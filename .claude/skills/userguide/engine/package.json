@@ -1,0 +1,10 @@
+{
+  "name": "userguide-screenshot-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Engine chụp + annotate ảnh cho /userguide (dùng chung mọi feature). Chạy: node capture.mjs",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}

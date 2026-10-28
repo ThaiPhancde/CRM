@@ -1,0 +1,74 @@
+{
+  "feature": "food-delivery",
+  "baseURL": "http://localhost:3000",
+  "specs": [
+    {
+      "scope": "ordering",
+      "title": "Đặt món từ menu (US-001)",
+      "scenarios": [
+        {
+          "id": "TC-001",
+          "title": "Đặt đơn thành công",
+          "tags": ["@happy", "@P0", "@AC-001"],
+          "steps": [
+            { "action": "note", "value": "Given khách đã đăng nhập, nhà hàng mở cửa, giỏ có món còn bán, tổng >= 30.000d" },
+            { "action": "goto", "target": "/cart" },
+            { "action": "click", "target": "place-order-btn" },
+            { "action": "expectText", "target": "order-status", "value": "Chờ nhà hàng xác nhận" },
+            { "action": "expectVisible", "target": "order-code" }
+          ]
+        },
+        {
+          "id": "TC-002",
+          "title": "Nhà hàng đóng cửa",
+          "tags": ["@negative", "@E-food-delivery-001", "@AC-002"],
+          "steps": [
+            { "action": "note", "value": "Given nhà hàng chuyển sang đóng cửa trước khi đặt" },
+            { "action": "goto", "target": "/cart" },
+            { "action": "click", "target": "place-order-btn" },
+            { "action": "expectText", "target": "toast-error", "value": "Nhà hàng hiện đang đóng cửa" }
+          ]
+        },
+        {
+          "id": "TC-003",
+          "title": "Dưới giá trị tối thiểu",
+          "tags": ["@boundary", "@BR-food-delivery-001", "@AC-004"],
+          "steps": [
+            { "action": "note", "value": "Given tổng đơn < 30.000d" },
+            { "action": "goto", "target": "/cart" },
+            { "action": "expectDisabled", "target": "place-order-btn" },
+            { "action": "expectText", "target": "min-order-note", "value": "Đơn tối thiểu 30.000đ" }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "payment",
+      "title": "Thanh toán đơn (US-002)",
+      "scenarios": [
+        {
+          "id": "TC-010",
+          "title": "Thanh toán COD thành công",
+          "tags": ["@happy", "@P0", "@AC-001"],
+          "steps": [
+            { "action": "goto", "target": "/checkout" },
+            { "action": "click", "target": "pay-cod" },
+            { "action": "click", "target": "confirm-pay" },
+            { "action": "expectText", "target": "order-status", "value": "Chờ nhà hàng xác nhận" }
+          ]
+        },
+        {
+          "id": "TC-011",
+          "title": "Thanh toán online thất bại",
+          "tags": ["@negative", "@E-food-delivery-004", "@AC-003"],
+          "steps": [
+            { "action": "goto", "target": "/checkout" },
+            { "action": "click", "target": "pay-online" },
+            { "action": "note", "value": "cổng thanh toán báo thất bại (mock)" },
+            { "action": "expectText", "target": "toast-error", "value": "Thanh toán không thành công" }
+          ]
+        }
+      ]
+    }
+  ]
+}

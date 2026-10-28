@@ -1,0 +1,178 @@
+// CRM LevelUp — schema. Quy ước (docs/data-model.md):
+// - Bảng nghiệp vụ có workspaceId; lớp src/lib/db.ts tự lọc/gán theo workspace (D-03). Membership có workspaceId
+//   nhưng là bảng phân quyền toàn hệ thống, tra trước khi có ngữ cảnh → không lọc.
+// - Workspace = team/đơn vị kinh doanh (D-29). Tiền Decimal (D-09).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Vai trò cố định, ma trận quyền ở src/lib/permissions.ts (D-21, D-32).
+enum Role {
+  MANAGER
+  SALES_LEAD
+  SALES
+  MARKETING
+  FULFILLMENT
+  PURCHASING_VIEW
+  FINANCE_VIEW
+}
+
+enum PaymentMode {
+  PREPAID
+  COD
+}
+
+model Workspace {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  teams       Team[]
+  brands      Brand[]
+  markets     Market[]
+  stores      Store[]
+  fxRates     FxRate[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String
+  /// Quản trị công ty LevelUp: vào mọi workspace; ở workspace không có membership thì mang quyền Quản lý (D-29).
+  isCompanyAdmin Boolean      @default(false)
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  memberships    Membership[]
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  roles       Role[]
+  teamId      String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  team        Team?     @relation(fields: [teamId], references: [id])
+
+  @@unique([workspaceId, userId])
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  workspaceId String
+  code        String
+  name        String
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  members     Membership[]
+
+  @@unique([workspaceId, code])
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  workspaceId String
+  code        String
+  name        String
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  stores      Store[]
+
+  @@unique([workspaceId, code])
+}
+
+model Market {
+  id          String      @id @default(cuid())
+  workspaceId String
+  /// Mã quốc gia ISO 3166-1 alpha-2 (US, DE, AE…)
+  code        String
+  name        String
+  currency    String
+  paymentMode PaymentMode
+  timezone    String
+  locale      String
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id])
+  stores      Store[]
+
+  @@unique([workspaceId, code])
+}
+
+model Store {
+  id          String    @id @default(cuid())
+  workspaceId String
+  brandId     String
+  code        String
+  name        String
+  /// Mã adapter đăng ký (pancake, shopify, website…) — chuỗi, không enum, để thêm nền tảng không đổi schema (D-28).
+  platform    String
+  externalId  String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  brand       Brand     @relation(fields: [brandId], references: [id])
+  markets     Market[]
+
+  @@unique([workspaceId, code])
+}
+
+model FxRate {
+  id          String    @id @default(cuid())
+  workspaceId String
+  currency    String
+  /// 1 đơn vị tiền này = rateToUsd USD
+  rateToUsd   Decimal   @db.Decimal(18, 8)
+  validFrom   DateTime  @db.Date
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, currency, validFrom])
+}
+
+/// Nhật ký chỉ thêm (D-16): không cập nhật, không xóa.
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  actorId     String
+  entity      String
+  entityId    String
+  action      String
+  before      Json?
+  after       Json?
+  reason      String?
+  at          DateTime @default(now())
+
+  @@index([workspaceId, entity, entityId])
+  @@index([workspaceId, at])
+}
+
+model IdempotencyKey {
+  id          String   @id @default(cuid())
+  workspaceId String
+  scope       String
+  key         String
+  resultRef   String?
+  createdAt   DateTime @default(now())
+
+  @@unique([workspaceId, scope, key])
+}

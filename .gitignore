@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+ai-jobs/**/logs/
+tests/e2e/shots/
+backups/
+uploads/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.playwright-mcp/
+.next-build/
+__pycache__/
+*.pyc
