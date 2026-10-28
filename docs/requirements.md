@@ -28,7 +28,7 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-10 | Connector khai báo khả năng; xác thực, backfill có checkpoint, gia tăng, lỗi, replay | HLD §5.1 | XĐ | 2 | ◐ replay |
+| R-10 | Connector khai báo khả năng; xác thực, backfill có checkpoint, gia tăng, lỗi, replay | HLD §5.1 | XĐ — **đã có Phase 2** (replay; live báo 501 rõ ràng) | 2 | ◐ replay |
 | R-11 | Khung adapter chung (registry theo mã platform); hai adapter đầu: Pancake (polling gia tăng), Shopify (GraphQL + webhook + đối chiếu); thêm nền tảng không sửa nghiệp vụ | HLD §5.1; D-28 | XĐ | 2, 12 | ◐ |
 | R-12 | Chống trùng bản ghi nguồn theo (workspace, connection, loại, mã nguồn) | HLD §4 | XĐ | 2 | ✓ |
 | R-13 | Một đơn kinh doanh, nhiều liên kết nguồn (bất kỳ cặp nền tảng, `linkRules` cấu hình); không gộp vì trùng tiền/SĐT; hàng đợi xác minh | HLD §5.2; D-06, D-28 | XĐ | 2 | ✓ |

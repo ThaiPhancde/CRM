@@ -19,10 +19,10 @@ export const NAV: NavGroup[] = [
   {
     label: "Bán hàng",
     items: [
-      { href: "/don-hang", label: "Đơn hàng", icon: "bag", phase: 2 },
-      { href: "/xac-minh", label: "Cần xác minh", icon: "alert", phase: 2 },
+      { href: "/don-hang", label: "Đơn hàng", icon: "bag", perm: "order.view" },
+      { href: "/xac-minh", label: "Cần xác minh", icon: "alert", perm: "order.link" },
       { href: "/van-don", label: "Vận đơn", icon: "truck", phase: 10 },
-      { href: "/san-pham", label: "Sản phẩm", icon: "box", phase: 2 },
+      { href: "/san-pham", label: "Sản phẩm", icon: "box", perm: "product.view" },
     ],
   },
   {
@@ -50,7 +50,7 @@ export const NAV: NavGroup[] = [
   {
     label: "Hệ thống",
     items: [
-      { href: "/ket-noi", label: "Kết nối dữ liệu", icon: "plug", phase: 2 },
+      { href: "/ket-noi", label: "Kết nối dữ liệu", icon: "plug", perm: "integration.view" },
       { href: "/quan-tri/nguoi-dung", label: "Người dùng", icon: "user", perm: "admin.users" },
       { href: "/quan-tri/vai-tro", label: "Vai trò & quyền", icon: "shield", perm: "admin.roles" },
       { href: "/quan-tri/danh-muc", label: "Danh mục", icon: "grid", perm: "admin.settings" },

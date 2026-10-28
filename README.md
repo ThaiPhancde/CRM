@@ -14,7 +14,9 @@ cp .env.example .env            # điền mật khẩu DB, SESSION_SECRET ≥ 32
 createdb crm && createdb crm_test
 npx prisma migrate deploy
 npm run db:seed                 # 2 team mẫu, danh mục, 9 người mẫu đủ vai
+npm run db:seed-demo            # sản phẩm + kết nối 5 shop + 12 tháng đơn phát lại (~2 phút)
 npx next dev -p 3217            # http://localhost:3217 → /dang-nhap
+npm run worker                  # (tùy chọn) worker đồng bộ theo chu kỳ, tiến trình riêng
 ```
 
 ## Kiểm thử

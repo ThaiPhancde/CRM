@@ -15,7 +15,8 @@ const MARKETS: Record<string, { name: string; currency: string; paymentMode: Pay
 
 // Tỷ giá demo cố định (D-09), sửa được ở Danh mục. 1 đơn vị = rateToUsd USD.
 const FX: Record<string, string> = { USD: "1", EUR: "1.08", AED: "0.27229", SAR: "0.26667", KWD: "3.25" };
-const FX_DATE = new Date("2026-01-01");
+// Hiệu lực từ đầu 2025: dữ liệu demo kéo dài 12 tháng trước 28/10/2026.
+const FX_DATE = new Date("2025-01-01");
 
 const WORKSPACES = [
   {

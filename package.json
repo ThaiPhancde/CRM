@@ -12,7 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
-    "worker": "tsx --env-file=.env worker/index.ts"
+    "worker": "tsx --env-file=.env worker/index.ts",
+    "db:seed-demo": "tsx --env-file=.env prisma/seed-demo.ts",
+    "fixtures": "tsx scripts/gen-fixtures.ts"
   },
   "engines": {
     "node": ">=20"

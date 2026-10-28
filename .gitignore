@@ -12,3 +12,4 @@ next-env.d.ts
 .next-build/
 __pycache__/
 *.pyc
+fixtures/replay/

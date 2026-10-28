@@ -9,6 +9,11 @@ const PERM_LABEL: Record<Permission, string> = {
   "admin.audit": "Xem nhật ký thao tác",
   "catalog.view": "Xem danh mục",
   "finance.view": "Xem số tiền, tỷ giá, COD",
+  "integration.manage": "Quản lý kết nối dữ liệu, chạy đồng bộ",
+  "integration.view": "Xem trạng thái kết nối dữ liệu",
+  "order.view": "Xem đơn hàng",
+  "order.link": "Duyệt gộp/tách đơn nghi trùng",
+  "product.view": "Xem sản phẩm",
 };
 
 export default async function RolesPage() {

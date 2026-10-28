@@ -6,7 +6,7 @@ import { Badge, Card, PageHeader, SectionTitle, StatCard } from "@/components/ui
 // Dashboard theo vai là Phase 9. Phase 1 chỉ hiện danh mục của team + lộ trình demo để người dùng thấy phạm vi.
 const ROADMAP = [
   { p: 1, name: "Nền tảng, quyền, giao diện", done: true },
-  { p: 2, name: "Kết nối dữ liệu + đơn chuẩn" },
+  { p: 2, name: "Kết nối dữ liệu + đơn chuẩn", done: true },
   { p: 3, name: "Customer 360" },
   { p: 4, name: "Nhu cầu mua + không gian sales" },
   { p: 5, name: "Dịch vụ sau bán + tri thức" },

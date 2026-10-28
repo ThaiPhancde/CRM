@@ -1,0 +1,11 @@
+[
+  {
+    "id": "catalog",
+    "mode": "write",
+    "model": "gemini-4-argon-medium",
+    "prompt_file": "work-order.md",
+    "allowed_paths": ["fixtures/catalog.json"],
+    "check": ["python", "-I", "ai-jobs/p2-catalog/checker.py", "."],
+    "timeout_s": 1200
+  }
+]

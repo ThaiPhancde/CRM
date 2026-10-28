@@ -8,7 +8,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 |---|---|---|---|
 | 0 Audit + đặc tả | **Xong bản nháp, chờ duyệt** | 28/10/2026 | Bộ tài liệu vai trò + thiết kế + prompt phase; chưa có code |
 | 1 Nền tảng, quyền, UI shell | **Xong, chờ nghiệm thu** | 28/10/2026 | 22 test xanh; thử trình duyệt 2 vai; chưa commit/worktree |
-| 2 Kết nối + đơn chuẩn | Chưa | | |
+| 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
 | 3 Customer 360 | Chưa | | |
 | 4 Nhu cầu mua + sales | Chưa | | |
 | 5 Dịch vụ + tri thức | Chưa | | |
@@ -19,6 +19,32 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Phase 2 — đã làm (28/10/2026)
+
+**Lát 2.1 — khung connector.** Schema `Connection`, `SyncRun`, `SyncCheckpoint`, `SourceEvent` (migration `phase2_connectors_orders`). `src/adapters/connectors/`: kiểu `NormalizedOrder` (zod), registry theo mã nền tảng (D-28), mapper Pancake (định dạng phát lại giả định, CXM) và Shopify (Admin GraphQL giản lược, TL), nguồn phát lại đọc `fixtures/replay/<mã shop>.json`, nguồn live trả 501 có giải thích. Cấu hình kết nối mã hóa AES-256-GCM (`src/lib/crypto.ts`). `runSync`: khóa chống chạy chồng (409), checkpoint lùi 10 phút, thống kê từng lượt, đặt kết nối ERROR khi lượt thất bại. Chạy lại sự kiện lỗi.
+
+**Lát 2.2 — đơn chuẩn.** `Product`/`Variant`/`SourceProductMapping`; `Order` (4 trạng thái tách, tiền Decimal nguyên tệ + tỷ giá chốt theo ngày đặt + USD), `OrderItem` (đặt/giao/hoàn theo dòng), `Payment`, `Refund`, `Shipment`, `DeliveryEvent`. `src/modules/orders/ingest.ts`: chống trùng theo eventKey, bản cũ đến muộn = STALE theo từng liên kết nguồn, chủ nhóm trường order/payment/fulfillment (D-32), thiếu tỷ giá = ERROR có lý do.
+
+**Lát 2.3 — liên kết hai nguồn.** `SourceOrderLink`, `OrderLinkReview`, `MergeLog`, `Setting` (`linkRules`, `sourceOfTruth`). Tự liên kết khi đúng một đơn khớp quy tắc; nghi trùng → hàng đợi (D-37). Gộp có ảnh chụp, tách lại khôi phục đơn cũ cùng id.
+
+**Lát 2.4 — giao diện + worker.** `/ket-noi` (thẻ kết nối, lượt đồng bộ, Đồng bộ ngay / Nạp lịch sử / Chạy lại lỗi / Tạm dừng, thêm kết nối), `/don-hang` (lọc GET, phân trang server 50/trang, ô REV-01 quy USD, lọc đơn nhiều nguồn, xuất CSV có BOM), `/don-hang/[id]` (dòng hàng, tổng tiền + tỷ giá chốt, dòng thời gian giao hàng, nguồn liên kết + trạng thái gốc, nhật ký bản ghi nguồn), `/xac-minh` (so cạnh nhau, gộp / không phải, tách lại), `/san-pham`. Worker `npm run worker` (`--once`). Quyền mới: `integration.manage/view`, `order.view/link`, `product.view`.
+
+**Dữ liệu demo.** `npm run db:seed-demo`: 42 sản phẩm / 67 SKU (Gemini), sinh 8.288 bản ghi phát lại 12 tháng (tất định), nạp qua luồng đồng bộ thật → **1.963 đơn, 2.003 liên kết nguồn, 40 đơn Shopify–Pancake tự liên kết, 3 cặp chờ xác minh, 118 bản cũ đến muộn bị bỏ qua, 185 bản gửi lặp bị loại, 0 lỗi**.
+
+**Test đã chạy (28/10):**
+- `npx vitest run` → 3 file, **32/32 passed** (Phase 2: 10 ca — trùng hai nguồn tính một lần + REV-01 đúng 102,6 USD; DUPLICATE; STALE; giao/hoàn một phần; nghi trùng → gộp → tách lại; thiếu tỷ giá → ERROR → chạy lại; D-32 chủ nhóm giao hàng; nền tảng thứ ba chỉ cần đăng ký adapter; khóa đồng bộ chồng 409; che tiền + cô lập workspace).
+- `npx tsc --noEmit` sạch; `next build` thành công (12 route); `npm run worker -- --once` exit 0.
+- Trình duyệt (1440): `/don-hang` Team PiAlpha 1.350 đơn; đơn #6025 Team EU 2 nguồn, trạng thái giao lấy từ Pancake; `/xac-minh` 3 cặp; `/ket-noi` đồng bộ ngay → 1 trùng bỏ qua; CSV 200, `text/csv`, BOM EF BB BF.
+
+**Lỗi thật phát hiện và sửa trong phase:** seed tỷ giá có hiệu lực từ 2026 trong khi dữ liệu bắt đầu 10/2025 → hệ thống từ chối quy đổi đúng thiết kế (288+ ERROR), sửa seed về 2025 rồi chạy lại lỗi thành công; bộ sinh dữ liệu đẩy "bản đến muộn" trùng phiên bản đã gửi nên chỉ ra DUPLICATE thay vì STALE — sửa để phiên bản đến muộn chỉ tới sau phiên bản mới hơn.
+
+**Chưa làm / còn hở:**
+- Gộp/tách trên trình duyệt chưa bấm thử (nút có hộp thoại xác nhận của trình duyệt); đã có test tự động.
+- Sales thấy mọi đơn của team (chưa giới hạn theo khách được giao — Phase 4).
+- SĐT so 9 chữ số cuối (Phase 3 thay bằng E.164).
+- Webhook Shopify mô phỏng chưa làm (live chưa bật); `Settlement`/đối soát COD ở Phase 10.
+- Tỷ lệ: Claude ~93% / Gemini ~7%.
 
 ## Phase 1 — đã làm (28/10/2026)
 

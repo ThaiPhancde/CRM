@@ -1,0 +1,812 @@
+{
+  "products": [
+    {
+      "code": "LUMI-LAMP01",
+      "brand": "LUMI",
+      "category": "Lighting",
+      "name_vi": "Đèn ngủ cảm biến chuyển động",
+      "name_en": "Motion Sensor Night Light",
+      "name_ar": "مصباح ليلي بمستشعر حركة",
+      "variants": [
+        {
+          "sku": "LUMI-LAMP01-WH",
+          "attributes": { "color": "warm white" },
+          "prices": { "USD": "19.90", "EUR": "18.50", "AED": "73.00", "SAR": "75.00", "KWD": "6.100" },
+          "cost_usd": "6.20"
+        },
+        {
+          "sku": "LUMI-LAMP01-CL",
+          "attributes": { "color": "cool white" },
+          "prices": { "USD": "19.90", "EUR": "18.50", "AED": "73.00", "SAR": "75.00", "KWD": "6.100" },
+          "cost_usd": "6.20"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-LAMP02",
+      "brand": "LUMI",
+      "category": "Lighting",
+      "name_vi": "Đèn bàn học gập gọn sạc điện",
+      "name_en": "Foldable Rechargeable Desk Lamp",
+      "name_ar": "مصباح مكتب قابل للطي وإعادة الشحن",
+      "variants": [
+        {
+          "sku": "LUMI-LAMP02-WH",
+          "attributes": { "color": "white" },
+          "prices": { "USD": "34.90", "EUR": "32.50", "AED": "129.00", "SAR": "131.00", "KWD": "10.750" },
+          "cost_usd": "11.50"
+        },
+        {
+          "sku": "LUMI-LAMP02-BK",
+          "attributes": { "color": "matte black" },
+          "prices": { "USD": "34.90", "EUR": "32.50", "AED": "129.00", "SAR": "131.00", "KWD": "10.750" },
+          "cost_usd": "11.50"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-LAMP03",
+      "brand": "LUMI",
+      "category": "Lighting",
+      "name_vi": "Thanh đèn gắn tủ bếp nam châm",
+      "name_en": "Magnetic Under Cabinet Light Bar",
+      "name_ar": "شريط إضاءة مغناطيسي لتحت الخزانة",
+      "variants": [
+        {
+          "sku": "LUMI-LAMP03-30CM",
+          "attributes": { "length": "30cm" },
+          "prices": { "USD": "22.00", "EUR": "20.50", "AED": "81.00", "SAR": "83.00", "KWD": "6.800" },
+          "cost_usd": "7.00"
+        },
+        {
+          "sku": "LUMI-LAMP03-50CM",
+          "attributes": { "length": "50cm" },
+          "prices": { "USD": "28.00", "EUR": "25.90", "AED": "103.00", "SAR": "105.00", "KWD": "8.600" },
+          "cost_usd": "9.10"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-BOX01",
+      "brand": "LUMI",
+      "category": "Storage",
+      "name_vi": "Hộp đựng thực phẩm thủy tinh nắp khóa",
+      "name_en": "Glass Food Storage Container",
+      "name_ar": "حافظة طعام زجاجية بغطاء محكم",
+      "variants": [
+        {
+          "sku": "LUMI-BOX01-800ML",
+          "attributes": { "capacity": "800ml" },
+          "prices": { "USD": "14.50", "EUR": "13.50", "AED": "53.00", "SAR": "55.00", "KWD": "4.500" },
+          "cost_usd": "4.80"
+        },
+        {
+          "sku": "LUMI-BOX01-1200ML",
+          "attributes": { "capacity": "1200ml" },
+          "prices": { "USD": "18.50", "EUR": "17.00", "AED": "68.00", "SAR": "69.00", "KWD": "5.700" },
+          "cost_usd": "6.10"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-JAR02",
+      "brand": "LUMI",
+      "category": "Storage",
+      "name_vi": "Bộ lọ đựng gia vị nắp gỗ tre",
+      "name_en": "Bamboo Lid Spice Jar Set",
+      "name_ar": "طقم برطمانات توابل بغطاء خيزران",
+      "variants": [
+        {
+          "sku": "LUMI-JAR02-6PC",
+          "attributes": { "pack": "6 pieces" },
+          "prices": { "USD": "24.90", "EUR": "23.00", "AED": "91.00", "SAR": "93.00", "KWD": "7.700" },
+          "cost_usd": "8.20"
+        },
+        {
+          "sku": "LUMI-JAR02-12PC",
+          "attributes": { "pack": "12 pieces" },
+          "prices": { "USD": "42.00", "EUR": "38.90", "AED": "154.00", "SAR": "158.00", "KWD": "12.900" },
+          "cost_usd": "13.80"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-BIN03",
+      "brand": "LUMI",
+      "category": "Storage",
+      "name_vi": "Thùng đựng gạo chống ẩm có cốc đong",
+      "name_en": "Airtight Rice Dispenser Bin",
+      "name_ar": "حاوية أرز محكمة الإغلاق مع كوب قياس",
+      "variants": [
+        {
+          "sku": "LUMI-BIN03-5KG",
+          "attributes": { "capacity": "5kg" },
+          "prices": { "USD": "29.90", "EUR": "27.90", "AED": "110.00", "SAR": "112.00", "KWD": "9.200" },
+          "cost_usd": "9.80"
+        },
+        {
+          "sku": "LUMI-BIN03-10KG",
+          "attributes": { "capacity": "10kg" },
+          "prices": { "USD": "39.90", "EUR": "36.90", "AED": "146.00", "SAR": "150.00", "KWD": "12.300" },
+          "cost_usd": "13.20"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-SCALE01",
+      "brand": "LUMI",
+      "category": "Kitchen Tools",
+      "name_vi": "Cân điện tử nhà bếp mặt kính",
+      "name_en": "Digital Glass Kitchen Scale",
+      "name_ar": "ميزان مطبخ رقمي بسطح زجاجي",
+      "variants": [
+        {
+          "sku": "LUMI-SCALE01-SL",
+          "attributes": { "color": "silver" },
+          "prices": { "USD": "16.90", "EUR": "15.50", "AED": "62.00", "SAR": "63.00", "KWD": "5.200" },
+          "cost_usd": "5.40"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-CHOP02",
+      "brand": "LUMI",
+      "category": "Kitchen Tools",
+      "name_vi": "Dụng cụ cắt hạt lựu rau củ đa năng",
+      "name_en": "Multi Blade Vegetable Chopper",
+      "name_ar": "قطاعة خضروات متعددة الشفرات",
+      "variants": [
+        {
+          "sku": "LUMI-CHOP02-GN",
+          "attributes": { "color": "sage green" },
+          "prices": { "USD": "26.50", "EUR": "24.50", "AED": "97.00", "SAR": "99.00", "KWD": "8.200" },
+          "cost_usd": "8.50"
+        },
+        {
+          "sku": "LUMI-CHOP02-GY",
+          "attributes": { "color": "grey" },
+          "prices": { "USD": "26.50", "EUR": "24.50", "AED": "97.00", "SAR": "99.00", "KWD": "8.200" },
+          "cost_usd": "8.50"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-MILL03",
+      "brand": "LUMI",
+      "category": "Kitchen Tools",
+      "name_vi": "Cối xay tiêu muối tự động bằng thép",
+      "name_en": "Electric Salt and Pepper Grinder",
+      "name_ar": "مطحنة ملح وفلفل كهربائية من الفولاذ",
+      "variants": [
+        {
+          "sku": "LUMI-MILL03-1PC",
+          "attributes": { "pack": "single" },
+          "prices": { "USD": "21.00", "EUR": "19.50", "AED": "77.00", "SAR": "79.00", "KWD": "6.500" },
+          "cost_usd": "6.80"
+        },
+        {
+          "sku": "LUMI-MILL03-2PC",
+          "attributes": { "pack": "twin set" },
+          "prices": { "USD": "38.00", "EUR": "35.00", "AED": "139.00", "SAR": "142.00", "KWD": "11.700" },
+          "cost_usd": "12.40"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-WHISK04",
+      "brand": "LUMI",
+      "category": "Kitchen Tools",
+      "name_vi": "Máy tạo bọt sữa cầm tay dùng pin",
+      "name_en": "Handheld Milk Frother Wand",
+      "name_ar": "خفاقة حليب يدوية لصنع الرغوة",
+      "variants": [
+        {
+          "sku": "LUMI-WHISK04-BK",
+          "attributes": { "color": "black" },
+          "prices": { "USD": "12.90", "EUR": "11.90", "AED": "47.00", "SAR": "48.00", "KWD": "4.000" },
+          "cost_usd": "3.90"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-RACK01",
+      "brand": "LUMI",
+      "category": "Organization",
+      "name_vi": "Kệ úp bát đĩa hai tầng thoát nước",
+      "name_en": "Two Tier Dish Drying Rack",
+      "name_ar": "رف تجفيف أطباق من طابقين",
+      "variants": [
+        {
+          "sku": "LUMI-RACK01-BK",
+          "attributes": { "color": "black" },
+          "prices": { "USD": "46.00", "EUR": "42.50", "AED": "169.00", "SAR": "172.00", "KWD": "14.200" },
+          "cost_usd": "15.20"
+        },
+        {
+          "sku": "LUMI-RACK01-WH",
+          "attributes": { "color": "white" },
+          "prices": { "USD": "46.00", "EUR": "42.50", "AED": "169.00", "SAR": "172.00", "KWD": "14.200" },
+          "cost_usd": "15.20"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-TRAY02",
+      "brand": "LUMI",
+      "category": "Organization",
+      "name_vi": "Khay chia ngăn kéo đựng muỗng nĩa",
+      "name_en": "Expandable Bamboo Cutlery Tray",
+      "name_ar": "منظم أدوات مائدة قابل للتوسيع من الخيزران",
+      "variants": [
+        {
+          "sku": "LUMI-TRAY02-NAT",
+          "attributes": { "finish": "natural bamboo" },
+          "prices": { "USD": "32.00", "EUR": "29.50", "AED": "118.00", "SAR": "120.00", "KWD": "9.800" },
+          "cost_usd": "10.50"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-FLASK01",
+      "brand": "LUMI",
+      "category": "Drinkware",
+      "name_vi": "Bình giữ nhiệt inox hai lớp có lưới lọc",
+      "name_en": "Insulated Stainless Tea Tumbler",
+      "name_ar": "كوب شاي حراري معزول مع مصفاة",
+      "variants": [
+        {
+          "sku": "LUMI-FLASK01-NV",
+          "attributes": { "color": "navy blue" },
+          "prices": { "USD": "23.50", "EUR": "21.90", "AED": "86.00", "SAR": "88.00", "KWD": "7.200" },
+          "cost_usd": "7.60"
+        },
+        {
+          "sku": "LUMI-FLASK01-CR",
+          "attributes": { "color": "cream" },
+          "prices": { "USD": "23.50", "EUR": "21.90", "AED": "86.00", "SAR": "88.00", "KWD": "7.200" },
+          "cost_usd": "7.60"
+        }
+      ]
+    },
+    {
+      "code": "LUMI-KETL02",
+      "brand": "LUMI",
+      "category": "Drinkware",
+      "name_vi": "Ấm đun nước cổ ngỗng pha cà phê",
+      "name_en": "Gooseneck Pour Over Coffee Kettle",
+      "name_ar": "غلاية قهوة بعنق طويل للصب الدقيق",
+      "variants": [
+        {
+          "sku": "LUMI-KETL02-BK",
+          "attributes": { "color": "matte black" },
+          "prices": { "USD": "54.00", "EUR": "50.00", "AED": "198.00", "SAR": "202.00", "KWD": "16.600" },
+          "cost_usd": "18.00"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-CLNS01",
+      "brand": "NOVA",
+      "category": "Cleansers",
+      "name_vi": "Sữa rửa mặt tạo bọt dịu nhẹ",
+      "name_en": "Gentle Amino Foaming Cleanser",
+      "name_ar": "غسول وجه رغوي لطيف بالأحماض الأمينية",
+      "variants": [
+        {
+          "sku": "NOVA-CLNS01-150ML",
+          "attributes": { "size": "150ml" },
+          "prices": { "USD": "18.00", "EUR": "16.90", "AED": "66.00", "SAR": "68.00", "KWD": "5.500" },
+          "cost_usd": "4.90"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-BALM02",
+      "brand": "NOVA",
+      "category": "Cleansers",
+      "name_vi": "Sáp tẩy trang chiết xuất hoa cúc",
+      "name_en": "Chamomile Melting Cleansing Balm",
+      "name_ar": "بلسم مزيل للمكياج بخلاصة البابونج",
+      "variants": [
+        {
+          "sku": "NOVA-BALM02-100G",
+          "attributes": { "size": "100g" },
+          "prices": { "USD": "26.00", "EUR": "24.00", "AED": "95.00", "SAR": "98.00", "KWD": "8.000" },
+          "cost_usd": "7.20"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-TONR03",
+      "brand": "NOVA",
+      "category": "Cleansers",
+      "name_vi": "Nước cân bằng cấp ẩm chiết xuất gạo",
+      "name_en": "Rice Bran Hydrating Facial Toner",
+      "name_ar": "تونر مرطب للوجه بخلاصة نخالة الأرز",
+      "variants": [
+        {
+          "sku": "NOVA-TONR03-200ML",
+          "attributes": { "size": "200ml" },
+          "prices": { "USD": "22.00", "EUR": "20.50", "AED": "81.00", "SAR": "83.00", "KWD": "6.800" },
+          "cost_usd": "6.00"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-SERM01",
+      "brand": "NOVA",
+      "category": "Serums",
+      "name_vi": "Tinh chất cấp nước Hyaluronic đa tầng",
+      "name_en": "Hyaluronic Moisture Boost Serum",
+      "name_ar": "سيروم حمض الهيالورونيك لترطيب البشرة",
+      "variants": [
+        {
+          "sku": "NOVA-SERM01-30ML",
+          "attributes": { "size": "30ml" },
+          "prices": { "USD": "29.00", "EUR": "26.90", "AED": "106.00", "SAR": "109.00", "KWD": "8.900" },
+          "cost_usd": "7.80"
+        },
+        {
+          "sku": "NOVA-SERM01-50ML",
+          "attributes": { "size": "50ml" },
+          "prices": { "USD": "42.00", "EUR": "38.90", "AED": "154.00", "SAR": "158.00", "KWD": "12.900" },
+          "cost_usd": "11.20"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-SERM02",
+      "brand": "NOVA",
+      "category": "Serums",
+      "name_vi": "Tinh chất dưỡng sáng Vitamin C 10%",
+      "name_en": "Vitamin C Glow Facial Drops",
+      "name_ar": "قطرات فيتامين سي لإشراقة الوجه",
+      "variants": [
+        {
+          "sku": "NOVA-SERM02-30ML",
+          "attributes": { "size": "30ml" },
+          "prices": { "USD": "34.00", "EUR": "31.50", "AED": "125.00", "SAR": "128.00", "KWD": "10.500" },
+          "cost_usd": "9.50"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-SERM03",
+      "brand": "NOVA",
+      "category": "Serums",
+      "name_vi": "Dầu dưỡng ẩm từ hạt tầm xuân",
+      "name_en": "Cold Pressed Rosehip Facial Oil",
+      "name_ar": "زيت ثمر الورد المعصور على البارد للوجه",
+      "variants": [
+        {
+          "sku": "NOVA-SERM03-30ML",
+          "attributes": { "size": "30ml" },
+          "prices": { "USD": "31.00", "EUR": "28.90", "AED": "114.00", "SAR": "116.00", "KWD": "9.500" },
+          "cost_usd": "8.60"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-CREM01",
+      "brand": "NOVA",
+      "category": "Moisturizers",
+      "name_vi": "Kem dưỡng ẩm dạng thạch mỏng nhẹ",
+      "name_en": "Water Gel Daily Moisturizer",
+      "name_ar": "كريم جل مائي مرطب يومي للوجه",
+      "variants": [
+        {
+          "sku": "NOVA-CREM01-50ML",
+          "attributes": { "size": "50ml" },
+          "prices": { "USD": "28.00", "EUR": "25.90", "AED": "103.00", "SAR": "105.00", "KWD": "8.600" },
+          "cost_usd": "7.90"
+        },
+        {
+          "sku": "NOVA-CREM01-100ML",
+          "attributes": { "size": "100ml" },
+          "prices": { "USD": "45.00", "EUR": "41.50", "AED": "165.00", "SAR": "169.00", "KWD": "13.800" },
+          "cost_usd": "12.50"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-CREM02",
+      "brand": "NOVA",
+      "category": "Moisturizers",
+      "name_vi": "Kem dưỡng ban đêm chứa Ceramide",
+      "name_en": "Ceramide Barrier Night Cream",
+      "name_ar": "كريم ليلي بالسيراميد لترطيب البشرة",
+      "variants": [
+        {
+          "sku": "NOVA-CREM02-50ML",
+          "attributes": { "size": "50ml" },
+          "prices": { "USD": "36.00", "EUR": "33.50", "AED": "132.00", "SAR": "135.00", "KWD": "11.100" },
+          "cost_usd": "10.20"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-EYEC03",
+      "brand": "NOVA",
+      "category": "Moisturizers",
+      "name_vi": "Kem dưỡng vùng mắt chiết xuất trà xanh",
+      "name_en": "Green Tea Smoothing Eye Cream",
+      "name_ar": "كريم العين المنعم بخلاصة الشاي الأخضر",
+      "variants": [
+        {
+          "sku": "NOVA-EYEC03-20ML",
+          "attributes": { "size": "20ml" },
+          "prices": { "USD": "27.00", "EUR": "25.00", "AED": "99.00", "SAR": "101.00", "KWD": "8.300" },
+          "cost_usd": "7.40"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-MASK01",
+      "brand": "NOVA",
+      "category": "Masks",
+      "name_vi": "Mặt nạ đất sét hồng làm sạch lỗ chân lông",
+      "name_en": "Pink Kaolin Clay Pore Mask",
+      "name_ar": "قناع الطين الوردي لتنظيف المسام",
+      "variants": [
+        {
+          "sku": "NOVA-MASK01-120G",
+          "attributes": { "size": "120g" },
+          "prices": { "USD": "24.00", "EUR": "22.00", "AED": "88.00", "SAR": "90.00", "KWD": "7.400" },
+          "cost_usd": "6.60"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-MASK02",
+      "brand": "NOVA",
+      "category": "Masks",
+      "name_vi": "Mặt nạ ngủ dưỡng môi hương quả mọng",
+      "name_en": "Berry Overnight Lip Sleeping Mask",
+      "name_ar": "قناع ليلي مرطب للشفاه برائحة التوت",
+      "variants": [
+        {
+          "sku": "NOVA-MASK02-20G",
+          "attributes": { "scent": "mixed berry" },
+          "prices": { "USD": "15.00", "EUR": "13.90", "AED": "55.00", "SAR": "56.00", "KWD": "4.600" },
+          "cost_usd": "4.10"
+        },
+        {
+          "sku": "NOVA-MASK02-VAN",
+          "attributes": { "scent": "vanilla" },
+          "prices": { "USD": "15.00", "EUR": "13.90", "AED": "55.00", "SAR": "56.00", "KWD": "4.600" },
+          "cost_usd": "4.10"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-TOOL01",
+      "brand": "NOVA",
+      "category": "Beauty Tools",
+      "name_vi": "Con lăn massage mặt bằng đá thạch anh",
+      "name_en": "Rose Quartz Facial Massage Roller",
+      "name_ar": "أداة تدليك الوجه من حجر الكوارتز الوردي",
+      "variants": [
+        {
+          "sku": "NOVA-TOOL01-PK",
+          "attributes": { "stone": "rose quartz" },
+          "prices": { "USD": "25.00", "EUR": "23.00", "AED": "92.00", "SAR": "94.00", "KWD": "7.700" },
+          "cost_usd": "6.80"
+        },
+        {
+          "sku": "NOVA-TOOL01-GN",
+          "attributes": { "stone": "aventurine" },
+          "prices": { "USD": "25.00", "EUR": "23.00", "AED": "92.00", "SAR": "94.00", "KWD": "7.700" },
+          "cost_usd": "6.80"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-TOOL02",
+      "brand": "NOVA",
+      "category": "Beauty Tools",
+      "name_vi": "Máy rửa mặt đầu cọ silicone chống nước",
+      "name_en": "Silicone Sonic Facial Cleansing Brush",
+      "name_ar": "فرشاة تنظيف الوجه السيليكونية المقاومة للماء",
+      "variants": [
+        {
+          "sku": "NOVA-TOOL02-LP",
+          "attributes": { "color": "light pink" },
+          "prices": { "USD": "58.00", "EUR": "53.90", "AED": "213.00", "SAR": "218.00", "KWD": "17.800" },
+          "cost_usd": "17.40"
+        },
+        {
+          "sku": "NOVA-TOOL02-MT",
+          "attributes": { "color": "mint" },
+          "prices": { "USD": "58.00", "EUR": "53.90", "AED": "213.00", "SAR": "218.00", "KWD": "17.800" },
+          "cost_usd": "17.40"
+        }
+      ]
+    },
+    {
+      "code": "NOVA-TOOL03",
+      "brand": "NOVA",
+      "category": "Beauty Tools",
+      "name_vi": "Gương trang điểm để bàn có đèn viền",
+      "name_en": "Lighted Tabletop Vanity Mirror",
+      "name_ar": "مرآة مكياج مكتبية مزودة بإضاءة",
+      "variants": [
+        {
+          "sku": "NOVA-TOOL03-WH",
+          "attributes": { "color": "pearl white" },
+          "prices": { "USD": "68.00", "EUR": "63.00", "AED": "250.00", "SAR": "255.00", "KWD": "20.900" },
+          "cost_usd": "21.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-TABL01",
+      "brand": "ORBI",
+      "category": "Tables",
+      "name_vi": "Bàn trà tròn mặt gỗ sồi tự nhiên",
+      "name_en": "Solid Oak Round Coffee Table",
+      "variants": [
+        {
+          "sku": "ORBI-TABL01-OAK",
+          "attributes": { "finish": "natural oak" },
+          "prices": { "USD": "280.00", "EUR": "259.00", "AED": "1028.00", "SAR": "1050.00", "KWD": "86.000" },
+          "cost_usd": "98.00"
+        },
+        {
+          "sku": "ORBI-TABL01-WAL",
+          "attributes": { "finish": "smoked walnut" },
+          "prices": { "USD": "310.00", "EUR": "287.00", "AED": "1138.00", "SAR": "1162.00", "KWD": "95.400" },
+          "cost_usd": "108.50"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-TABL02",
+      "brand": "ORBI",
+      "category": "Tables",
+      "name_vi": "Bàn phụ cạnh sofa chân thép sơn tĩnh điện",
+      "name_en": "Steel Frame Sofa Side Table",
+      "variants": [
+        {
+          "sku": "ORBI-TABL02-BK",
+          "attributes": { "color": "charcoal black" },
+          "prices": { "USD": "125.00", "EUR": "116.00", "AED": "459.00", "SAR": "469.00", "KWD": "38.500" },
+          "cost_usd": "42.00"
+        },
+        {
+          "sku": "ORBI-TABL02-SD",
+          "attributes": { "color": "warm sand" },
+          "prices": { "USD": "125.00", "EUR": "116.00", "AED": "459.00", "SAR": "469.00", "KWD": "38.500" },
+          "cost_usd": "42.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-DESK03",
+      "brand": "ORBI",
+      "category": "Tables",
+      "name_vi": "Bàn làm việc có ngăn kéo gỗ tần bì",
+      "name_en": "Ash Wood Writing Desk with Drawers",
+      "variants": [
+        {
+          "sku": "ORBI-DESK03-120CM",
+          "attributes": { "width": "120cm" },
+          "prices": { "USD": "420.00", "EUR": "389.00", "AED": "1542.00", "SAR": "1575.00", "KWD": "129.200" },
+          "cost_usd": "148.00"
+        },
+        {
+          "sku": "ORBI-DESK03-150CM",
+          "attributes": { "width": "150cm" },
+          "prices": { "USD": "490.00", "EUR": "454.00", "AED": "1800.00", "SAR": "1837.00", "KWD": "150.800" },
+          "cost_usd": "172.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-CHAR01",
+      "brand": "ORBI",
+      "category": "Seating",
+      "name_vi": "Ghế ăn bọc nỉ chân gỗ dẻ gai",
+      "name_en": "Upholstered Fabric Dining Chair",
+      "variants": [
+        {
+          "sku": "ORBI-CHAR01-GY",
+          "attributes": { "color": "heather grey" },
+          "prices": { "USD": "165.00", "EUR": "153.00", "AED": "606.00", "SAR": "619.00", "KWD": "50.800" },
+          "cost_usd": "56.00"
+        },
+        {
+          "sku": "ORBI-CHAR01-OL",
+          "attributes": { "color": "olive green" },
+          "prices": { "USD": "165.00", "EUR": "153.00", "AED": "606.00", "SAR": "619.00", "KWD": "50.800" },
+          "cost_usd": "56.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-ARMC02",
+      "brand": "ORBI",
+      "category": "Seating",
+      "name_vi": "Ghế bành thư giãn bọc vải bố",
+      "name_en": "Woven Linen Lounge Armchair",
+      "variants": [
+        {
+          "sku": "ORBI-ARMC02-BG",
+          "attributes": { "color": "oatmeal beige" },
+          "prices": { "USD": "540.00", "EUR": "500.00", "AED": "1983.00", "SAR": "2025.00", "KWD": "166.200" },
+          "cost_usd": "189.00"
+        },
+        {
+          "sku": "ORBI-ARMC02-TR",
+          "attributes": { "color": "terracotta" },
+          "prices": { "USD": "540.00", "EUR": "500.00", "AED": "1983.00", "SAR": "2025.00", "KWD": "166.200" },
+          "cost_usd": "189.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-BNCH03",
+      "brand": "ORBI",
+      "category": "Seating",
+      "name_vi": "Ghế băng dài sảnh chờ có kệ để giày",
+      "name_en": "Entryway Bench with Shoe Shelf",
+      "variants": [
+        {
+          "sku": "ORBI-BNCH03-OAK",
+          "attributes": { "finish": "oiled oak" },
+          "prices": { "USD": "210.00", "EUR": "194.00", "AED": "771.00", "SAR": "787.00", "KWD": "64.600" },
+          "cost_usd": "72.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-SHLF01",
+      "brand": "ORBI",
+      "category": "Shelving",
+      "name_vi": "Kệ sách năm tầng khung sắt mặt gỗ",
+      "name_en": "Five Tier Open Bookcase",
+      "variants": [
+        {
+          "sku": "ORBI-SHLF01-OAK",
+          "attributes": { "finish": "oak and black" },
+          "prices": { "USD": "340.00", "EUR": "315.00", "AED": "1249.00", "SAR": "1275.00", "KWD": "104.600" },
+          "cost_usd": "119.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-SHLF02",
+      "brand": "ORBI",
+      "category": "Shelving",
+      "name_vi": "Bộ kệ gỗ treo tường giấu chân",
+      "name_en": "Floating Wooden Wall Shelf Set",
+      "variants": [
+        {
+          "sku": "ORBI-SHLF02-60CM",
+          "attributes": { "length": "60cm" },
+          "prices": { "USD": "65.00", "EUR": "60.00", "AED": "239.00", "SAR": "244.00", "KWD": "20.000" },
+          "cost_usd": "21.50"
+        },
+        {
+          "sku": "ORBI-SHLF02-90CM",
+          "attributes": { "length": "90cm" },
+          "prices": { "USD": "85.00", "EUR": "78.90", "AED": "312.00", "SAR": "319.00", "KWD": "26.200" },
+          "cost_usd": "28.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-CABN03",
+      "brand": "ORBI",
+      "category": "Shelving",
+      "name_vi": "Tủ thấp phòng khách cánh đan mây",
+      "name_en": "Rattan Door Media Sideboard",
+      "variants": [
+        {
+          "sku": "ORBI-CABN03-NAT",
+          "attributes": { "finish": "natural cane" },
+          "prices": { "USD": "580.00", "EUR": "537.00", "AED": "2130.00", "SAR": "2175.00", "KWD": "178.500" },
+          "cost_usd": "203.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-RUG01",
+      "brand": "ORBI",
+      "category": "Textiles",
+      "name_vi": "Thảm trải sàn dệt phẳng sợi đay",
+      "name_en": "Flatweave Braided Jute Area Rug",
+      "variants": [
+        {
+          "sku": "ORBI-RUG01-160",
+          "attributes": { "size": "160x230cm" },
+          "prices": { "USD": "195.00", "EUR": "180.50", "AED": "716.00", "SAR": "731.00", "KWD": "60.000" },
+          "cost_usd": "66.00"
+        },
+        {
+          "sku": "ORBI-RUG01-200",
+          "attributes": { "size": "200x300cm" },
+          "prices": { "USD": "295.00", "EUR": "273.00", "AED": "1083.00", "SAR": "1106.00", "KWD": "90.800" },
+          "cost_usd": "99.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-THRW02",
+      "brand": "ORBI",
+      "category": "Textiles",
+      "name_vi": "Chăn phủ sofa dệt kim sợi cotton",
+      "name_en": "Waffle Knit Cotton Throw Blanket",
+      "variants": [
+        {
+          "sku": "ORBI-THRW02-CR",
+          "attributes": { "color": "ecru cream" },
+          "prices": { "USD": "58.00", "EUR": "53.90", "AED": "213.00", "SAR": "218.00", "KWD": "17.800" },
+          "cost_usd": "19.00"
+        },
+        {
+          "sku": "ORBI-THRW02-SG",
+          "attributes": { "color": "sage" },
+          "prices": { "USD": "58.00", "EUR": "53.90", "AED": "213.00", "SAR": "218.00", "KWD": "17.800" },
+          "cost_usd": "19.00"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-CUSH03",
+      "brand": "ORBI",
+      "category": "Textiles",
+      "name_vi": "Vỏ gối tựa lưng vải lanh thêu nổi",
+      "name_en": "Textured Linen Cushion Cover",
+      "variants": [
+        {
+          "sku": "ORBI-CUSH03-45CM",
+          "attributes": { "size": "45x45cm" },
+          "prices": { "USD": "42.00", "EUR": "38.90", "AED": "154.00", "SAR": "158.00", "KWD": "12.900" },
+          "cost_usd": "13.50"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-VASE01",
+      "brand": "ORBI",
+      "category": "Decor",
+      "name_vi": "Bình gốm cắm hoa tráng men mờ",
+      "name_en": "Matte Ceramic Ribbed Flower Vase",
+      "variants": [
+        {
+          "sku": "ORBI-VASE01-WH",
+          "attributes": { "color": "chalk white" },
+          "prices": { "USD": "48.00", "EUR": "44.50", "AED": "176.00", "SAR": "180.00", "KWD": "14.800" },
+          "cost_usd": "15.80"
+        },
+        {
+          "sku": "ORBI-VASE01-CL",
+          "attributes": { "color": "terracotta clay" },
+          "prices": { "USD": "48.00", "EUR": "44.50", "AED": "176.00", "SAR": "180.00", "KWD": "14.800" },
+          "cost_usd": "15.80"
+        }
+      ]
+    },
+    {
+      "code": "ORBI-MIRR02",
+      "brand": "ORBI",
+      "category": "Decor",
+      "name_vi": "Gương tròn treo tường viền gỗ sồi",
+      "name_en": "Oak Framed Round Wall Mirror",
+      "variants": [
+        {
+          "sku": "ORBI-MIRR02-60CM",
+          "attributes": { "diameter": "60cm" },
+          "prices": { "USD": "145.00", "EUR": "134.00", "AED": "533.00", "SAR": "544.00", "KWD": "44.600" },
+          "cost_usd": "49.00"
+        },
+        {
+          "sku": "ORBI-MIRR02-80CM",
+          "attributes": { "diameter": "80cm" },
+          "prices": { "USD": "190.00", "EUR": "176.00", "AED": "698.00", "SAR": "712.00", "KWD": "58.500" },
+          "cost_usd": "64.00"
+        }
+      ]
+    }
+  ]
+}

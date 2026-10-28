@@ -94,6 +94,7 @@ model Brand {
   updatedAt   DateTime  @updatedAt
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   stores      Store[]
+  products    Product[]
 
   @@unique([workspaceId, code])
 }
@@ -113,12 +114,13 @@ model Market {
   updatedAt   DateTime    @updatedAt
   workspace   Workspace   @relation(fields: [workspaceId], references: [id])
   stores      Store[]
+  orders      Order[]
 
   @@unique([workspaceId, code])
 }
 
 model Store {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   workspaceId String
   brandId     String
   code        String
@@ -126,12 +128,14 @@ model Store {
   /// Mã adapter đăng ký (pancake, shopify, website…) — chuỗi, không enum, để thêm nền tảng không đổi schema (D-28).
   platform    String
   externalId  String?
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  brand       Brand     @relation(fields: [brandId], references: [id])
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id])
+  brand       Brand        @relation(fields: [brandId], references: [id])
   markets     Market[]
+  connections Connection[]
+  orders      Order[]
 
   @@unique([workspaceId, code])
 }
@@ -175,4 +179,381 @@ model IdempotencyKey {
   createdAt   DateTime @default(now())
 
   @@unique([workspaceId, scope, key])
+}
+
+/// Cấu hình theo workspace (key/value JSON): linkRules, sourceOfTruth… (D-32). Sửa ở Quản trị → Cấu hình (Phase 11).
+model Setting {
+  id          String   @id @default(cuid())
+  workspaceId String
+  key         String
+  value       Json
+  updatedAt   DateTime @updatedAt
+
+  @@unique([workspaceId, key])
+}
+
+// ---- Phase 2: kết nối dữ liệu ---------------------------------------------------------------------
+
+enum ConnectionStatus {
+  ACTIVE
+  PAUSED
+  ERROR
+}
+
+enum SyncMode {
+  BACKFILL
+  INCREMENTAL
+  REPLAY
+}
+
+enum SyncStatus {
+  RUNNING
+  OK
+  FAILED
+}
+
+enum EventOutcome {
+  APPLIED
+  LINKED
+  STALE
+  DUPLICATE
+  ERROR
+}
+
+model Connection {
+  id              String            @id @default(cuid())
+  workspaceId     String
+  storeId         String
+  /// Mã adapter (D-28), lấy từ Store.platform lúc tạo.
+  platform        String
+  /// "replay" (demo, đọc fixture) hoặc "live" (API thật, Phase 12).
+  mode            String            @default("replay")
+  status          ConnectionStatus  @default(ACTIVE)
+  /// Khóa/URL của API thật, mã hóa AES-256-GCM bằng INTEGRATION_SECRET_KEY. Replay không cần.
+  configEncrypted String?
+  pollIntervalMin Int               @default(15)
+  lastSyncAt      DateTime?
+  lastError       String?
+  /// Khóa chống chạy đồng bộ chồng nhau (worker và nút "Đồng bộ ngay").
+  syncLockedUntil DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  store           Store             @relation(fields: [storeId], references: [id])
+  runs            SyncRun[]
+  links           SourceOrderLink[]
+
+  @@unique([workspaceId, storeId])
+}
+
+model SyncRun {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  connectionId String
+  mode         SyncMode
+  status       SyncStatus    @default(RUNNING)
+  startedAt    DateTime      @default(now())
+  finishedAt   DateTime?
+  applied      Int           @default(0)
+  linked       Int           @default(0)
+  stale        Int           @default(0)
+  duplicate    Int           @default(0)
+  errors       Int           @default(0)
+  reviews      Int           @default(0)
+  error        String?
+  connection   Connection    @relation(fields: [connectionId], references: [id])
+  events       SourceEvent[]
+
+  @@index([workspaceId, connectionId, startedAt])
+}
+
+model SyncCheckpoint {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  connectionId String
+  recordType   String
+  cursorAt     DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([workspaceId, connectionId, recordType])
+}
+
+/// Mỗi bản ghi nguồn nhận được (kể cả trùng/cũ/lỗi) để truy vết và chạy lại. eventKey = loại:mã:sourceUpdatedAt.
+model SourceEvent {
+  id              String       @id @default(cuid())
+  workspaceId     String
+  connectionId    String
+  syncRunId       String?
+  eventKey        String
+  recordType      String
+  sourceRecordId  String
+  sourceUpdatedAt DateTime
+  outcome         EventOutcome
+  error           String?
+  /// Bản ghi gốc. Demo lưu thẳng; khi lên thật áp chính sách lưu.
+  payload         Json
+  orderId         String?
+  createdAt       DateTime     @default(now())
+  syncRun         SyncRun?     @relation(fields: [syncRunId], references: [id])
+
+  @@unique([workspaceId, connectionId, eventKey])
+  @@index([workspaceId, outcome])
+  @@index([workspaceId, orderId])
+}
+
+// ---- Phase 2: sản phẩm -----------------------------------------------------------------------------
+
+model Product {
+  id          String    @id @default(cuid())
+  workspaceId String
+  brandId     String?
+  code        String
+  name        String
+  nameEn      String?
+  nameAr      String?
+  category    String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  brand       Brand?    @relation(fields: [brandId], references: [id])
+  variants    Variant[]
+
+  @@unique([workspaceId, code])
+}
+
+model Variant {
+  id           String                 @id @default(cuid())
+  workspaceId  String
+  productId    String
+  sku          String
+  attributes   Json
+  costPrice    Decimal?               @db.Decimal(18, 4)
+  costCurrency String?
+  product      Product                @relation(fields: [productId], references: [id])
+  items        OrderItem[]
+  mappings     SourceProductMapping[]
+
+  @@unique([workspaceId, sku])
+}
+
+model SourceProductMapping {
+  id           String  @id @default(cuid())
+  workspaceId  String
+  variantId    String
+  connectionId String
+  sourceSku    String
+  variant      Variant @relation(fields: [variantId], references: [id])
+
+  @@unique([workspaceId, connectionId, sourceSku])
+}
+
+// ---- Phase 2: đơn chuẩn (một đơn kinh doanh, nhiều liên kết nguồn — D-06, D-07) -------------------
+
+enum OrderStatus {
+  BOOKED
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  REFUNDED
+  COD_PENDING
+  COD_COLLECTED
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  IN_TRANSIT
+  PARTIAL
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum ReturnStatus {
+  NONE
+  PARTIAL
+  FULL
+}
+
+enum DeliveryEventType {
+  PICKED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+  COD_COLLECTED
+}
+
+enum ReviewStatus {
+  PENDING
+  LINKED
+  REJECTED
+}
+
+model Order {
+  id                String            @id @default(cuid())
+  workspaceId       String
+  storeId           String
+  marketId          String?
+  orderNumber       String
+  status            OrderStatus
+  paymentStatus     PaymentStatus
+  fulfillmentStatus FulfillmentStatus
+  returnStatus      ReturnStatus      @default(NONE)
+  currency          String
+  /// Σ dòng hàng (nguyên tệ)
+  grossAmount       Decimal           @db.Decimal(18, 4)
+  discount          Decimal           @db.Decimal(18, 4)
+  shippingFee       Decimal           @db.Decimal(18, 4)
+  /// gross − discount + shipping (nguyên tệ). REV-01/02 dùng giá trị này.
+  netAmount         Decimal           @db.Decimal(18, 4)
+  refundedAmount    Decimal           @default(0) @db.Decimal(18, 4)
+  /// 1 đơn vị tiền đơn = fxRate USD, chốt theo FxRate hiệu lực tại ngày đặt (D-09).
+  fxRate            Decimal           @db.Decimal(18, 8)
+  fxDate            DateTime          @db.Date
+  netUsd            Decimal           @db.Decimal(18, 4)
+  /// Ảnh chụp thông tin khách từ nguồn; Phase 3 gắn Customer.
+  customerName      String?
+  customerPhone     String?
+  customerEmail     String?
+  customerSourceId  String?
+  shipCountry       String?
+  bookedAt          DateTime
+  confirmedAt       DateTime?
+  cancelledAt       DateTime?
+  deliveredAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  store             Store             @relation(fields: [storeId], references: [id])
+  market            Market?           @relation(fields: [marketId], references: [id])
+  items             OrderItem[]
+  links             SourceOrderLink[]
+  payments          Payment[]
+  refunds           Refund[]
+  shipments         Shipment[]
+
+  @@index([workspaceId, bookedAt])
+  @@index([workspaceId, customerPhone])
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  orderId      String
+  variantId    String?
+  sourceSku    String
+  name         String
+  qty          Int
+  qtyDelivered Int      @default(0)
+  qtyReturned  Int      @default(0)
+  unitPrice    Decimal  @db.Decimal(18, 4)
+  lineAmount   Decimal  @db.Decimal(18, 4)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant      Variant? @relation(fields: [variantId], references: [id])
+}
+
+model SourceOrderLink {
+  id              String     @id @default(cuid())
+  workspaceId     String
+  orderId         String
+  connectionId    String
+  platform        String
+  sourceRecordId  String
+  /// Mã đơn hiển thị ở nguồn, đã chuẩn hóa (bỏ #, khoảng trắng, chữ thường) để so quy tắc liên kết.
+  orderNumberNorm String
+  /// Mã tham chiếu tới đơn ở nguồn khác (đã chuẩn hóa), mapper trích từ ghi chú/tag.
+  refs            String[]
+  sourceStatusRaw String
+  sourceUpdatedAt DateTime
+  /// Liên kết tạo đơn (nguồn đầu tiên). Mặc định chủ mọi nhóm trường (D-32).
+  isPrimary       Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  order           Order      @relation(fields: [orderId], references: [id])
+  connection      Connection @relation(fields: [connectionId], references: [id])
+
+  @@unique([workspaceId, connectionId, sourceRecordId])
+  @@index([workspaceId, platform, orderNumberNorm])
+}
+
+model OrderLinkReview {
+  id          String       @id @default(cuid())
+  workspaceId String
+  orderAId    String
+  orderBId    String
+  reasons     Json
+  status      ReviewStatus @default(PENDING)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@unique([workspaceId, orderAId, orderBId])
+}
+
+/// Gộp đơn/khách có thể tách lại: giữ ảnh chụp bản bị gộp (D-08, data-model quy tắc 6).
+model MergeLog {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  entity       String
+  survivorId   String
+  mergedId     String
+  snapshot     Json
+  evidence     Json
+  mergedById   String
+  mergedAt     DateTime  @default(now())
+  unmergedAt   DateTime?
+  unmergedById String?
+
+  @@index([workspaceId, entity, survivorId])
+}
+
+model Payment {
+  id          String    @id @default(cuid())
+  workspaceId String
+  orderId     String
+  method      String
+  amount      Decimal   @db.Decimal(18, 4)
+  currency    String
+  status      String
+  paidAt      DateTime?
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  workspaceId String
+  orderId     String
+  amount      Decimal  @db.Decimal(18, 4)
+  currency    String
+  reason      String?
+  refundedAt  DateTime
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Shipment {
+  id            String            @id @default(cuid())
+  workspaceId   String
+  orderId       String
+  carrier       String?
+  trackingNo    String?
+  status        FulfillmentStatus
+  failureReason String?
+  codAmount     Decimal?          @db.Decimal(18, 4)
+  deliveredAt   DateTime?
+  collectedAt   DateTime?
+  order         Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events        DeliveryEvent[]
+}
+
+model DeliveryEvent {
+  id          String            @id @default(cuid())
+  workspaceId String
+  shipmentId  String
+  type        DeliveryEventType
+  reasonCode  String?
+  occurredAt  DateTime
+  shipment    Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 }

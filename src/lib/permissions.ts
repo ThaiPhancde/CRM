@@ -31,6 +31,16 @@ const MATRIX = {
   "catalog.view": ALL,
   /** Số tiền, tỷ giá, COD (che ở service khi thiếu). */
   "finance.view": ["MANAGER", "SALES_LEAD", "FINANCE_VIEW"],
+  /** Thêm/tạm dừng kết nối, chạy đồng bộ, chạy lại sự kiện lỗi (Phase 2). Khóa API nhạy cảm → chỉ Quản lý. */
+  "integration.manage": ["MANAGER"],
+  /** Xem trạng thái kết nối, lượt đồng bộ, lỗi. */
+  "integration.view": ["MANAGER", "SALES_LEAD", "MARKETING", "FULFILLMENT"],
+  /** Xem đơn hàng. ponytail: Sales thấy mọi đơn của team; giới hạn theo khách được giao khi có phân công (Phase 4). */
+  "order.view": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT", "PURCHASING_VIEW", "FINANCE_VIEW"],
+  /** Duyệt gộp/tách đơn nghi trùng giữa hai nguồn (/xac-minh). */
+  "order.link": ["MANAGER", "FULFILLMENT"],
+  /** Xem sản phẩm và ánh xạ mã nguồn. */
+  "product.view": ALL,
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;

@@ -2,6 +2,28 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 28/10/2026 (lần 3) — Phase 2 xong, chờ nghiệm thu
+
+**Đã làm:** kết nối dữ liệu (khung adapter + Pancake/Shopify phát lại), đơn chuẩn nhiều nguồn, hàng đợi xác minh gộp/tách, trang `/ket-noi`, `/don-hang`, `/xac-minh`, `/san-pham`, worker đồng bộ. Code Phase 0–1 đã đẩy lên https://github.com/ThaiPhancde/CRM (nhánh `main`). Chi tiết + kết quả test: `implementation-status.md` Phase 2.
+
+**Quyết định mới:** D-36 (định dạng phát lại Pancake giả định; dữ liệu sinh tất định), D-37 (quy tắc nghi trùng và liên kết), D-38 (xuất CSV có BOM thay xlsx), D-39 (cấu hình demo Team EU hư cấu).
+
+**Chạy (thêm so với Phase 1):**
+```bash
+npx prisma migrate deploy && npm run db:seed && npm run db:seed-demo   # ~2 phút, 1.963 đơn
+npm run worker -- --once          # một lượt đồng bộ các kết nối đến hạn
+npx tsx --env-file=.env scripts/retry-errors.ts   # chạy lại mọi sự kiện lỗi sau khi sửa nguyên nhân
+```
+Reset DB demo `crm` (chỉ khi người dùng đồng ý): `npx prisma migrate reset --force --skip-seed` rồi seed lại — Prisma chặn lệnh này khi AI gọi nếu không có biến đồng ý.
+
+**Còn dở:** không.
+
+**Chờ người dùng:** nghiệm thu Phase 2 (Quản lý → Đơn hàng, chuyển Team EU → lọc "đơn có nhiều nguồn", mở `/xac-minh` thử gộp và tách lại); trả lời Q-14 khi biết team nào có đơn đi qua hai nền tảng.
+
+**Bước tiếp theo:** Phase 3 — Customer 360 (hợp nhất khách từ `Order.customer*` + nguồn, chuẩn SĐT E.164, gộp/tách có bằng chứng).
+
+**Quy ước mới (Phase 2):** dịch vụ chạy nền dùng `workspaceDb(id)` thay vì ngữ cảnh ALS; server action dùng `runAction()` ở `src/lib/action.ts`; nhãn trạng thái lấy từ `src/lib/status-badge.ts`, định dạng tiền/ngày từ `src/lib/format.ts`; mapper nền tảng là nơi DUY NHẤT biết hình dạng bản ghi gốc.
+
 ## Checkpoint 28/10/2026 (lần 2) — Phase 1 xong, chờ nghiệm thu
 
 **Đã làm:** nền tảng Next.js 15 + Prisma + PostgreSQL + Tailwind 4; cô lập workspace; đăng nhập thử; quyền; giao diện trắng–cam; trang quản trị; seed. Chi tiết và kết quả test: `implementation-status.md` Phase 1.

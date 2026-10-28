@@ -13,6 +13,8 @@ Cập nhật: 28/10/2026 (Phase 0). Nguồn: HLD §5; Purchasing System `docs/in
 | Anthropic | replay | khung SDK | TL |
 | Purchasing System | fixture | chưa có API | CXM (Q-16) |
 
+**Đã có code (Phase 2, 28/10):** `src/adapters/connectors/{types,registry,pancake,shopify}.ts`. Mapper dùng chung cho phát lại và API thật; nguồn "live" hiện trả 501 có lời giải thích (không gọi endpoint chưa xác minh). Định dạng phát lại Pancake là giả định (D-36). Thêm nền tảng: viết một `Platform` + `registerPlatform()` (có test chứng minh, `tests/orders.test.ts`).
+
 ## 2. Dữ liệu chuẩn chung
 
 Shop (`Store`), khách (`CustomerIdentity`), đơn (`Order` + `OrderItem` + `SourceOrderLink`), thanh toán, giao hàng, hoàn. Mỗi bản ghi nguồn giữ bộ trường HLD §4 và `rawPayloadRef` (JSON lưu bảng `RawPayload` theo chính sách 90 ngày demo).

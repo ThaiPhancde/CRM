@@ -1,0 +1,141 @@
+// Đọc đơn hàng: danh sách lọc + phân trang phía server, chi tiết, xuất CSV. Số tiền che khi thiếu finance.view (docs/permissions.md mục 3).
+import type { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { HttpError } from "@/lib/errors";
+import { can } from "@/lib/permissions";
+import { requirePerm, type SessionUser } from "@/lib/session";
+
+export const PAGE_SIZE = 50;
+
+export const orderFilter = z.object({
+  q: z.string().trim().max(100).optional(),
+  store: z.string().optional(),
+  market: z.string().optional(),
+  status: z.enum(["BOOKED", "CONFIRMED", "CANCELLED"]).optional(),
+  fulfillment: z.enum(["UNFULFILLED", "IN_TRANSIT", "PARTIAL", "DELIVERED", "FAILED", "RETURNED"]).optional(),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  multi: z.enum(["1"]).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+export type OrderFilter = z.infer<typeof orderFilter>;
+
+/** Bộ lọc từ query string; giá trị không hợp lệ bị bỏ qua (không ném lỗi trên trang danh sách). */
+export function parseFilter(sp: Record<string, string | string[] | undefined>): OrderFilter {
+  const flat = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]).filter(([, v]) => v !== "" && v !== undefined));
+  const r = orderFilter.safeParse(flat);
+  if (r.success) return r.data;
+  const ok: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(flat)) if (orderFilter.shape[k as keyof typeof orderFilter.shape]?.safeParse(v).success) ok[k] = v;
+  return orderFilter.parse(ok);
+}
+
+function where(f: OrderFilter): Prisma.OrderWhereInput {
+  const w: Prisma.OrderWhereInput = {};
+  if (f.store) w.storeId = f.store;
+  if (f.market) w.marketId = f.market;
+  if (f.status) w.status = f.status;
+  if (f.fulfillment) w.fulfillmentStatus = f.fulfillment;
+  if (f.from || f.to) w.bookedAt = { ...(f.from ? { gte: new Date(f.from) } : {}), ...(f.to ? { lt: new Date(new Date(f.to).getTime() + 86400000) } : {}) };
+  if (f.multi) w.links = { some: { isPrimary: false } };
+  if (f.q) {
+    const digits = f.q.replace(/\D/g, "");
+    w.OR = [
+      { orderNumber: { contains: f.q, mode: "insensitive" } },
+      { customerName: { contains: f.q, mode: "insensitive" } },
+      { customerEmail: { contains: f.q, mode: "insensitive" } },
+      ...(digits.length >= 4 ? [{ customerPhone: { contains: digits } }] : []),
+    ];
+  }
+  return w;
+}
+
+const money = (user: SessionUser) => can(user.roles, "finance.view");
+
+export async function listOrders(user: SessionUser, f: OrderFilter) {
+  requirePerm(user, "order.view");
+  const w = where(f);
+  const [total, rows, agg] = await Promise.all([
+    db.order.count({ where: w }),
+    db.order.findMany({
+      where: w,
+      orderBy: { bookedAt: "desc" },
+      skip: (f.page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      include: { store: { select: { name: true, platform: true } }, market: { select: { code: true } }, links: { select: { platform: true, isPrimary: true } } },
+    }),
+    // REV-01: Σ giá trị đặt của đơn chưa hủy, quy USD (docs/metrics.md).
+    db.order.aggregate({ where: { ...w, status: { not: "CANCELLED" } }, _sum: { netUsd: true }, _count: true }),
+  ]);
+  const showMoney = money(user);
+  return {
+    total,
+    page: f.page,
+    pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    showMoney,
+    rev01Usd: showMoney ? (agg._sum.netUsd?.toString() ?? "0") : null,
+    rev01Count: agg._count,
+    rows: rows.map((o) => ({
+      id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: o.customerPhone,
+      store: o.store.name, platform: o.store.platform, market: o.market?.code ?? o.shipCountry ?? null,
+      status: o.status, paymentStatus: o.paymentStatus, fulfillmentStatus: o.fulfillmentStatus, returnStatus: o.returnStatus,
+      currency: o.currency, net: showMoney ? o.netAmount.toString() : null, netUsd: showMoney ? o.netUsd.toString() : null,
+      sources: o.links.map((l) => l.platform),
+    })),
+  };
+}
+
+export async function getOrder(user: SessionUser, id: string) {
+  requirePerm(user, "order.view");
+  const o = await db.order.findFirst({
+    where: { id },
+    include: {
+      store: { include: { brand: true } }, market: true, items: { include: { variant: { include: { product: true } } } },
+      payments: { orderBy: { paidAt: "asc" } }, refunds: { orderBy: { refundedAt: "asc" } },
+      shipments: { include: { events: { orderBy: { occurredAt: "asc" } } } },
+      links: { include: { connection: { include: { store: true } } }, orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!o) throw new HttpError(404, "Không tìm thấy đơn");
+  const events = await db.sourceEvent.findMany({ where: { orderId: id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, outcome: true, sourceUpdatedAt: true, createdAt: true, connectionId: true, sourceRecordId: true } });
+  const reviews = await db.orderLinkReview.findMany({ where: { status: "PENDING", OR: [{ orderAId: id }, { orderBId: id }] } });
+  const showMoney = money(user);
+  const m = (v: Prisma.Decimal | null | undefined) => (showMoney && v != null ? v.toString() : null);
+  return {
+    showMoney,
+    order: {
+      ...o,
+      grossAmount: m(o.grossAmount), discount: m(o.discount), shippingFee: m(o.shippingFee), netAmount: m(o.netAmount), refundedAmount: m(o.refundedAmount),
+      netUsd: m(o.netUsd), fxRate: m(o.fxRate),
+      items: o.items.map((i) => ({ ...i, unitPrice: m(i.unitPrice), lineAmount: m(i.lineAmount) })),
+      payments: showMoney ? o.payments.map((p) => ({ ...p, amount: p.amount.toString() })) : [],
+      refunds: showMoney ? o.refunds.map((r) => ({ ...r, amount: r.amount.toString() })) : [],
+      shipments: o.shipments.map((s) => ({ ...s, codAmount: m(s.codAmount) })),
+    },
+    events,
+    pendingReviews: reviews.length,
+  };
+}
+
+const CSV_HEAD = ["Mã đơn", "Ngày đặt", "Shop", "Nền tảng", "Thị trường", "Khách", "SĐT", "Trạng thái", "Thanh toán", "Giao hàng", "Tiền tệ", "Giá trị (nguyên tệ)", "Tỷ giá", "Giá trị USD (REV-01)", "Số nguồn"];
+
+/** CSV UTF-8 có BOM (Excel mở đúng tiếng Việt). ponytail: tối đa 10.000 dòng; lớn hơn thì xuất từ Warehouse (Phase 9). */
+export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
+  requirePerm(user, "order.view");
+  const showMoney = money(user);
+  const rows = await db.order.findMany({
+    where: where(f), orderBy: { bookedAt: "desc" }, take: 10000,
+    include: { store: { select: { name: true, platform: true } }, market: { select: { code: true } }, _count: { select: { links: true } } },
+  });
+  const esc = (v: unknown) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = rows.map((o) => [
+    o.orderNumber, o.bookedAt.toISOString(), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, o.customerPhone,
+    o.status, o.paymentStatus, o.fulfillmentStatus, o.currency,
+    showMoney ? o.netAmount.toString() : "", showMoney ? o.fxRate.toString() : "", showMoney ? o.netUsd.toString() : "", o._count.links,
+  ].map(esc).join(","));
+  return "﻿" + [CSV_HEAD.join(","), ...lines].join("\r\n");
+}
