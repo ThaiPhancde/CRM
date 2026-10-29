@@ -12,6 +12,8 @@ const KIND_BADGE: Record<QueueItem["kind"], { label: string; tone: Tone }> = {
   lead_followup: { label: "Liên hệ lại", tone: "info" },
   lead_unassigned: { label: "Chưa giao", tone: "neutral" },
   task: { label: "Việc", tone: "brand" },
+  ticket: { label: "Ticket", tone: "danger" },
+  ticket_unassigned: { label: "Ticket chưa giao", tone: "neutral" },
 };
 
 export default async function MyQueuePage() {

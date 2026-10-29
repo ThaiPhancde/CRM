@@ -56,6 +56,7 @@ model User {
   tasks          Task[]         @relation("TaskAssignee")
   activities     Activity[]
   notifications  Notification[]
+  ownedTickets   Ticket[]       @relation("TicketOwner")
 }
 
 model Membership {
@@ -456,6 +457,8 @@ model Order {
   customer          Customer?         @relation(fields: [customerId], references: [id])
   tasks             Task[]
 
+  tickets Ticket[]
+
   @@index([workspaceId, bookedAt])
   @@index([workspaceId, customerPhone])
   @@index([workspaceId, customerId])
@@ -517,6 +520,8 @@ model Customer {
   leads            Lead[]
   activities       Activity[]
   tasks            Task[]
+
+  tickets Ticket[]
 
   @@index([workspaceId, primaryPhoneE164])
   @@index([workspaceId, lastOrderAt])
@@ -876,6 +881,7 @@ model Task {
   leadId         String?
   customerId     String?
   orderId        String?
+  ticketId       String?
   createdById    String?
   completedAt    DateTime?
   /// Đã nhắc hạn (worker) — không nhắc lại.
@@ -887,6 +893,7 @@ model Task {
   lead           Lead?      @relation(fields: [leadId], references: [id])
   customer       Customer?  @relation(fields: [customerId], references: [id])
   order          Order?     @relation(fields: [orderId], references: [id])
+  ticket         Ticket?    @relation(fields: [ticketId], references: [id])
 
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, assigneeId, status, dueAt])
@@ -894,6 +901,7 @@ model Task {
   @@index([customerId])
   @@index([orderId])
   @@index([workspaceId, status, remindedAt, dueAt])
+  @@index([ticketId])
 }
 
 /// Kịch bản tư vấn theo brand/market/giai đoạn/ngôn ngữ (null = áp mọi giá trị).
@@ -954,4 +962,159 @@ model Notification {
 
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, userId, readAt])
+}
+
+// ---- Phase 5: dịch vụ sau bán + tri thức (thiết kế mục 10 Phase 5) ---------------------------------
+
+enum TicketType {
+  GIAO_CHAM
+  LOI_HANG
+  DOI_TRA
+  BAO_HANH
+  KHAC
+}
+
+enum TicketPriority {
+  THAP
+  TRUNG
+  CAO
+  KHAN
+}
+
+enum TicketStatus {
+  MOI
+  DANG_XU_LY
+  CHO_KHACH
+  DA_GIAI_QUYET
+  DONG
+}
+
+/// Chính sách SLA (giờ lịch): theo team + brand (null = mọi brand) + mức. Không có dòng khớp → mặc định trong code (D-50).
+model SlaPolicy {
+  id                 String         @id @default(cuid())
+  workspaceId        String
+  brandId            String?
+  priority           TicketPriority
+  firstResponseHours Float
+  resolveHours       Float
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@unique([workspaceId, brandId, priority])
+}
+
+model Ticket {
+  id                 String         @id @default(cuid())
+  workspaceId        String
+  /// Mã đọc được, tăng dần trong team (TK-000123).
+  code               String
+  type               TicketType
+  priority           TicketPriority
+  status             TicketStatus   @default(MOI)
+  subject            String
+  customerId         String?
+  orderId            String?
+  brandId            String?
+  teamId             String?
+  ownerId            String?
+  /// Khách giá trị cao (D-24: ≥ 3 đơn giao thành công 12 tháng) — xếp trước trong hàng đợi.
+  vip                Boolean        @default(false)
+  firstResponseDueAt DateTime
+  resolveDueAt       DateTime
+  firstRespondedAt   DateTime?
+  resolvedAt         DateTime?
+  closedAt           DateTime?
+  /// Đã báo sắp quá hạn / quá hạn xử lý — worker không báo lại (D-48).
+  dueSoonNotifiedAt  DateTime?
+  breachNotifiedAt   DateTime?
+  idempotencyKey     String?
+  createdById        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  customer           Customer?      @relation(fields: [customerId], references: [id])
+  order              Order?         @relation(fields: [orderId], references: [id])
+  owner              User?          @relation("TicketOwner", fields: [ownerId], references: [id])
+  events             TicketEvent[]
+  tasks              Task[]
+
+  @@unique([workspaceId, code])
+  @@unique([workspaceId, idempotencyKey])
+  @@index([customerId])
+  @@index([orderId])
+  @@index([workspaceId, ownerId, status])
+  @@index([workspaceId, teamId, status])
+  @@index([workspaceId, status, resolveDueAt])
+  @@index([workspaceId, createdAt])
+  @@index([subject(ops: raw("gin_trgm_ops"))], type: Gin, map: "Ticket_subject_trgm_idx")
+}
+
+enum TicketEventType {
+  CREATED
+  NOTE
+  REPLY
+  STATUS
+  ASSIGN
+  PRIORITY
+  SYSTEM
+}
+
+/// Dòng thời gian ticket (chỉ thêm). REPLY = trả lời khách → Outbox SIMULATED; NOTE = ghi chú nội bộ.
+model TicketEvent {
+  id             String          @id @default(cuid())
+  workspaceId    String
+  ticketId       String
+  type           TicketEventType
+  body           String?
+  actorId        String?
+  meta           Json?
+  idempotencyKey String?
+  createdAt      DateTime        @default(now())
+  ticket         Ticket          @relation(fields: [ticketId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([ticketId, createdAt])
+}
+
+enum KnowledgeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// Bài tri thức theo brand/market/ngôn ngữ (null = áp mọi). Nội dung nằm ở KnowledgeVersion; bài trỏ tới bản đang xuất bản.
+model KnowledgeArticle {
+  id               String             @id @default(cuid())
+  workspaceId      String
+  brandId          String?
+  marketId         String?
+  language         String
+  title            String
+  status           KnowledgeStatus    @default(DRAFT)
+  /// Số phiên bản mới nhất / đang xuất bản (null = chưa xuất bản).
+  latestVersion    Int                @default(1)
+  publishedVersion Int?
+  tags             String[]
+  createdById      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  versions         KnowledgeVersion[]
+
+  @@index([workspaceId, status, language])
+  @@index([workspaceId, brandId])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "KnowledgeArticle_title_trgm_idx")
+}
+
+/// Phiên bản bài tri thức (chỉ thêm) — sửa bài = thêm phiên bản mới; xuất bản = trỏ publishedVersion.
+model KnowledgeVersion {
+  id          String           @id @default(cuid())
+  workspaceId String
+  articleId   String
+  version     Int
+  title       String
+  body        String
+  createdById String?
+  createdAt   DateTime         @default(now())
+  article     KnowledgeArticle @relation(fields: [articleId], references: [id])
+
+  @@unique([articleId, version])
 }

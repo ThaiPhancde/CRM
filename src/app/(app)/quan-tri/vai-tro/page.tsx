@@ -22,6 +22,12 @@ const PERM_LABEL: Record<Permission, string> = {
   "lead.edit": "Tạo/sửa nhu cầu mua, ghi tương tác",
   "lead.assign": "Chuyển người phụ trách nhu cầu mua",
   "task.manage": "Tạo/hoàn thành nhiệm vụ",
+  "ticket.view": "Xem ticket chăm sóc (theo phạm vi)",
+  "ticket.edit": "Xử lý ticket: trả lời, ghi chú, đổi trạng thái",
+  "ticket.assign": "Giao/chuyển ticket",
+  "knowledge.view": "Đọc bài tri thức",
+  "knowledge.edit": "Soạn bài tri thức (thêm phiên bản)",
+  "knowledge.publish": "Xuất bản bài tri thức",
 };
 
 export default async function RolesPage() {

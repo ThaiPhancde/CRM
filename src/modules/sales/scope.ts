@@ -44,12 +44,12 @@ export function taskWhere(u: SessionUser): Prisma.TaskWhereInput {
 }
 
 /**
- * Khách được xem. Chỉ người CHỈ có vai Sales bị hẹp (các vai khác có customer.view đều xem cả workspace — ma trận mục 2).
+ * Khách được xem (lead, việc hoặc ticket giao cho mình — D-45, D-50). Chỉ người CHỈ có vai Sales bị hẹp (các vai khác có customer.view đều xem cả workspace — ma trận mục 2).
  * ponytail: lọc qua quan hệ lead/task mỗi truy vấn; nhiều khách thì lưu bảng phân công khách riêng.
  */
 export function customerScopeWhere(u: SessionUser): Prisma.CustomerWhereInput {
   if (has(u, "MANAGER", "SALES_LEAD", "MARKETING", "FULFILLMENT", "FINANCE_VIEW", "PURCHASING_VIEW")) return {};
-  return { OR: [{ leads: { some: leadEditWhere(u) } }, { tasks: { some: { assigneeId: u.id } } }] };
+  return { OR: [{ leads: { some: leadEditWhere(u) } }, { tasks: { some: { assigneeId: u.id } } }, { tickets: { some: { ownerId: u.id } } }] };
 }
 
 /**

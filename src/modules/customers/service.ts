@@ -9,6 +9,7 @@ import { can } from "@/lib/permissions";
 import { piiFor } from "@/lib/pii";
 import { FAILURE_REASON } from "@/lib/status-badge";
 import { customerScopeWhere, leadViewWhere } from "@/modules/sales/scope";
+import { ticketWhere } from "@/modules/service/scope";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
 
@@ -98,7 +99,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
 
 export type TimelineItem = {
   at: string;
-  kind: "order" | "delivery" | "refund" | "merge" | "unmerge" | "preference" | "activity" | "lead";
+  kind: "order" | "delivery" | "refund" | "merge" | "unmerge" | "preference" | "activity" | "lead" | "ticket";
   title: string;
   detail?: string;
   href?: string;
@@ -158,6 +159,9 @@ export async function getCustomer360(user: SessionUser, id: string) {
     if (m.unmergedAt) timeline.push({ at: m.unmergedAt.toISOString(), kind: "unmerge", title: "Tách lại hồ sơ", tone: "info" });
   }
   for (const p of c.preferences) timeline.push({ at: p.changedAt.toISOString(), kind: "preference", title: `${p.optIn ? "Đồng ý" : "Từ chối"} nhận ${p.purpose === "MARKETING" ? "tin tiếp thị" : "tin chăm sóc"} qua ${p.channel}`, detail: p.source, tone: "neutral" });
+  // Phase 5: ticket của khách (chỉ người có ticket.view, theo phạm vi ticket).
+  const tickets = can(user.roles, "ticket.view") ? await db.ticket.findMany({ where: { AND: [{ customerId: id }, ticketWhere(user)] }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, code: true, subject: true, status: true, createdAt: true } }) : [];
+  for (const t of tickets) timeline.push({ at: t.createdAt.toISOString(), kind: "ticket", title: `Ticket ${t.code}: ${t.subject}`, detail: t.status, href: `/cham-soc/${t.id}`, tone: "danger" });
   for (const l of leads) timeline.push({ at: l.createdAt.toISOString(), kind: "lead", title: `Nhu cầu mua: ${l.interest ?? l.source}`, detail: l.owner?.name ?? "Chưa giao", href: `/nhu-cau/${l.id}`, tone: "brand" });
   for (const a of activities) timeline.push({ at: a.occurredAt.toISOString(), kind: "activity", title: `${ACTIVITY_TITLE[a.type] ?? a.type}${a.direction === "IN" ? " từ khách" : a.direction === "OUT" ? " gửi khách" : ""}`, detail: a.body.slice(0, 140), href: a.leadId ? `/nhu-cau/${a.leadId}` : undefined, tone: "neutral" });
   timeline.sort((a, b) => b.at.localeCompare(a.at));

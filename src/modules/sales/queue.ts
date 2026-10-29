@@ -8,23 +8,26 @@ import { can } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/session";
 import { OPEN_STAGES, autoAssign, loadRouting } from "./routing";
 import { endOfDayVN } from "./tasks";
+import { queueTickets } from "@/modules/service/tickets";
 
 export type QueueItem = {
-  kind: "lead_response" | "lead_followup" | "lead_unassigned" | "task";
+  kind: "lead_response" | "lead_followup" | "lead_unassigned" | "task" | "ticket" | "ticket_unassigned";
   id: string;
   title: string;
   detail: string | null;
   dueAt: string | null;
   overdue: boolean;
   link: string;
+  /** Khách giá trị cao (ticket) — xếp trước trong cùng mức quá hạn. */
+  vip?: boolean;
 };
 
 /**
  * Việc cần làm của người dùng, sắp theo ưu tiên: quá hạn trước, rồi hạn gần nhất. Gồm lead chưa phản hồi, lead đến hẹn
- * liên hệ lại, việc đến hạn trong 24 giờ; Trưởng nhóm thấy thêm lead chưa giao của nhóm. Ticket thêm ở Phase 5.
+ * liên hệ lại, việc đến hạn trong 24 giờ, ticket đang mở (Phase 5); Trưởng nhóm thấy thêm lead/ticket chưa giao của nhóm.
  */
 export async function myQueue(user: SessionUser, now = new Date()) {
-  if (!can(user.roles, "lead.view") && !can(user.roles, "task.manage")) throw new HttpError(403, "Không có quyền");
+  if (!can(user.roles, "lead.view") && !can(user.roles, "task.manage") && !can(user.roles, "ticket.view")) throw new HttpError(403, "Không có quyền");
   bindTenant(user);
   const open = { stage: { in: [...OPEN_STAGES] } } satisfies Prisma.LeadWhereInput;
   const lead = can(user.roles, "lead.edit");
@@ -41,7 +44,8 @@ export async function myQueue(user: SessionUser, now = new Date()) {
     ...tasks.map((t) => ({ kind: "task" as const, id: t.id, title: t.title, detail: t.lead?.contactName ?? t.customer?.displayName ?? null, dueAt: at(t.dueAt), overdue: t.dueAt < now, link: t.leadId ? `/nhu-cau/${t.leadId}` : `/nhiem-vu` })),
     ...pool.map((l) => ({ kind: "lead_unassigned" as const, id: l.id, title: `Chưa giao: ${l.contactName}`, detail: l.interest, dueAt: at(l.firstResponseDueAt), overdue: !!l.firstResponseDueAt && l.firstResponseDueAt < now, link: `/nhu-cau/${l.id}` })),
   ];
-  items.sort((a, b) => Number(b.overdue) - Number(a.overdue) || (a.dueAt ?? "9").localeCompare(b.dueAt ?? "9"));
+  items.push(...(await queueTickets(user, now)));
+  items.sort((a, b) => Number(b.overdue) - Number(a.overdue) || Number(!!b.vip) - Number(!!a.vip) || (a.dueAt ?? "9").localeCompare(b.dueAt ?? "9"));
   return { items, overdue: items.filter((i) => i.overdue).length };
 }
 

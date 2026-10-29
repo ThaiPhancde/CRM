@@ -29,8 +29,8 @@ export const NAV: NavGroup[] = [
   {
     label: "Chăm sóc",
     items: [
-      { href: "/cham-soc", label: "Ticket", icon: "life", phase: 5 },
-      { href: "/tri-thuc", label: "Tri thức", icon: "book", phase: 5 },
+      { href: "/cham-soc", label: "Ticket", icon: "life", perm: "ticket.view" },
+      { href: "/tri-thuc", label: "Tri thức", icon: "book", perm: "knowledge.view" },
     ],
   },
   {

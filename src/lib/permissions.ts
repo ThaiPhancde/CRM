@@ -57,6 +57,16 @@ const MATRIX = {
   "lead.assign": ["MANAGER", "SALES_LEAD"],
   /** Tạo/hoàn thành nhiệm vụ. Người không có quyền giao chỉ tạo/sửa việc của chính mình. */
   "task.manage": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT"],
+  /** Xem/xử lý ticket. Phạm vi ở src/modules/service/scope.ts: Sales của mình + chưa giao của nhóm; Vận đơn ticket giao hàng/đổi trả. */
+  "ticket.view": ["MANAGER", "SALES_LEAD", "SALES", "FULFILLMENT"],
+  "ticket.edit": ["MANAGER", "SALES_LEAD", "SALES", "FULFILLMENT"],
+  /** Giao/chuyển ticket (Trưởng nhóm trong nhóm mình). */
+  "ticket.assign": ["MANAGER", "SALES_LEAD"],
+  /** Đọc bài tri thức đã xuất bản. */
+  "knowledge.view": ALL,
+  /** Soạn bài (thêm phiên bản) / xuất bản. */
+  "knowledge.edit": ["MANAGER", "SALES_LEAD", "MARKETING"],
+  "knowledge.publish": ["MANAGER", "SALES_LEAD", "MARKETING"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;
