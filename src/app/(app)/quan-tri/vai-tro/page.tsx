@@ -28,6 +28,7 @@ const PERM_LABEL: Record<Permission, string> = {
   "knowledge.view": "Đọc bài tri thức",
   "knowledge.edit": "Soạn bài tri thức (thêm phiên bản)",
   "knowledge.publish": "Xuất bản bài tri thức",
+  "score.config": "Đổi trọng số điểm, tính lại điểm",
 };
 
 export default async function RolesPage() {

@@ -48,9 +48,9 @@ Kết thúc phase trả ngắn gọn: đã làm; cách chạy/test; kết quả 
 - **Màu chủ đạo trắng – cam** (D-15). Cam chỉ cho hành động chính và điểm nhấn.
 - **Bộ skill BA-KIT** đã cài ở `.claude/` (51 skill). Dùng `/srs`, `/erd`, `/sequence`, `/userstory`, `/test-cases`, `/uiux` khi cần đặc tả hoặc rà soát một feature; output ghi vào `docs/features/<slug>/`. Skill không thay thế các file vai trò ở `docs/`.
 
-## Phối hợp Gemini qua Antigravity CLI — Claude chỉ đạo 60%, Gemini 40%
+## Phối hợp Gemini qua Antigravity CLI — Claude chỉ đạo; tỷ lệ 50/50 từ Phase 6 (D-51)
 
-Người dùng yêu cầu (28/10/2026) kết hợp Antigravity với Claude chỉ đạo; tỷ lệ chỉnh từ 80/20 thành **60/40** ngày 29/10/2026 (D-27). Quy trình đầy đủ: `docs/antigravity-workflow.md`. Tóm tắt:
+Người dùng yêu cầu (28/10/2026) kết hợp Antigravity với Claude chỉ đạo; tỷ lệ chỉnh từ 80/20 thành 60/40 ngày 29/10/2026 (D-27), rồi **50/50 từ Phase 6** (D-51): Gemini nhận thêm nội dung chỉ số và bảng test hàm thuần. Quy trình đầy đủ: `docs/antigravity-workflow.md`. Tóm tắt:
 
 - Claude làm ~60%: kiến trúc, contract (zod, kiểu TS, chữ ký service), Prisma schema, `bindTenant`/`requirePerm`, approval, audit, idempotency, adapter, logic tiền/chống trùng/gộp/chấm điểm, tool AI + prompt, tích hợp, **review mọi diff**, nghiệm thu, cập nhật docs.
 - Gemini (`agy -p` headless qua `tools/agy-runner/run_agy.py`) làm ~40%: **phần lớn trang giao diện** (danh sách, chi tiết, form, kanban, báo cáo) dựng trên service Claude đã viết và test, fixture/dữ liệu mẫu, nội dung đa ngôn ngữ, test bảng cho hàm thuần, test E2E theo kịch bản, ảnh chụp rà soát. Mỗi phase Claude viết service + test trước, rồi giao Gemini làm UI song song khi Claude làm lát kế tiếp. agy không sẵn sàng hoặc batch hỏng thì Claude tự làm.

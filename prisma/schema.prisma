@@ -1120,3 +1120,105 @@ model KnowledgeVersion {
 
   @@unique([articleId, version])
 }
+
+// ---- Phase 6: chỉ số, chấm điểm, Warehouse (thiết kế mục 10 Phase 6, docs/metrics.md) --------------
+
+/// Từ điển chỉ số (docs/metrics.md). Mã toàn cục, không theo team — một định nghĩa cho cả công ty (L3).
+model MetricDefinition {
+  code       String   @id
+  group      String
+  nameVi     String
+  nameEn     String
+  formula    String
+  timeAnchor String
+  source     String
+  owner      String
+  pitfalls   String?
+  updatedAt  DateTime @updatedAt
+}
+
+/// Chỉ số khách × kỳ do Warehouse dựng (Postgres demo / BigQuery thật). Kỳ "R12M" = 12 tháng trượt tới `asOf`. Tiền quy VND (D-44).
+model CustomerMetric {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  customerId         String
+  period             String
+  asOf               DateTime
+  orders             Int
+  deliveredOrders    Int
+  failedByCustomer   Int
+  confirmedOrders    Int
+  rev01              Decimal   @db.Decimal(18, 4)
+  rev02              Decimal   @db.Decimal(18, 4)
+  rev03              Decimal   @db.Decimal(18, 4)
+  rev04              Decimal   @db.Decimal(18, 4)
+  refunds            Decimal   @db.Decimal(18, 4)
+  /// Lợi nhuận gộp 12 tháng (REV-03 − giá vốn phần đã giao); null khi thiếu giá vốn.
+  grossProfit        Decimal?  @db.Decimal(18, 4)
+  firstOrderAt       DateTime?
+  lastValidOrderAt   DateTime?
+  recencyDays        Int?
+  /// CUS-02: khoảng cách TB giữa các đơn giao thành công (ngày); null khi < 2 đơn.
+  avgCycleDays       Float?
+  /// CUS-03: có đơn hợp lệ thứ hai trong 60 ngày sau đơn đầu.
+  repurchase60       Boolean   @default(false)
+  rScore             Int?
+  fScore             Int?
+  mScore             Int?
+  openTickets        Int       @default(0)
+  maxOpenPriority    Int       @default(0)
+  oldestOpenTicketAt DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@unique([workspaceId, customerId, period])
+  @@index([customerId])
+  @@index([workspaceId, period, asOf])
+}
+
+enum ScoreType {
+  SALES_PRIORITY
+  RFM
+  TXN_RISK
+  SUPPORT_NEED
+}
+
+/// Phiên bản trọng số (D-11, D-33): đổi trọng số = phiên bản mới, điểm của phiên bản cũ giữ nguyên.
+model ScoreVersion {
+  id          String    @id @default(cuid())
+  workspaceId String
+  type        ScoreType
+  version     Int
+  weights     Json
+  note        String?
+  active      Boolean   @default(true)
+  createdById String?
+  createdAt   DateTime  @default(now())
+  scores      Score[]
+
+  @@unique([workspaceId, type, version])
+  @@index([workspaceId, type, active])
+}
+
+/// Điểm của một khách/lead theo một phiên bản. value null = chưa đủ dữ liệu (không mặc định rủi ro cao — HLD §7.2).
+model Score {
+  id              String       @id @default(cuid())
+  workspaceId     String
+  type            ScoreType
+  versionId       String
+  customerId      String?
+  leadId          String?
+  value           Int?
+  band            String
+  /// [{ part, points, max, evidence }]
+  reasons         Json
+  missingData     String[]
+  suggestedAction String?
+  computedAt      DateTime
+  version         ScoreVersion @relation(fields: [versionId], references: [id])
+
+  @@unique([versionId, customerId])
+  @@unique([versionId, leadId])
+  @@index([customerId])
+  @@index([leadId])
+  @@index([workspaceId, type, band])
+}

@@ -57,8 +57,12 @@ export function customerScopeWhere(u: SessionUser): Prisma.CustomerWhereInput {
  * điều kiện quan hệ lồng (đơn → khách → lead) bị Postgres đánh giá trên mọi đơn — 0,8 s với 600k đơn (D-48, docs/performance.md).
  */
 export async function orderScopeWhere(u: SessionUser): Promise<Prisma.OrderWhereInput> {
-  const c = customerScopeWhere(u);
-  if (!Object.keys(c).length) return {};
-  const ids = await db.customer.findMany({ where: c, select: { id: true } });
-  return { customerId: { in: ids.map((x) => x.id) } };
+  if (!Object.keys(customerScopeWhere(u)).length) return {};
+  // Hợp 3 truy vấn có index (lead / việc / ticket của mình) thay cho 3 EXISTS lồng trên mọi khách — 0,58 s → xem docs/performance.md.
+  const [l, t, k] = await Promise.all([
+    db.lead.findMany({ where: { AND: [leadEditWhere(u), { customerId: { not: null } }] }, select: { customerId: true }, distinct: ["customerId"] }),
+    db.task.findMany({ where: { assigneeId: u.id, customerId: { not: null } }, select: { customerId: true }, distinct: ["customerId"] }),
+    db.ticket.findMany({ where: { ownerId: u.id, customerId: { not: null } }, select: { customerId: true }, distinct: ["customerId"] }),
+  ]);
+  return { customerId: { in: [...new Set([...l, ...t, ...k].map((x) => x.customerId!))] } };
 }

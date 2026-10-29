@@ -65,6 +65,16 @@ const USERS: { email: string; name: string; isCompanyAdmin?: boolean; membership
   { email: "sales.eu@demo.invalid", name: "Bùi Sales EU", memberships: [{ ws: "TEAM-EU", roles: ["SALES"], team: "SALES-EU" }] },
 ];
 
+/** Từ điển chỉ số (Phase 6): nạp fixtures/metrics.json nếu có — định nghĩa toàn công ty, cập nhật theo file (L3). */
+async function seedMetrics() {
+  const { existsSync, readFileSync } = await import("node:fs");
+  const f = "fixtures/metrics.json";
+  if (!existsSync(f)) return 0;
+  const rows = JSON.parse(readFileSync(f, "utf8")) as { code: string; group: string; nameVi: string; nameEn: string; formula: string; timeAnchor: string; source: string; owner: string; pitfalls?: string | null }[];
+  for (const r of rows) await db.metricDefinition.upsert({ where: { code: r.code }, update: r, create: r });
+  return rows.length;
+}
+
 async function main() {
   const wsIds: Record<string, string> = {};
   const teamIds: Record<string, string> = {};
@@ -127,6 +137,8 @@ async function main() {
     }
   }
   const counts = await Promise.all([db.workspace.count(), db.market.count(), db.store.count(), db.user.count(), db.membership.count()]);
+  const metrics = await seedMetrics();
+  if (metrics) console.log(`từ điển chỉ số: ${metrics} mã`);
   console.log(`seed xong: workspace=${counts[0]} market=${counts[1]} store=${counts[2]} user=${counts[3]} membership=${counts[4]}`);
 }
 

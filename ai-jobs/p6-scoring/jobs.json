@@ -1,0 +1,15 @@
+[
+  {"id": "metrics-content", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/metrics-content.md",
+   "allowed_paths": ["fixtures/metrics.json"], "check": ["python", "-I", "ai-jobs/p6-scoring/checker.py", "metrics-content", "."], "timeout_s": 1200},
+  {"id": "formula-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/formula-tests.md",
+   "allowed_paths": ["tests/formulas.test.ts"], "check": ["python", "-I", "ai-jobs/p6-scoring/checker.py", "formula-tests", "."], "timeout_s": 1500},
+  {"id": "customer-scores", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/customer-scores.md",
+   "allowed_paths": ["src/app/(app)/khach-hang/[id]/score-card.tsx", "src/app/(app)/khach-hang/[id]/page.tsx", "src/app/(app)/khach-hang/page.tsx"],
+   "check": ["python", "-I", "ai-jobs/p6-scoring/checker.py", "customer-scores", "."], "timeout_s": 1800},
+  {"id": "lead-scores", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/lead-scores.md",
+   "allowed_paths": ["src/app/(app)/nhu-cau/page.tsx", "src/app/(app)/nhu-cau/board.tsx", "src/app/(app)/nhu-cau/[id]/page.tsx", "src/app/(app)/nhu-cau/[id]/lead-score.tsx"],
+   "check": ["python", "-I", "ai-jobs/p6-scoring/checker.py", "lead-scores", "."], "timeout_s": 1500},
+  {"id": "score-admin", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/score-admin.md",
+   "allowed_paths": ["src/app/(app)/quan-tri/diem/page.tsx", "src/app/(app)/quan-tri/diem/version-form.tsx", "src/app/(app)/quan-tri/diem/recompute-button.tsx", "src/app/(app)/quan-tri/chi-so/page.tsx"],
+   "check": ["python", "-I", "ai-jobs/p6-scoring/checker.py", "score-admin", "."], "timeout_s": 1800}
+]

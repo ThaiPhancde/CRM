@@ -10,6 +10,7 @@ import { piiFor } from "@/lib/pii";
 import { FAILURE_REASON } from "@/lib/status-badge";
 import { customerScopeWhere, leadViewWhere } from "@/modules/sales/scope";
 import { ticketWhere } from "@/modules/service/scope";
+import { scoresFor } from "@/modules/scoring/service";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
 
@@ -40,6 +41,8 @@ export function parseCustomerFilter(sp: Record<string, string | string[] | undef
 
 export type CustomerRow = {
   id: string;
+  /** Phân hạng RFM hiện hành (Phase 6), null = chưa chấm. */
+  rfm: { value: number | null; band: string } | null;
   name: string;
   phone: string | null;
   email: string | null;
@@ -87,10 +90,11 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
     }),
     db.customer.count({ where: { ...w, orderCount: { gte: 2 } } }),
   ]);
+  const rfm = await scoresFor("customer", rows.map((c) => c.id), "RFM");
   return {
     total, page: f.page, pages: Math.max(1, Math.ceil(total / CUSTOMER_PAGE_SIZE)), showMoney: money, showPii: pii.full, repeatCount,
     rows: rows.map((c): CustomerRow => ({
-      id: c.id, name: c.displayName, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), market: c.market?.code ?? null,
+      id: c.id, rfm: rfm.get(c.id) ?? null, name: c.displayName, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), market: c.market?.code ?? null,
       orderCount: c.orderCount, deliveredOrders: c.deliveredOrders, firstOrderAt: c.firstOrderAt?.toISOString() ?? null, lastOrderAt: c.lastOrderAt?.toISOString() ?? null,
       valueBase12m: money ? c.valueBase12m.toString() : null, platforms: c.identities.map((i) => i.platform), tags: c.tags,
     })),

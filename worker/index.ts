@@ -7,6 +7,7 @@ import { runSync } from "../src/modules/connectors/service";
 import { refreshCustomerStats } from "../src/modules/customers/resolve";
 import { assignPendingLeads, closeStaleLeads, remindDue } from "../src/modules/sales/queue";
 import { remindTicketSla } from "../src/modules/service/tickets";
+import { scoringJobs } from "../src/modules/scoring/engine";
 
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify({ at: new Date().toISOString(), ...o }));
 
@@ -49,7 +50,7 @@ export async function refreshStaleCustomerStats(now = new Date(), limit = 500) {
 export async function salesJobs(now = new Date()) {
   const teams = await rootDb.workspace.findMany({ where: { active: true }, select: { id: true } });
   let failed = 0;
-  const total = { assigned: 0, taskReminders: 0, leadAlerts: 0, autoClosed: 0, ticketDueSoon: 0, ticketBreached: 0 };
+  const total = { assigned: 0, taskReminders: 0, leadAlerts: 0, autoClosed: 0, ticketDueSoon: 0, ticketBreached: 0, leadsScored: 0, customersScored: 0 };
   for (const w of teams) {
     try {
       const c = workspaceDb(w.id);
@@ -59,6 +60,9 @@ export async function salesJobs(now = new Date()) {
       const sla = await remindTicketSla(c, now);
       total.ticketDueSoon += sla.dueSoon;
       total.ticketBreached += sla.breached;
+      const sc = await scoringJobs(c, w.id, now);
+      total.leadsScored += sc.leads.leads;
+      if (sc.customers) total.customersScored += sc.customers.scored;
       total.assigned += a.assigned;
       total.taskReminders += r.taskReminders;
       total.leadAlerts += r.leadAlerts;

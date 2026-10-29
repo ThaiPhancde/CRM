@@ -8,9 +8,10 @@ const S = Number(process.env.SCALE ?? 1);
 const label = process.argv[2] ?? "run";
 /**
  * Mục tiêu NFR (D-48): trang người dùng p50 < 500 ms, chi tiết < 300 ms, job worker một lượt < 5 s, xuất CSV < 5 s.
+ * Job hằng ngày (chỉ số + điểm toàn bộ khách của team): < 2 phút.
  * Nhập đơn: ≥ 30 bản ghi/giây (1.000 bản ≤ 33 s) — tính từ khối lượng mục tiêu ~8.200 bản ghi/ngày/team, dư > 100 lần.
  */
-const TARGET: Record<string, number> = { page: 500, detail: 300, job: 5000, export: 5000, write: 300, ingest: 33000 };
+const TARGET: Record<string, number> = { page: 500, detail: 300, job: 5000, export: 5000, write: 300, ingest: 33000, daily: 120000 };
 
 async function main() {
   const { rootDb, runInWorkspace, workspaceDb } = await import("../../src/lib/db");
@@ -81,6 +82,14 @@ async function main() {
   if (aTicket) await time("Ticket: chi tiết", "detail", () => tickets.getTicket(mgr, aTicket));
   await time("Tri thức: danh sách", "page", () => kb.listArticles(sales, kb.parseKbFilter({})));
   await time("Worker: nhắc SLA ticket (1 lượt)", "job", () => tickets.remindTicketSla(c), 1);
+  const scoring = await import("../../src/modules/scoring/engine");
+  const scoreSvc = await import("../../src/modules/scoring/service");
+  await time("Job hằng ngày: chỉ số R12M + điểm 3 loại toàn bộ khách", "daily", () => scoring.refreshAndScoreCustomers(c, ws.id), 1);
+  await time("Worker: chấm điểm lead mở (lượt đầu)", "job", () => scoring.scoreOpenLeads(c), 1);
+  await time("Worker: chấm điểm lead mở (lượt kế, không có gì mới)", "job", () => scoring.scoreOpenLeads(c), 1);
+  await time("Điểm + chỉ số của một khách (hồ sơ 360)", "detail", () => scoreSvc.getCustomerScores(mgr, aCustomer));
+  await time("Khách: danh sách kèm hạng RFM", "page", () => customers.listCustomers(mgr, customers.parseCustomerFilter({})));
+  await time("Lead: danh sách kèm điểm ưu tiên", "page", () => leads.listLeads(mgr, leads.parseLeadFilter({})));
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

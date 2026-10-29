@@ -67,6 +67,8 @@ const MATRIX = {
   /** Soạn bài (thêm phiên bản) / xuất bản. */
   "knowledge.edit": ["MANAGER", "SALES_LEAD", "MARKETING"],
   "knowledge.publish": ["MANAGER", "SALES_LEAD", "MARKETING"],
+  /** Đổi trọng số điểm (tạo phiên bản mới), tính lại điểm ngay (Phase 6). */
+  "score.config": ["MANAGER"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;

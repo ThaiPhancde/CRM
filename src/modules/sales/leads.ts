@@ -12,6 +12,7 @@ import { piiFor } from "@/lib/pii";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { OPEN_STAGES, autoAssign, loadRouting } from "./routing";
 import { assigneeWhere, leadAssignWhere, leadEditWhere, leadViewWhere } from "./scope";
+import { scoresFor } from "@/modules/scoring/service";
 
 import { LANGUAGES, LEAD_STAGES, STAGE_LABEL } from "./labels";
 
@@ -182,6 +183,8 @@ function toRow(user: SessionUser, l: LeadRow, now: Date) {
     nextActionAt: l.nextActionAt?.toISOString() ?? null, createdAt: l.createdAt.toISOString(),
     /** Quá hạn phản hồi đầu tiên. */
     overdue: open && !l.firstRespondedAt && !!l.firstResponseDueAt && l.firstResponseDueAt < now,
+    /** Điểm ưu tiên sales hiện hành (Phase 6) — điền ở listLeads/leadBoard. */
+    score: null as { value: number | null; band: string } | null,
   };
 }
 export type LeadListRow = ReturnType<typeof toRow>;
@@ -193,7 +196,8 @@ export async function listLeads(user: SessionUser, f: LeadFilter, now = new Date
     db.lead.count({ where: w }),
     db.lead.findMany({ where: w, include: listInclude, orderBy: [{ createdAt: "desc" }], skip: (f.page - 1) * LEAD_PAGE_SIZE, take: LEAD_PAGE_SIZE }),
   ]);
-  return { total, page: f.page, pageSize: LEAD_PAGE_SIZE, rows: rows.map((l) => toRow(user, l, now)), canEdit: can(user.roles, "lead.edit"), canAssign: can(user.roles, "lead.assign") };
+  const sc = await scoresFor("lead", rows.map((l) => l.id), "SALES_PRIORITY");
+  return { total, page: f.page, pageSize: LEAD_PAGE_SIZE, rows: rows.map((l) => ({ ...toRow(user, l, now), score: sc.get(l.id) ?? null })), canEdit: can(user.roles, "lead.edit"), canAssign: can(user.roles, "lead.assign") };
 }
 
 /**
@@ -211,7 +215,8 @@ export async function leadBoard(user: SessionUser, f: LeadFilter, now = new Date
       db.lead.count({ where: w }),
       db.lead.findMany({ where: w, include: listInclude, orderBy: [{ updatedAt: "desc" }], take: perStage }),
     ]);
-    return { stage, closed, total, rows: rows.map((l) => toRow(user, l, now)) };
+    const sc = await scoresFor("lead", rows.map((l) => l.id), "SALES_PRIORITY");
+    return { stage, closed, total, rows: rows.map((l) => ({ ...toRow(user, l, now), score: sc.get(l.id) ?? null })) };
   }));
   return { columns, canEdit: can(user.roles, "lead.edit") };
 }

@@ -55,6 +55,8 @@ export const NAV: NavGroup[] = [
       { href: "/quan-tri/nguoi-dung", label: "Người dùng", icon: "user", perm: "admin.users" },
       { href: "/quan-tri/vai-tro", label: "Vai trò & quyền", icon: "shield", perm: "admin.roles" },
       { href: "/quan-tri/danh-muc", label: "Danh mục", icon: "grid", perm: "admin.settings" },
+      { href: "/quan-tri/diem", label: "Điểm khách hàng", icon: "chart", perm: "score.config" },
+      { href: "/quan-tri/chi-so", label: "Từ điển chỉ số", icon: "book", perm: "catalog.view" },
       { href: "/quan-tri/nhat-ky", label: "Nhật ký", icon: "clock", perm: "admin.audit" },
     ],
   },
