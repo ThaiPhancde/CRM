@@ -53,9 +53,9 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-30 | Lead/nhu cầu mua: sản phẩm quan tâm, tiến độ, lý do chưa mua, hành động tiếp | HLD §3 | XĐ | 4 | ✓ |
-| R-31 | Hàng đợi, phân công theo năng lực/market, chuyển phụ trách có lịch sử | HLD §3, §11 | XĐ | 4 | ✓ |
-| R-32 | Activity, Task, lịch hẹn, kịch bản | HLD §3 | XĐ | 4 | ✓ |
+| R-30 | Lead/nhu cầu mua: sản phẩm quan tâm, tiến độ, lý do chưa mua, hành động tiếp | HLD §3 | XĐ — **đã có Phase 4** (R-30…R-32; sản phẩm quan tâm là văn bản, Phase 10 gắn SKU) | 4 | ✓ |
+| R-31 | Hàng đợi, phân công theo năng lực/market, chuyển phụ trách có lịch sử | HLD §3, §11; D-45, D-46 | XĐ — phân công theo brand + market + tải (chưa theo ngôn ngữ/năng lực cá nhân) | 4 | ✓ |
+| R-32 | Activity, Task, lịch hẹn, kịch bản | HLD §3; D-47 | XĐ — lịch hẹn = việc loại Hẹn gặp + hẹn liên hệ lại | 4 | ✓ |
 | R-33 | Ticket, loại sự cố, mức, SLA, thời hạn | HLD §3, §11 | XĐ | 5 | ✓ |
 | R-34 | Tri thức theo brand/market/ngôn ngữ, có phiên bản | HLD §3 | XĐ | 5 | ✓ |
 | R-35 | Khách giá trị cao gặp sự cố được ưu tiên | HLD §7.4; D-24 | MĐ | 5 | ✓ |

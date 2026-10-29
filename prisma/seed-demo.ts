@@ -8,6 +8,7 @@ import { generate } from "../scripts/gen-fixtures";
 import { runSync } from "../src/modules/connectors/service";
 import { resolveAllCustomers } from "../src/modules/customers/resolve";
 import { workspaceDb } from "../src/lib/db";
+import { seedSales } from "../scripts/seed-sales";
 
 const db = new PrismaClient();
 type Catalog = { products: { code: string; brand: string; category: string; name_vi: string; name_en: string; name_ar?: string; variants: { sku: string; attributes: Record<string, string>; cost_usd: string }[] }[] };
@@ -60,6 +61,8 @@ async function main() {
     db.order.count(), db.sourceOrderLink.count(), db.orderLinkReview.count({ where: { status: "PENDING" } }),
     db.customer.count({ where: { mergedIntoId: null } }), db.customerReview.count({ where: { status: "PENDING" } }),
   ]);
+  // Phase 4: kịch bản + nhu cầu mua kèm hội thoại (sau khi có khách để gắn).
+  console.log("nhu cầu mua:", await seedSales());
   console.log(`xong: đơn=${orders} liên kết nguồn=${links} đơn chờ xác minh=${reviews} khách=${customers} khách chờ xác minh=${customerReviews}`);
 }
 

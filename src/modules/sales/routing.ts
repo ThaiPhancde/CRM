@@ -3,6 +3,7 @@
 // Không ai nhận được → lead nằm ở hàng chờ của nhóm, báo Trưởng nhóm/Quản lý.
 import { z } from "zod";
 import type { Db } from "@/lib/db";
+import { dateTime } from "@/lib/format";
 import { notify } from "@/lib/notify";
 
 export const OPEN_STAGES = ["MOI", "DANG_TU_VAN", "CHO_QUYET_DINH"] as const;
@@ -69,7 +70,7 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
   }
   await client.assignment.create({ data: { leadId: lead.id, toUserId: pick, teamId, reason: "Tự động: ít lead mở nhất trong nhóm" } as never });
   await client.activity.create({ data: { type: "SYSTEM", leadId: lead.id, customerId: lead.customerId, body: "Tự động giao phụ trách", occurredAt: now } as never });
-  await notify(client, { userId: pick, title: `Lead mới: ${lead.contactName}`, body: `Phản hồi trước ${due.toISOString()}`, link: `/nhu-cau/${lead.id}`, key: `lead-assigned:${lead.id}:${pick}` });
+  await notify(client, { userId: pick, title: `Lead mới: ${lead.contactName}`, body: `Phản hồi trước ${dateTime(due)}`, link: `/nhu-cau/${lead.id}`, key: `lead-assigned:${lead.id}:${pick}` });
   return pick;
 }
 

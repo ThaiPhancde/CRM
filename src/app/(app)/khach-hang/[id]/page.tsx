@@ -7,8 +7,11 @@ import { HttpError } from "@/lib/errors";
 import { date, dateTime, money, num, base } from "@/lib/format";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
 import { getCustomer360, type TimelineItem } from "@/modules/customers/service";
+import { STAGE_LABEL } from "@/modules/sales/leads";
 import { PreferenceForm } from "./preference-form";
 import { UnmergeButton } from "./unmerge-button";
+
+const ACTIVITY_LABEL: Record<string, string> = { CALL: "Cuộc gọi", MESSAGE: "Tin nhắn", MEETING: "Gặp mặt", NOTE: "Ghi chú" };
 
 type ProfileTab = "tong-quan" | "don" | "tuong-tac" | "dia-chi" | "danh-tinh" | "gop";
 
@@ -75,6 +78,7 @@ export default async function CustomerProfilePage({
     canEdit,
     pendingReviews,
   } = res;
+  const data = res;
 
   const tabs: { key: ProfileTab; label: string; count?: number }[] = [
     { key: "tong-quan", label: "Tổng quan" },
@@ -348,12 +352,50 @@ export default async function CustomerProfilePage({
       )}
 
       {tab === "tuong-tac" && (
-        <Card>
-          <EmptyState
-            title="Chưa có tương tác — ghi cuộc gọi, tin nhắn có ở Phase 4"
-            description="Lịch sử cuộc gọi, tin nhắn chăm sóc và ghi chú nội bộ với khách hàng sẽ hiển thị tại đây."
-          />
-        </Card>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <Card className="xl:col-span-2">
+            <SectionTitle>Tương tác ({num(data.activities.length)})</SectionTitle>
+            {!data.seeLeads ? (
+              <EmptyState title="Bạn không có quyền xem tương tác bán hàng" description="Cuộc gọi, tin nhắn thuộc nhu cầu mua chỉ hiện với người có quyền xem nhu cầu mua." />
+            ) : data.activities.length === 0 ? (
+              <EmptyState title="Chưa có tương tác" description="Cuộc gọi, tin nhắn, ghi chú ghi ở trang nhu cầu mua sẽ hiện tại đây." />
+            ) : (
+              <ul className="divide-y divide-border">
+                {data.activities.map((a) => (
+                  <li key={a.id} className="px-4 py-3 text-sm">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+                      <Badge tone={a.direction === "IN" ? "info" : "brand"}>{ACTIVITY_LABEL[a.type] ?? a.type}</Badge>
+                      <span>{a.direction === "IN" ? "Khách gửi" : a.actor ?? "Hệ thống"}</span>
+                      {a.channel && <span>· {a.channel}</span>}
+                      <span className="tabular ml-auto">{dateTime(a.occurredAt)}</span>
+                    </div>
+                    <p dir="auto" className="mt-1 whitespace-pre-line text-fg">{a.body}</p>
+                    {a.leadId && <Link href={`/nhu-cau/${a.leadId}`} className="mt-1 inline-block text-xs text-brand hover:underline">Xem nhu cầu mua</Link>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+          <Card>
+            <SectionTitle>Nhu cầu mua ({num(data.leads.length)})</SectionTitle>
+            {data.leads.length === 0 ? (
+              <EmptyState title="Chưa có nhu cầu mua" description="Nhu cầu gắn với khách khi SĐT khớp đúng hồ sơ này." />
+            ) : (
+              <ul className="divide-y divide-border">
+                {data.leads.map((l) => (
+                  <li key={l.id} className="px-4 py-3 text-sm">
+                    <Link href={`/nhu-cau/${l.id}`} className="font-medium text-fg hover:text-brand">{l.interest ?? l.source}</Link>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+                      <Badge>{STAGE_LABEL[l.stage]}</Badge>
+                      <span>{l.owner ?? "Chưa giao"}</span>
+                      <span className="tabular ml-auto">{date(l.createdAt)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
       )}
 
       {tab === "dia-chi" && (

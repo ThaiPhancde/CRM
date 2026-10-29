@@ -2,6 +2,20 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 6) — Phase 2 đã rà, Phase 4 xong, chờ nghiệm thu
+
+**Đã làm:** rà Phase 2 (vá `NOT_OWNER`); Phase 4 nhu cầu mua + không gian sales (lead, phân công, Kanban, hàng đợi, nhiệm vụ, nhắc hạn, Outbox SIMULATED). Phase 3 chưa nghiệm thu nhưng người dùng yêu cầu đi tiếp. Chi tiết: `implementation-status.md` Phase 4.
+
+**Quyết định mới:** D-45 (phạm vi lead/khách/đơn), D-46 (phân công), D-47 (thông báo + Outbox, worker 1 phút).
+
+**Chạy thêm:** `npx prisma migrate deploy` → `npm run db:seed` (thêm `leadRouting` + Đặng Sales) → `npx tsx --env-file=.env scripts/seed-sales.ts` (60 lead; DB mới thì `db:seed-demo` gọi sẵn). Đăng nhập Phạm Sales/Đặng Sales để thấy hàng đợi riêng; Lê Trưởng Nhóm thấy cả nhóm.
+
+**Quy ước mới:** hằng số/nhãn dùng ở client đặt trong module thuần (`src/modules/sales/labels.ts`); không export hằng số từ file `"use client"` cho trang server; khóa idempotency trên form sinh trong `useEffect`. Service không gọi `requirePerm` phải tự `bindTenant(user)`. Checker p4 có luật bắt hai lỗi ranh giới client/server — chép sang lô sau.
+
+**Chờ người dùng:** nghiệm thu Phase 3 + 4; xác nhận Q-22 (quy tắc phân công, 30 lead/người), Q-23 (4 giờ phản hồi).
+
+**Bước tiếp theo:** Phase 5 — dịch vụ sau bán + tri thức (Ticket/SLA/KnowledgeArticle; ticket vào hàng đợi; Gemini: `/cham-soc`, `/tri-thuc`, 20 bài tri thức 4 ngôn ngữ).
+
 ## Checkpoint 29/10/2026 (lần 5) — tiền quy đổi chung đổi sang VND
 
 **Đã làm:** theo yêu cầu người dùng, mọi giá trị báo cáo quy về VND thay USD (D-44). Cột đổi tên `FxRate.rateToBase`, `Order.netBase`, `Customer.valueBase12m`; dữ liệu cũ đã quy đổi bằng migration (không cần reset). Định dạng: `base()` trong `src/lib/format.ts`.

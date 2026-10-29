@@ -24,6 +24,8 @@ const WORKSPACES = [
     name: "Team PiAlpha",
     markets: ["AE", "SA", "KW", "US"],
     teams: [{ code: "SALES-ME", name: "Sales Trung Đông" }, { code: "MKT", name: "Marketing" }],
+    // Phân công lead (Q-22, D-46): mọi brand/market về nhóm Sales Trung Đông; tối đa 30 lead mở/người; phản hồi trong 4 giờ.
+    leadRouting: { rules: [{ team: "SALES-ME" }], maxOpenPerUser: 30, firstResponseHours: 4 },
     brands: [
       { code: "LUMI", name: "Lumi Home", stores: [
         { code: "LUMI-PK-AE", name: "Lumi UAE", platform: "pancake", markets: ["AE"] },
@@ -39,6 +41,7 @@ const WORKSPACES = [
     name: "Team EU",
     markets: ["DE", "FR", "US"],
     teams: [{ code: "SALES-EU", name: "Sales châu Âu" }],
+    leadRouting: { rules: [{ team: "SALES-EU" }], maxOpenPerUser: 30, firstResponseHours: 4 },
     brands: [
       { code: "ORBI", name: "Orbi Living", stores: [
         { code: "ORBI-SH-EU", name: "Orbi EU Store", platform: "shopify", markets: ["DE", "FR"] },
@@ -54,6 +57,7 @@ const USERS: { email: string; name: string; isCompanyAdmin?: boolean; membership
   { email: "quanly@demo.invalid", name: "Trần Quản Lý", memberships: [{ ws: "PIALPHA", roles: ["MANAGER"] }, { ws: "TEAM-EU", roles: ["MANAGER"] }] },
   { email: "truongnhom@demo.invalid", name: "Lê Trưởng Nhóm", memberships: [{ ws: "PIALPHA", roles: ["SALES_LEAD"], team: "SALES-ME" }] },
   { email: "sales@demo.invalid", name: "Phạm Sales", memberships: [{ ws: "PIALPHA", roles: ["SALES"], team: "SALES-ME" }] },
+  { email: "sales2@demo.invalid", name: "Đặng Sales", memberships: [{ ws: "PIALPHA", roles: ["SALES"], team: "SALES-ME" }] },
   { email: "marketing@demo.invalid", name: "Đỗ Marketing", memberships: [{ ws: "PIALPHA", roles: ["MARKETING"], team: "MKT" }] },
   { email: "vandon@demo.invalid", name: "Vũ Vận Đơn", memberships: [{ ws: "PIALPHA", roles: ["FULFILLMENT"] }] },
   { email: "muahang@demo.invalid", name: "Hoàng Mua Hàng", memberships: [{ ws: "PIALPHA", roles: ["PURCHASING_VIEW"] }] },
@@ -83,6 +87,7 @@ async function main() {
         create: { workspaceId: ws.id, currency, rateToBase: FX[currency], validFrom: FX_DATE },
       });
     }
+    await db.setting.upsert({ where: { workspaceId_key: { workspaceId: ws.id, key: "leadRouting" } }, update: {}, create: { workspaceId: ws.id, key: "leadRouting", value: w.leadRouting } });
     for (const t of w.teams) {
       const team = await db.team.upsert({ where: { workspaceId_code: { workspaceId: ws.id, code: t.code } }, update: {}, create: { workspaceId: ws.id, ...t } });
       teamIds[`${w.code}/${t.code}`] = team.id;

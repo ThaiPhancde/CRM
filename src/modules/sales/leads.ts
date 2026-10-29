@@ -2,7 +2,7 @@
 // Mọi hàm kiểm quyền + phạm vi ở server (scope.ts); ghi audit; thao tác lặp có khóa idempotency.
 import { Prisma, type LeadStage } from "@prisma/client";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { bindTenant, db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { HttpError, parse, ValidationError } from "@/lib/errors";
 import { notify } from "@/lib/notify";
@@ -13,8 +13,9 @@ import { requirePerm, type SessionUser } from "@/lib/session";
 import { OPEN_STAGES, autoAssign, loadRouting } from "./routing";
 import { assigneeWhere, leadAssignWhere, leadEditWhere, leadViewWhere } from "./scope";
 
-export const LEAD_STAGES = ["MOI", "DANG_TU_VAN", "CHO_QUYET_DINH", "DA_MUA", "TU_CHOI", "MAT_LIEN_LAC"] as const satisfies readonly LeadStage[];
-export const LANGUAGES = ["vi", "en", "ar", "de"] as const;
+import { LANGUAGES, LEAD_STAGES, STAGE_LABEL } from "./labels";
+
+export { LANGUAGES, LEAD_STAGES, STAGE_LABEL };
 /** Đóng không thành đơn → bắt buộc lý do (HLD §6 "lý do chưa mua"). */
 const NEED_REASON: LeadStage[] = ["TU_CHOI", "MAT_LIEN_LAC"];
 const CLOSED: LeadStage[] = ["DA_MUA", "TU_CHOI", "MAT_LIEN_LAC"];
@@ -235,10 +236,6 @@ export const stageSchema = z.object({
   nextActionAt: optDate,
 });
 
-export const STAGE_LABEL: Record<LeadStage, string> = {
-  MOI: "Mới", DANG_TU_VAN: "Đang tư vấn", CHO_QUYET_DINH: "Chờ quyết định", DA_MUA: "Đã mua", TU_CHOI: "Từ chối", MAT_LIEN_LAC: "Mất liên lạc",
-};
-
 /** Đổi giai đoạn (kanban kéo thả gọi hàm này). Từ chối/mất liên lạc cần lý do. */
 export async function changeStage(user: SessionUser, input: unknown, now = new Date()) {
   const d = parse(stageSchema, input);
@@ -334,6 +331,7 @@ async function transfer(user: SessionUser, l: { id: string; ownerId: string | nu
 
 /** Người có thể nhận lead/việc từ người dùng hiện tại (cho ô chọn ở drawer chuyển phụ trách / form việc). */
 export async function assignableUsers(user: SessionUser) {
+  bindTenant(user);
   const ms = await db.membership.findMany({ where: { AND: [assigneeWhere(user)], user: { active: true } }, include: { user: { select: { id: true, name: true } }, team: { select: { name: true } } }, orderBy: { user: { name: "asc" } } });
   return ms.map((m) => ({ id: m.user.id, name: m.user.name, team: m.team?.name ?? null, roles: m.roles }));
 }

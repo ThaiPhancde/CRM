@@ -10,7 +10,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 1 Nền tảng, quyền, UI shell | **Xong, chờ nghiệm thu** | 28/10/2026 | 22 test xanh; thử trình duyệt 2 vai; chưa commit/worktree |
 | 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
 | 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
-| 4 Nhu cầu mua + sales | Chưa | | |
+| 4 Nhu cầu mua + sales | **Xong, chờ nghiệm thu** | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
 | 5 Dịch vụ + tri thức | Chưa | | |
 | 6 Chỉ số + điểm + Warehouse | Chưa | | |
 | 7 Journey + marketing | Chưa | | |
@@ -19,6 +19,20 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Phase 4 — đã làm (29/10/2026)
+
+**Rà Phase 2 trước khi làm (theo yêu cầu người dùng).** Đối chiếu lát 2.1–2.4 và mục nghiệm thu: 5 tình huống fixture, tính một lần, không lùi trạng thái, phát lại không tạo đơn — đều có test. Lệch thiết kế tìm thấy và sửa: quy tắc 3 yêu cầu ghi `NOT_OWNER` khi nguồn không làm chủ nhóm trường nào — trước đây ghi `APPLIED`; nay ghi `NOT_OWNER`, giữ mốc liên kết, không ghi vào đơn, cột "Không chủ" ở `/ket-noi` (migration `event_not_owner`, có test). Để lại có chủ ý: nút xác minh kết nối và test hợp đồng adapter thật (cần endpoint đã xác minh — Phase 12); bảng `Return` (dùng số hoàn theo dòng); màn ánh xạ SKU tay (Phase 10).
+
+**Claude (lõi).** Schema `Lead`/`Assignment`/`Activity`/`Task`/`Script`/`Outbox`/`Notification` (migration `phase4_leads_tasks`). `src/modules/sales/`: `scope.ts` (phạm vi D-45, áp cả vào khách và đơn — Sales chỉ thấy khách/đơn có lead/việc của mình), `routing.ts` (phân công D-46: brand + market → nhóm, ít lead mở nhất, giới hạn 30, hàng chờ + báo), `leads.ts` (tạo idempotent, gắn khách khi SĐT khớp đúng một hồ sơ, danh sách/Kanban, chi tiết, đổi giai đoạn có lý do, ghi tương tác — liên hệ ra đầu tiên ghi đã phản hồi, chuyển phụ trách/nhận lead có lịch sử + audit), `tasks.ts` (tạo idempotent, phạm vi giao việc), `queue.ts` (hàng đợi ưu tiên quá hạn, thông báo, job worker giao lead treo + nhắc hạn → thông báo + Outbox SIMULATED), `labels.ts` (nhãn thuần dùng được ở client). Server action `nhu-cau/actions.ts`, `nhiem-vu/actions.ts`. Gộp/tách khách mang theo lead/việc/tương tác. Customer 360: tab Tương tác + nhu cầu mua, dòng thời gian có tương tác. Worker lặp 1 phút. Seed: `leadRouting` mỗi team, thêm "Đặng Sales" (PiAlpha) để thấy chia việc; `scripts/seed-sales.ts` nạp 60 lead qua đúng `autoAssign`.
+
+**Gemini (batch `p4-sales`, 5 job song song, 421 s, cả 5 qua checker lần đầu, 0 ghi sai chỗ).** `/nhu-cau` (danh sách + Kanban kéo thả HTML5 + ô chọn thay bàn phím + Modal lý do + Drawer tạo lead), `/nhu-cau/[id]` (ghi tương tác, giai đoạn, việc, kịch bản, lịch sử phụ trách, chuyển phụ trách, nhận lead), `/hang-doi`, `/nhiem-vu`; `fixtures/leads.json` (60 lead, hội thoại vi/en/ar/de) + `fixtures/scripts.json` (16 kịch bản). **Claude review bắt 4 lỗi:** client import module server (lỗi 500 — tách `labels.ts`), trang server lấy hằng số từ file `"use client"` (nhãn nguồn/loại việc/màu giai đoạn ra rỗng), khóa idempotency sinh lúc render (lệch hydration), nhãn "Khách" cho dòng tự động. Thêm 2 luật vào checker để bắt hai lỗi đầu ở lô sau. Phía Claude tự sửa: thời gian dạng thô trong thông báo; hàm không gọi `requirePerm` thiếu `bindTenant`.
+
+**Test (29/10):** `npx vitest run` → 6 file, **143/143 passed** (Phase 4: 9 ca — chia đều trong nhóm + hạn 4 giờ; quy tắc bắt tất cả + đủ tải → hàng chờ + báo + worker giao khi có chỗ; phạm vi Sales/Trưởng nhóm/Marketing/team khác + nhận lead; chuyển phụ trách cần quyền + phạm vi + lý do, lịch sử chỉ thêm; Sales chỉ thấy khách có lead của mình; liên hệ ra đầu tiên + Từ chối cần lý do + gửi lặp; tạo lead/việc cùng khóa, kể cả hai yêu cầu đồng thời, chỉ một bản; hàng đợi + nhắc một lần + Outbox SIMULATED; gộp/tách khách mang lead). `tsc` sạch; `next build` thành công. `seed-sales` chạy hai lần: lần hai tạo 0. Trình duyệt (1920): Quản lý — 38 lead PiAlpha, 6 quá hạn, Kanban đổi sang Từ chối bắt nhập lý do (server báo lỗi khi bỏ trống), trang chi tiết đủ khối; Sales — hàng đợi 10 việc/7 quá hạn, khách hàng 6 hồ sơ (trước đây 414), nhiệm vụ 2 việc.
+
+**Còn thiếu / để sau:** E2E kéo thả tự động (Phase 11); phân công theo ngôn ngữ/năng lực cá nhân (chờ Q-22); chuông thông báo trên thanh trên cùng (thông báo đang ở `/hang-doi`); ticket trong hàng đợi (Phase 5). Q-22/Q-23 vẫn chờ người dùng xác nhận số.
+
+**Tỷ lệ theo dòng:** Claude ~1.350 dòng lõi + sửa review / Gemini ~2.540 dòng giao diện + 68 KB nội dung; theo loại việc Gemini chỉ làm giao diện và nội dung (D-27).
 
 ## Đổi tiền quy đổi chung USD → VND (29/10/2026, D-44)
 

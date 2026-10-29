@@ -8,7 +8,7 @@ import { HttpError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
 import { piiFor } from "@/lib/pii";
 import { FAILURE_REASON } from "@/lib/status-badge";
-import { customerScopeWhere } from "@/modules/sales/scope";
+import { customerScopeWhere, leadViewWhere } from "@/modules/sales/scope";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
 
@@ -98,7 +98,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
 
 export type TimelineItem = {
   at: string;
-  kind: "order" | "delivery" | "refund" | "merge" | "unmerge" | "preference";
+  kind: "order" | "delivery" | "refund" | "merge" | "unmerge" | "preference" | "activity" | "lead";
   title: string;
   detail?: string;
   href?: string;
@@ -135,6 +135,14 @@ export async function getCustomer360(user: SessionUser, id: string) {
   const storeOf = new Map(conns.map((x) => [x.id, x.store.name]));
   const merges = await db.mergeLog.findMany({ where: { entity: "CUSTOMER", OR: [{ survivorId: id }, { mergedId: id }] }, orderBy: { mergedAt: "desc" } });
   const reviews = await db.customerReview.count({ where: { status: "PENDING", OR: [{ customerAId: id }, { customerBId: id }] } });
+  // Phase 4: nhu cầu mua + tương tác của khách, chỉ phần người xem được (cùng phạm vi lead).
+  const seeLeads = can(user.roles, "lead.view");
+  const [leads, activities] = seeLeads
+    ? await Promise.all([
+        db.lead.findMany({ where: { AND: [{ customerId: id }, leadViewWhere(user)] }, orderBy: { createdAt: "desc" }, include: { owner: { select: { name: true } } } }),
+        db.activity.findMany({ where: { customerId: id, type: { not: "SYSTEM" }, OR: [{ leadId: null }, { lead: leadViewWhere(user) }] }, orderBy: { occurredAt: "desc" }, take: 200, include: { actor: { select: { name: true } } } }),
+      ])
+    : [[], []];
 
   const timeline: TimelineItem[] = [];
   for (const o of c.orders) {
@@ -150,6 +158,8 @@ export async function getCustomer360(user: SessionUser, id: string) {
     if (m.unmergedAt) timeline.push({ at: m.unmergedAt.toISOString(), kind: "unmerge", title: "Tách lại hồ sơ", tone: "info" });
   }
   for (const p of c.preferences) timeline.push({ at: p.changedAt.toISOString(), kind: "preference", title: `${p.optIn ? "Đồng ý" : "Từ chối"} nhận ${p.purpose === "MARKETING" ? "tin tiếp thị" : "tin chăm sóc"} qua ${p.channel}`, detail: p.source, tone: "neutral" });
+  for (const l of leads) timeline.push({ at: l.createdAt.toISOString(), kind: "lead", title: `Nhu cầu mua: ${l.interest ?? l.source}`, detail: l.owner?.name ?? "Chưa giao", href: `/nhu-cau/${l.id}`, tone: "brand" });
+  for (const a of activities) timeline.push({ at: a.occurredAt.toISOString(), kind: "activity", title: `${ACTIVITY_TITLE[a.type] ?? a.type}${a.direction === "IN" ? " từ khách" : a.direction === "OUT" ? " gửi khách" : ""}`, detail: a.body.slice(0, 140), href: a.leadId ? `/nhu-cau/${a.leadId}` : undefined, tone: "neutral" });
   timeline.sort((a, b) => b.at.localeCompare(a.at));
 
   const delivered = c.orders.filter((o) => o.items.some((i) => i.qtyDelivered > 0)).length;
@@ -194,8 +204,12 @@ export async function getCustomer360(user: SessionUser, id: string) {
     preferences: currentPrefs.map((p) => ({ id: p.id, channel: p.channel, purpose: p.purpose, optIn: p.optIn, source: p.source, changedAt: p.changedAt.toISOString() })),
     merges: merges.map((m) => ({ id: m.id, role: m.survivorId === id ? ("survivor" as const) : ("merged" as const), otherId: m.survivorId === id ? m.mergedId : m.survivorId, mergedAt: m.mergedAt.toISOString(), unmergedAt: m.unmergedAt?.toISOString() ?? null, evidence: m.evidence })),
     timeline,
+    seeLeads,
+    leads: leads.map((l) => ({ id: l.id, stage: l.stage, interest: l.interest, source: l.source, owner: l.owner?.name ?? null, createdAt: l.createdAt.toISOString() })),
+    activities: activities.map((a) => ({ id: a.id, type: a.type, direction: a.direction, channel: a.channel, body: a.body, actor: a.actor?.name ?? null, leadId: a.leadId, occurredAt: a.occurredAt.toISOString() })),
   };
 }
+const ACTIVITY_TITLE: Record<string, string> = { CALL: "Cuộc gọi", MESSAGE: "Tin nhắn", MEETING: "Gặp mặt", NOTE: "Ghi chú" };
 export type Customer360 = Exclude<Awaited<ReturnType<typeof getCustomer360>>, { redirectTo: string }>;
 
 // ---- Hàng đợi khách + gộp/tách -----------------------------------------------------------------

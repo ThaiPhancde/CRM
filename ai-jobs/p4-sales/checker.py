@@ -139,6 +139,19 @@ def main():
                 errors.append(f"{p.relative_to(root)}: too little Vietnamese copy")
             if re.search(r"#[0-9a-fA-F]{6}\b", t):
                 errors.append(f"{p.relative_to(root)}: raw hex color; use design tokens")
+        # Bài học p4: client file kéo module server (DB) vào bundle → 500; trang server nhận hằng số từ file "use client" → undefined.
+        for p in files:
+            if not p.is_file():
+                continue
+            t = p.read_text(encoding="utf-8")
+            if t.lstrip().startswith('"use client"'):
+                for m in re.finditer(r'^import (?!type )\{([^}]*)\} from "@/modules/([^"]+)"', t, re.M):
+                    if m.group(2) != "sales/labels" and any(x.strip() and not x.strip().startswith("type ") for x in m.group(1).split(",")):
+                        errors.append(f"{p.relative_to(root)}: client file imports values from @/modules/{m.group(2)} (server code); use labels or `import type`")
+            else:
+                for m in re.finditer(r'^import \{([^}]*)\} from "(\./[^"]+)"', t, re.M):
+                    if any(x.strip().isupper() and len(x.strip()) > 2 for x in m.group(1).split(",")):
+                        errors.append(f"{p.relative_to(root)}: server page imports a constant from client module {m.group(2)}; move it to a shared module")
         for pat in spec["must"]:
             if not re.search(pat, text):
                 errors.append(f"missing required usage {pat}")

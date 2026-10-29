@@ -1,0 +1,130 @@
+[
+  {
+    "brand": "LUMI",
+    "market": "AE",
+    "stage": "MOI",
+    "language": "ar",
+    "title": "الترحيب الأول وتأكيد التوفر — LUMI الإمارات",
+    "body": "مرحباً بك في LUMI Home! شكراً لتواصلك معنا.\nالمنتج الذي استفسرت عنه متوفر حالياً في مستودعنا بدبي وجاهز للشحن السريع.\nيسعدني توضيح المقاسات والألوان المتاحة لك.\nهل تفضل استخدامه للمطبخ أم لغرفة المعيشة؟"
+  },
+  {
+    "brand": "NOVA",
+    "market": "SA",
+    "stage": "DANG_TU_VAN",
+    "language": "ar",
+    "title": "أسئلة اكتشاف الاحتياج للعناية اليومية — NOVA",
+    "body": "أهلاً بك في NOVA Beauty، يسعدنا مساعدتك في اختيار الروتين الأنسب.\nمنتجاتنا مصممة بتركيبات لطيفة لترطيب البشرة ومنحها مظهراً ناعماً ومشرقاً.\nهل تبحثين عن مرطب يومي خفيف أم سيروم للعناية المسائية؟\nيمكنني أيضاً ترشيح الحجم الأنسب لتجربتك الأولى."
+  },
+  {
+    "brand": null,
+    "market": "AE",
+    "stage": "CHO_QUYET_DINH",
+    "language": "ar",
+    "title": "تأكيد طلب الدفع عند الاستلام (COD) في الخليج",
+    "body": "شكراً لاختيارك منتجاتنا! لتأكيد طلبك بخدمة الدفع عند الاستلام، يرجى تزويدنا بالبيانات التالية:\n1. الاسم الكامل ورقم الجوال المتاح لمندوب التوصيل.\n2. المدينة والحي والعنوان التفصيلي أو موقع التسليم.\n3. الوقت المفضل للاستلام (صباحاً أو مساءً).\nسيصل الطلب خلال 2 إلى 3 أيام عمل، وسيتواصل معك المندوب قبل التوصيل."
+  },
+  {
+    "brand": null,
+    "market": "KW",
+    "stage": "CHO_QUYET_DINH",
+    "language": "ar",
+    "title": "معالجة الاعتراض على السعر والمتابعة الودية",
+    "body": "أتفهم حرصك على مقارنة الأسعار واختيار الأفضل لمنزلك.\nالسعر يشمل الخامات عالية الجودة مع تغليف آمن وضمان استبدال في حال وجود أي عيب مصنعي.\nكما يتوفر لدينا عرض خاص عند طلب قطعتين لتوفير رسوم الشحن.\nهل ترغب في أن أحجز لك القطعة المتبقية على هذا العرض اليوم؟"
+  },
+  {
+    "brand": "NOVA",
+    "market": "US",
+    "stage": "MOI",
+    "language": "en",
+    "title": "Opening Greeting & Needs Discovery — NOVA US",
+    "body": "Hi there! Thank you for reaching out to NOVA Beauty.\nAll of our skincare essentials and beauty tools ship directly from our US fulfillment center within 24 hours.\nAre you looking for a daily hydration routine or a specific gift set today?\nLet me know your preference and I will happily share our best matching options."
+  },
+  {
+    "brand": "LUMI",
+    "market": null,
+    "stage": "DANG_TU_VAN",
+    "language": "en",
+    "title": "Product Sizing & Kitchen Organization Consultation — LUMI",
+    "body": "Thanks for your interest in LUMI Home!\nTo help you pick the right size, could you share the approximate space or shelf dimensions you have in mind?\nOur containers and lighting bars come in two convenient sizes so you can mix and match easily.\nI can also send you the exact measurements and care instructions right here."
+  },
+  {
+    "brand": "ORBI",
+    "market": "FR",
+    "stage": "CHO_QUYET_DINH",
+    "language": "en",
+    "title": "Handling Price Objection & Quality Assurance — ORBI",
+    "body": "I completely understand wanting to make sure a furniture piece is worth the investment.\nEvery ORBI Living item is crafted with solid kiln-dried wood and durable woven fabrics built for daily use.\nOur price also includes reinforced protective packaging and tracked doorstep delivery.\nWould you like me to check if our bundle discount applies to your order today?"
+  },
+  {
+    "brand": null,
+    "market": null,
+    "stage": "DANG_TU_VAN",
+    "language": "en",
+    "title": "Polite Follow-Up After Customer Silence",
+    "body": "Hello again! Just checking in to see if you had any other questions about the item we discussed.\nWe still have your preferred color in stock and ready for dispatch.\nThere is no rush at all—just let me know if you need more photos or delivery details.\nHave a wonderful day ahead!"
+  },
+  {
+    "brand": "ORBI",
+    "market": "DE",
+    "stage": "MOI",
+    "language": "de",
+    "title": "Erstbegrüßung und Bedarfsanalyse — ORBI Deutschland",
+    "body": "Hallo und herzlich willkommen bei ORBI Living!\nVielen Dank für Ihre Nachricht und Ihr Interesse an unseren Möbeln und Wohnaccessoires.\nWelche Maße oder Holzfarbe passen am besten in Ihr Zimmer?\nIch prüfe gerne sofort die aktuelle Verfügbarkeit und Lieferzeit für Ihre Postleitzahl."
+  },
+  {
+    "brand": "ORBI",
+    "market": "DE",
+    "stage": "DANG_TU_VAN",
+    "language": "de",
+    "title": "Beratung zu Material, Maßen und Pflege — ORBI",
+    "body": "Gerne gebe ich Ihnen weitere Details zu diesem Modell.\nDie Oberflächen sind pflegeleicht verarbeitet und alle genauen Maße finden Sie in unserer Übersicht.\nFür den Aufbau liegen sämtliche Beschläge sowie eine übersichtliche Anleitung im Paket bei.\nMöchten Sie das Möbelstück einzeln bestellen oder mit einem passenden Beistelltisch kombinieren?"
+  },
+  {
+    "brand": "ORBI",
+    "market": "DE",
+    "stage": "CHO_QUYET_DINH",
+    "language": "de",
+    "title": "Einwandbehandlung Preis und Versandvorteile",
+    "body": "Ich verstehe gut, dass Sie bei der Einrichtung auf ein faires Preis-Leistungs-Verhältnis achten.\nBei ORBI verwenden wir langlebiges Massivholz und robuste Stoffe, damit Sie viele Jahre Freude daran haben.\nZudem liefern wir sicher verpackt mit Sendungsverfolgung direkt bis an Ihre Haustür.\nSoll ich Ihnen den direkten Bestelllink für Ihre gewünschte Ausführung zusenden?"
+  },
+  {
+    "brand": null,
+    "market": "DE",
+    "stage": "CHO_QUYET_DINH",
+    "language": "de",
+    "title": "Freundliche Nachfrage und Bestellabschluss",
+    "body": "Guten Tag! Ich wollte mich kurz erkundigen, ob Sie sich schon für eine Variante entscheiden konnten.\nDie gewünschte Farbe ist aktuell noch auf Lager und kann innerhalb von zwei Werktagen versendet werden.\nGeben Sie mir einfach kurz Bescheid, falls Sie noch Fragen zu Zahlung oder Lieferung haben.\nIch helfe Ihnen jederzeit gerne weiter!"
+  },
+  {
+    "brand": "LUMI",
+    "market": null,
+    "stage": "MOI",
+    "language": "vi",
+    "title": "Chào mở đầu và hỏi nhu cầu sử dụng — LUMI",
+    "body": "Chào anh/chị! Cảm ơn anh/chị đã nhắn tin cho LUMI Home.\nMẫu sản phẩm anh/chị hỏi hiện đang có sẵn tại kho địa phương và giao nhanh trong 2–3 ngày.\nAnh/chị đang tìm mẫu này để dùng cho gian bếp gia đình hay làm quà tặng ạ?\nEm gửi thêm kích thước thực tế và màu sắc để anh/chị dễ chọn nhé."
+  },
+  {
+    "brand": "NOVA",
+    "market": null,
+    "stage": "DANG_TU_VAN",
+    "language": "vi",
+    "title": "Tư vấn chọn sản phẩm chăm sóc da hàng ngày — NOVA",
+    "body": "Dạ em cảm ơn chị đã quan tâm đến dòng chăm sóc da của NOVA Beauty.\nCác sản phẩm bên em tập trung cấp ẩm dịu nhẹ, chất thấm nhanh và phù hợp dùng hàng ngày.\nKhông biết hiện tại chị thích kết cấu dạng gel mỏng nhẹ hay dạng kem dưỡng ẩm sâu hơn ạ?\nNếu chị lấy theo bộ đôi làm sạch và cấp ẩm sẽ tiết kiệm hơn so với mua lẻ từng món ạ."
+  },
+  {
+    "brand": null,
+    "market": null,
+    "stage": "CHO_QUYET_DINH",
+    "language": "vi",
+    "title": "Xử lý băn khoăn về giá và chốt đơn",
+    "body": "Dạ em rất hiểu mình muốn cân nhắc kỹ trước khi đặt hàng ở nước ngoài.\nGiá bên em đã bao gồm đóng gói chống sốc kỹ lưỡng và hỗ trợ đổi mới nếu có lỗi vận chuyển.\nHiện tại kho đang có ưu đãi giảm phí giao hàng khi đặt từ 2 sản phẩm trở lên.\nAnh/chị cho em xin địa chỉ và số điện thoại nhận hàng để em giữ suất ưu đãi hôm nay nhé!"
+  },
+  {
+    "brand": null,
+    "market": null,
+    "stage": "DANG_TU_VAN",
+    "language": "vi",
+    "title": "Nhắn tin hỏi thăm lại sau khi khách im lặng",
+    "body": "Chào anh/chị ngày mới! Em nhắn nhẹ để hỏi thăm xem mình còn phân vân điểm nào về sản phẩm hôm trước không ạ.\nMàu sắc và kích thước anh/chị chọn hiện vẫn còn sẵn hàng tại kho.\nNếu anh/chị cần xem thêm ảnh chụp thực tế hoặc thông tin giao nhận, cứ nhắn em bất cứ lúc nào nhé.\nChúc anh/chị một ngày làm việc nhiều niềm vui!"
+  }
+]

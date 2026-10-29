@@ -1,7 +1,8 @@
 // Hàng đợi của tôi (/hang-doi) + thông báo trong ứng dụng + job worker (giao lead còn treo, nhắc hạn).
 import type { Prisma } from "@prisma/client";
-import { db, type Db } from "@/lib/db";
+import { bindTenant, db, type Db } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
+import { dateTime } from "@/lib/format";
 import { enqueueOutbox, notify } from "@/lib/notify";
 import { can } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/session";
@@ -24,6 +25,7 @@ export type QueueItem = {
  */
 export async function myQueue(user: SessionUser, now = new Date()) {
   if (!can(user.roles, "lead.view") && !can(user.roles, "task.manage")) throw new HttpError(403, "Không có quyền");
+  bindTenant(user);
   const open = { stage: { in: [...OPEN_STAGES] } } satisfies Prisma.LeadWhereInput;
   const lead = can(user.roles, "lead.edit");
   const [noReply, followUp, tasks, pool] = await Promise.all([
@@ -44,6 +46,7 @@ export async function myQueue(user: SessionUser, now = new Date()) {
 }
 
 export async function listNotifications(user: SessionUser, take = 20) {
+  bindTenant(user);
   const [rows, unread] = await Promise.all([
     db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take }),
     db.notification.count({ where: { userId: user.id, readAt: null } }),
@@ -53,6 +56,7 @@ export async function listNotifications(user: SessionUser, take = 20) {
 
 /** Đánh dấu đã đọc (một hoặc tất cả) — chỉ thông báo của chính mình. */
 export async function markNotificationsRead(user: SessionUser, id?: string, now = new Date()) {
+  bindTenant(user);
   const r = await db.notification.updateMany({ where: { userId: user.id, readAt: null, ...(id ? { id } : {}) }, data: { readAt: now } });
   return r.count;
 }
@@ -72,8 +76,8 @@ export async function remindDue(client: Db, now = new Date()) {
   const soon = new Date(now.getTime() + 30 * 60000);
   const tasks = await client.task.findMany({ where: { status: "OPEN", remindedAt: null, dueAt: { lte: soon } }, include: { assignee: { select: { email: true } } }, take: 500 });
   for (const t of tasks) {
-    await notify(client, { userId: t.assigneeId, title: `Đến hạn: ${t.title}`, body: `Hạn ${t.dueAt.toISOString()}`, link: t.leadId ? `/nhu-cau/${t.leadId}` : "/nhiem-vu", key: `task-due:${t.id}` });
-    await enqueueOutbox(client, { channel: "EMAIL", recipient: t.assignee.email, subject: `Nhắc việc: ${t.title}`, body: `Việc "${t.title}" đến hạn lúc ${t.dueAt.toISOString()}.`, entity: "Task", entityId: t.id, key: `task-due:${t.id}` });
+    await notify(client, { userId: t.assigneeId, title: `Đến hạn: ${t.title}`, body: `Hạn ${dateTime(t.dueAt)}`, link: t.leadId ? `/nhu-cau/${t.leadId}` : "/nhiem-vu", key: `task-due:${t.id}` });
+    await enqueueOutbox(client, { channel: "EMAIL", recipient: t.assignee.email, subject: `Nhắc việc: ${t.title}`, body: `Việc "${t.title}" đến hạn lúc ${dateTime(t.dueAt)} (giờ Việt Nam).`, entity: "Task", entityId: t.id, key: `task-due:${t.id}` });
     await client.task.update({ where: { id: t.id }, data: { remindedAt: now } });
   }
   const late = await client.lead.findMany({ where: { stage: { in: [...OPEN_STAGES] }, firstRespondedAt: null, firstResponseDueAt: { lt: now }, ownerId: { not: null } }, take: 500 });
