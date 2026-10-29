@@ -76,7 +76,7 @@ Mã **D-xx** là quyết định; chi tiết và trạng thái (ĐÃ CHỐT / M�
 | D-18 | Dữ liệu mẫu: công ty LevelUp, 2 workspace = team (PiAlpha, Team EU — hư cấu), 3 brand, 5 store trên ≥ 2 nền tảng (hư cấu), 6 market (US, DE, FR, AE, SA, KW), ~300 khách, ~2.000 đơn 12 tháng, có cặp giao dịch xuất hiện ở hai nguồn, COD các mốc, ticket, hội thoại. Sinh bằng seed có hạt cố định. |
 | D-32 | **Nguồn chính theo trường** (HLD §5.3): `Setting.sourceOfTruth` theo cặp nền tảng; "mới hơn thắng" chỉ áp giữa các bản của nguồn chủ trường. Mặc định. |
 | D-33 | Trọng số điểm 25/35/25/15 là **giả thuyết v1**, chưa kiểm chứng; hiệu chỉnh bằng dữ liệu thật ở Phase 12. Mặc định. |
-| D-27 | **Hai agent, Claude chỉ đạo ~80% / Gemini phụ trợ ~20%:** Claude Code là agent chính và làm phần lớn; Gemini qua Antigravity CLI (`agy -p`, runner `tools/agy-runner/run_agy.py`) làm batch độc lập có contract + checker máy (UI component, trang danh sách/form, fixture, mapper, test hàm thuần). Quy trình và bảng giao việc theo phase ở `docs/antigravity-workflow.md`. Claude nghiệm thu mọi output của Gemini. |
+| D-27 | **Hai agent, Claude chỉ đạo ~60% / Gemini ~40%** (chỉnh 29/10 từ 80/20): Claude Code là agent chính, làm lõi và review; Gemini qua Antigravity CLI (`agy -p`, runner `tools/agy-runner/run_agy.py`) làm batch độc lập có contract + checker máy (UI component, trang danh sách/form, fixture, mapper, test hàm thuần). Quy trình và bảng giao việc theo phase ở `docs/antigravity-workflow.md`. Claude nghiệm thu mọi output của Gemini. |
 
 ## 3. Kiến trúc
 
@@ -288,14 +288,14 @@ Yêu cầu xuyên suốt:
 - Không bịa API/endpoint/token; endpoint thật ghi "chưa xác minh" đến khi có tài liệu.
 - Không đưa bí mật vào git/log/frontend/tài liệu.
 
-Hai agent (D-27): bạn chỉ đạo và tự làm khoảng 80% khối lượng — thiết kế, schema, logic, quyền, AI, phần lớn UI, tích hợp, review, nghiệm thu. Gemini (Antigravity CLI, runner tools/agy-runner/run_agy.py) chỉ phụ trợ khoảng 20%: các việc lặp lại, khối lượng lớn, kiểm được bằng máy theo bảng docs/antigravity-workflow.md mục 4 (fixture, test bảng, component đơn giản, ảnh chụp). Chỉ giao khi tiết kiệm thật; viết work order + jobs.json + checker ở ai-jobs/<phase>-<slug>/, chạy trên worktree ../CRM2-gemini, git diff + checker + npm test trước khi merge. Không tin báo cáo tự nghiệm thu của Gemini. agy không sẵn sàng thì tự làm, không chờ.
+Hai agent (D-27): bạn chỉ đạo và tự làm khoảng 60% — thiết kế, contract, schema, quyền, logic tiền/chống trùng/gộp/chấm điểm, AI, tích hợp, review mọi diff, nghiệm thu. Gemini (Antigravity CLI, runner tools/agy-runner/run_agy.py) làm khoảng 40% theo bảng docs/antigravity-workflow.md mục 4: phần lớn trang giao diện dựng trên service bạn đã viết và test, fixture/nội dung đa ngôn ngữ, test bảng, E2E, ảnh chụp. Thứ tự mỗi phase: bạn viết schema + service + test → giao Gemini UI + dữ liệu mẫu (work order + jobs.json + checker ở ai-jobs/<phase>-<slug>/, worktree ../CRM2-gemini) → trong lúc chờ bạn làm lát kế tiếp → git diff + checker + npm test + đọc từng trang trước khi merge. Không tin báo cáo tự nghiệm thu của Gemini. agy không sẵn sàng thì tự làm, không chờ.
 
 Kết thúc phase trả ngắn gọn: đã làm; phần Claude làm / phần Gemini phụ trợ (batch nào, kết quả checker, tỷ lệ ước tính); cách chạy/test; kết quả test thực tế; chưa làm hoặc bị chặn; cách nghiệm thu; phase tiếp theo. Chỉ đánh dấu hoàn thành khi tiêu chí nghiệm thu đạt.
 ```
 
 ## 10. Prompt từng phase
 
-Mỗi prompt dùng kèm prompt nền. Ghi `docs/implementation-status.md` theo mẫu "Phase N — đã làm (ngày)". Mặc định Claude làm toàn bộ prompt; phần phụ trợ có thể giao Gemini (~20%) lấy từ `docs/antigravity-workflow.md` mục 4.
+Mỗi prompt dùng kèm prompt nền. Ghi `docs/implementation-status.md` theo mẫu "Phase N — đã làm (ngày)". Từ Phase 3, phần giao Gemini (~40%) của mỗi phase lấy từ `docs/antigravity-workflow.md` mục 4; prompt dưới đây mô tả toàn bộ phạm vi phase, Claude chia việc theo bảng đó.
 
 ### Phase 0 — Audit và đặc tả
 
@@ -305,7 +305,7 @@ Phase 0. Repo D:\CRM2 hiện chỉ có tài liệu và bộ skill BA. Đọc to�
 
 ### Phase 1 — Nền tảng, quyền, UI shell
 
-```text
+```text0
 Phase 1. Lát 1.0 Thiết lập hai agent theo docs/antigravity-workflow.md mục 2: git init (nếu chưa), kiểm agy --version / agy models / agy -p "Reply with exactly READY. Do not use tools." và ghi kết quả vào mục 7 của file đó; chạy python -I tools/agy-runner/test_run_agy.py; sửa 4 mục chặn của runner (prompt qua stdin, search_web = thất bại, mode write bắt buộc có sản phẩm + validator exit 0, validator JSON đúng) kèm test; tạo worktree ../CRM2-gemini. Bị chặn bởi đăng nhập/CLI thì báo đúng bước người dùng phải làm và tiếp tục các lát sau bằng Claude.
 
 Khởi tạo dự án theo D-01: Next.js 15 App Router + TypeScript + Prisma 6 + PostgreSQL + Tailwind 4 + vitest; worker/ là tiến trình Node riêng (chưa có job). Tạo .env.example đủ biến ở docs/demo-strategy.md.

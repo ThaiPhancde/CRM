@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
+import { piiFor } from "@/lib/pii";
 import { requirePerm, type SessionUser } from "@/lib/session";
 
 export const PAGE_SIZE = 50;
@@ -31,7 +32,8 @@ export function parseFilter(sp: Record<string, string | string[] | undefined>): 
   return orderFilter.parse(ok);
 }
 
-function where(f: OrderFilter): Prisma.OrderWhereInput {
+/** `pii=false`: không cho tìm theo SĐT/email (tránh dò thông tin qua ô tìm kiếm). */
+function where(f: OrderFilter, pii: boolean): Prisma.OrderWhereInput {
   const w: Prisma.OrderWhereInput = {};
   if (f.store) w.storeId = f.store;
   if (f.market) w.marketId = f.market;
@@ -44,8 +46,8 @@ function where(f: OrderFilter): Prisma.OrderWhereInput {
     w.OR = [
       { orderNumber: { contains: f.q, mode: "insensitive" } },
       { customerName: { contains: f.q, mode: "insensitive" } },
-      { customerEmail: { contains: f.q, mode: "insensitive" } },
-      ...(digits.length >= 4 ? [{ customerPhone: { contains: digits } }] : []),
+      ...(pii ? [{ customerEmail: { contains: f.q, mode: "insensitive" as const } }] : []),
+      ...(pii && digits.length >= 4 ? [{ customerPhone: { contains: digits } }] : []),
     ];
   }
   return w;
@@ -55,7 +57,8 @@ const money = (user: SessionUser) => can(user.roles, "finance.view");
 
 export async function listOrders(user: SessionUser, f: OrderFilter) {
   requirePerm(user, "order.view");
-  const w = where(f);
+  const pii = piiFor(user);
+  const w = where(f, pii.full);
   const [total, rows, agg] = await Promise.all([
     db.order.count({ where: w }),
     db.order.findMany({
@@ -77,7 +80,7 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
     rev01Usd: showMoney ? (agg._sum.netUsd?.toString() ?? "0") : null,
     rev01Count: agg._count,
     rows: rows.map((o) => ({
-      id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: o.customerPhone,
+      id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: pii.phone(o.customerPhone), customerId: o.customerId,
       store: o.store.name, platform: o.store.platform, market: o.market?.code ?? o.shipCountry ?? null,
       status: o.status, paymentStatus: o.paymentStatus, fulfillmentStatus: o.fulfillmentStatus, returnStatus: o.returnStatus,
       currency: o.currency, net: showMoney ? o.netAmount.toString() : null, netUsd: showMoney ? o.netUsd.toString() : null,
@@ -101,11 +104,13 @@ export async function getOrder(user: SessionUser, id: string) {
   const events = await db.sourceEvent.findMany({ where: { orderId: id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, outcome: true, sourceUpdatedAt: true, createdAt: true, connectionId: true, sourceRecordId: true } });
   const reviews = await db.orderLinkReview.findMany({ where: { status: "PENDING", OR: [{ orderAId: id }, { orderBId: id }] } });
   const showMoney = money(user);
+  const pii = piiFor(user);
   const m = (v: Prisma.Decimal | null | undefined) => (showMoney && v != null ? v.toString() : null);
   return {
     showMoney,
     order: {
       ...o,
+      customerPhone: pii.phone(o.customerPhone), customerEmail: pii.email(o.customerEmail),
       grossAmount: m(o.grossAmount), discount: m(o.discount), shippingFee: m(o.shippingFee), netAmount: m(o.netAmount), refundedAmount: m(o.refundedAmount),
       netUsd: m(o.netUsd), fxRate: m(o.fxRate),
       items: o.items.map((i) => ({ ...i, unitPrice: m(i.unitPrice), lineAmount: m(i.lineAmount) })),
@@ -124,8 +129,9 @@ const CSV_HEAD = ["Mã đơn", "Ngày đặt", "Shop", "Nền tảng", "Thị tr
 export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
   requirePerm(user, "order.view");
   const showMoney = money(user);
+  const pii = piiFor(user);
   const rows = await db.order.findMany({
-    where: where(f), orderBy: { bookedAt: "desc" }, take: 10000,
+    where: where(f, pii.full), orderBy: { bookedAt: "desc" }, take: 10000,
     include: { store: { select: { name: true, platform: true } }, market: { select: { code: true } }, _count: { select: { links: true } } },
   });
   const esc = (v: unknown) => {
@@ -133,7 +139,7 @@ export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
     return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = rows.map((o) => [
-    o.orderNumber, o.bookedAt.toISOString(), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, o.customerPhone,
+    o.orderNumber, o.bookedAt.toISOString(), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, pii.phone(o.customerPhone),
     o.status, o.paymentStatus, o.fulfillmentStatus, o.currency,
     showMoney ? o.netAmount.toString() : "", showMoney ? o.fxRate.toString() : "", showMoney ? o.netUsd.toString() : "", o._count.links,
   ].map(esc).join(","));

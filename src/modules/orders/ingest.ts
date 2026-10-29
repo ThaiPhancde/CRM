@@ -9,6 +9,7 @@
 import { Prisma } from "@prisma/client";
 import type { Db } from "@/lib/db";
 import { normRef, type NormalizedOrder, type Platform } from "@/adapters/connectors/types";
+import { resolveCustomer, type CustomerInput } from "@/modules/customers/resolve";
 
 const D = Prisma.Decimal;
 type Tx = Parameters<Parameters<Db["$transaction"]>[0]>[0];
@@ -87,6 +88,7 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
     if (n.sourceUpdatedAt <= link.sourceUpdatedAt) return { outcome: "STALE", orderId: link.orderId };
     const owned = ownedGroups(ctx.settings, link);
     await writeOrder(tx, link.orderId, n, owned);
+    await resolveCustomer(tx, customerInput(ctx.conn, n), link.orderId, owned.has("order"));
     await tx.sourceOrderLink.update({
       where: { id: link.id },
       data: { sourceUpdatedAt: n.sourceUpdatedAt, sourceStatusRaw: n.sourceStatusRaw, refs: n.refs.map(normRef), orderNumberNorm: normRef(n.orderNumber) },
@@ -104,14 +106,22 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
     const l = await tx.sourceOrderLink.create({ data: { ...linkData, orderId: target, isPrimary: false } as Prisma.SourceOrderLinkUncheckedCreateInput });
     const owned = ownedGroups(ctx.settings, l);
     if (owned.size) await writeOrder(tx, target, n, owned);
+    // Nguồn phụ bổ sung danh tính (mã khách ở nền tảng kia) cho cùng khách; chỉ gắn lại khách nếu làm chủ nhóm đơn.
+    await resolveCustomer(tx, customerInput(ctx.conn, n), target, owned.has("order"));
     return { outcome: "LINKED", orderId: target };
   }
 
   const order = await createOrder(tx, ctx.conn, n);
   await tx.sourceOrderLink.create({ data: { ...linkData, orderId: order.id, isPrimary: true } as Prisma.SourceOrderLinkUncheckedCreateInput });
+  await resolveCustomer(tx, customerInput(ctx.conn, n), order.id, true);
   const review = await flagSuspect(tx, ctx.conn, order);
   return { outcome: "APPLIED", orderId: order.id, review };
 }
+
+const customerInput = (conn: Conn, n: NormalizedOrder): CustomerInput => ({
+  connectionId: conn.id, platform: conn.platform, sourceId: n.customer.sourceId, name: n.customer.name,
+  phone: n.customer.phone, email: n.customer.email, country: n.shipCountry, at: n.sourceUpdatedAt,
+});
 
 function ownedGroups(s: IngestSettings, link: { platform: string; isPrimary: boolean }): Set<Group> {
   const out = new Set<Group>();

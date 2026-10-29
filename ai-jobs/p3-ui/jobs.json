@@ -1,0 +1,14 @@
+[
+  {"id": "list", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/list.md",
+   "allowed_paths": ["src/app/(app)/khach-hang/page.tsx"],
+   "check": ["python", "-I", "ai-jobs/p3-ui/checker.py", "list", "."], "timeout_s": 1500},
+  {"id": "profile", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/profile.md",
+   "allowed_paths": ["src/app/(app)/khach-hang/[id]/page.tsx", "src/app/(app)/khach-hang/[id]"],
+   "check": ["python", "-I", "ai-jobs/p3-ui/checker.py", "profile", "."], "timeout_s": 1800},
+  {"id": "review", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/review.md",
+   "allowed_paths": ["src/app/(app)/xac-minh/page.tsx", "src/app/(app)/xac-minh/customer-reviews.tsx"],
+   "check": ["python", "-I", "ai-jobs/p3-ui/checker.py", "review", "."], "timeout_s": 1500},
+  {"id": "phone", "mode": "write", "model": "gemini-4-argon-medium", "prompt_file": "prompts/phone.md",
+   "allowed_paths": ["tests/phone.test.ts"],
+   "check": ["python", "-I", "ai-jobs/p3-ui/checker.py", "phone", "."], "timeout_s": 1200}
+]

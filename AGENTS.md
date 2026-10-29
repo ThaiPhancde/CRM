@@ -47,12 +47,12 @@ Kết thúc phase trả ngắn gọn: đã làm; cách chạy/test; kết quả 
 - **Màu chủ đạo trắng – cam** (D-15). Cam chỉ cho hành động chính và điểm nhấn.
 - **Bộ skill BA-KIT** đã cài ở `.claude/` (51 skill). Dùng `/srs`, `/erd`, `/sequence`, `/userstory`, `/test-cases`, `/uiux` khi cần đặc tả hoặc rà soát một feature; output ghi vào `docs/features/<slug>/`. Skill không thay thế các file vai trò ở `docs/`.
 
-## Phối hợp Gemini qua Antigravity CLI — Claude chỉ đạo 80%, Gemini phụ trợ 20%
+## Phối hợp Gemini qua Antigravity CLI — Claude chỉ đạo 60%, Gemini 40%
 
-Người dùng yêu cầu (28/10/2026) kết hợp Antigravity, rồi chỉnh: **Claude vẫn là người chỉ đạo, Gemini chỉ phụ trợ, khoảng 80/20.** Quy trình đầy đủ: `docs/antigravity-workflow.md`. Tóm tắt:
+Người dùng yêu cầu (28/10/2026) kết hợp Antigravity với Claude chỉ đạo; tỷ lệ chỉnh từ 80/20 thành **60/40** ngày 29/10/2026 (D-27). Quy trình đầy đủ: `docs/antigravity-workflow.md`. Tóm tắt:
 
-- Claude làm ~80%: kiến trúc, contract, Prisma schema, `bindTenant`/`requirePerm`, approval, audit, idempotency, adapter, logic nghiệp vụ, tool AI, **phần lớn UI** (trang, form, bảng, luồng), review, tích hợp, nghiệm thu, cập nhật docs.
-- Gemini (`agy -p` headless qua `tools/agy-runner/run_agy.py`) làm ~20%, chỉ việc lặp lại/khối lượng lớn/kiểm được bằng máy: fixture replay theo zod schema, test bảng cho hàm thuần, bảng ánh xạ trạng thái, component đơn giản, ảnh chụp 4 trạng thái. Chỉ giao khi tiết kiệm thật; agy không sẵn sàng thì Claude tự làm.
+- Claude làm ~60%: kiến trúc, contract (zod, kiểu TS, chữ ký service), Prisma schema, `bindTenant`/`requirePerm`, approval, audit, idempotency, adapter, logic tiền/chống trùng/gộp/chấm điểm, tool AI + prompt, tích hợp, **review mọi diff**, nghiệm thu, cập nhật docs.
+- Gemini (`agy -p` headless qua `tools/agy-runner/run_agy.py`) làm ~40%: **phần lớn trang giao diện** (danh sách, chi tiết, form, kanban, báo cáo) dựng trên service Claude đã viết và test, fixture/dữ liệu mẫu, nội dung đa ngôn ngữ, test bảng cho hàm thuần, test E2E theo kịch bản, ảnh chụp rà soát. Mỗi phase Claude viết service + test trước, rồi giao Gemini làm UI song song khi Claude làm lát kế tiếp. agy không sẵn sàng hoặc batch hỏng thì Claude tự làm.
 - Mỗi batch ở `ai-jobs/<phase>-<slug>/` (work order tiếng Anh, `jobs.json`, checker, logs gitignore); chạy trên worktree `../CRM2-gemini`, `--max-parallel 1` lúc đầu; Claude `git diff` + checker + `npm test` rồi mới merge; ghi `ai-jobs/LEDGER.md`.
 - Không hai agent sửa cùng file. Gemini không chạm `.env`, migration, `lib/rbac.ts`, `lib/db.ts`, adapter thật, prompt hệ thống. Không tin báo cáo tự nghiệm thu của Gemini.
 - Lát 1.0 của Phase 1: kiểm `agy`, sửa runner (4 mục chặn), `git init`, worktree. Chưa chạy batch nào trước khi lát 1.0 xong.

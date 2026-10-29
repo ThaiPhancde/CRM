@@ -229,6 +229,18 @@ export function generate(outDir: string, end = Date.parse("2026-10-28T00:00:00Z"
     emit("ORBI-PK-DE", versions, (v) => pancakeRecord(id, `ODEQ${k + 1}`, o.cust, o.currency, false, t0, v, null, "DHL"));
   });
 
+  // Phase 3 — khách nghi trùng: 4 khách Mỹ đặt lại bằng SĐT mới + tài khoản Shopify mới nhưng CÙNG email.
+  // Email chưa xác minh nên không tự gộp → hàng đợi xác minh tab Khách (D-08). RNG riêng để không đổi dữ liệu phía trên.
+  const r2 = rng(seed + 3);
+  customers.US.filter((c) => c.email).slice(0, 4).forEach((c, k) => {
+    const t0 = end - (2 + k) * DAY;
+    const changed: Customer = { ...c, id: `${c.id}-NEW`, phone: `+1 ${String(2000000000 + Math.floor(r2() * 7999999999)).slice(0, 10)}` };
+    const lines = lineFor("NOVA", "USD");
+    const versions = lifecycle(r2, t0, lines, false, end).slice(0, 2);
+    const n = 900 + k;
+    for (const v of versions) push("NOVA-SH-US", Math.min(v.t + 60000, end), shopifyRecord(n, changed, "USD", t0, v, "UPS"));
+  });
+
   mkdirSync(outDir, { recursive: true });
   const summary: Record<string, number> = {};
   for (const [code, evs] of Object.entries(files)) {

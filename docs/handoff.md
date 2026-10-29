@@ -20,7 +20,7 @@ Reset DB demo `crm` (chỉ khi người dùng đồng ý): `npx prisma migrate r
 
 **Chờ người dùng:** nghiệm thu Phase 2 (Quản lý → Đơn hàng, chuyển Team EU → lọc "đơn có nhiều nguồn", mở `/xac-minh` thử gộp và tách lại); trả lời Q-14 khi biết team nào có đơn đi qua hai nền tảng.
 
-**Bước tiếp theo:** Phase 3 — Customer 360 (hợp nhất khách từ `Order.customer*` + nguồn, chuẩn SĐT E.164, gộp/tách có bằng chứng).
+**Bước tiếp theo:** Phase 3 — Customer 360 (hợp nhất khách từ `Order.customer*` + nguồn, chuẩn SĐT E.164, gộp/tách có bằng chứng). Áp dụng tỷ lệ mới **Claude 60 / Gemini 40** (D-27, chỉnh 29/10): Claude làm schema + service + test trước, giao Gemini trang `/khach-hang`, trang 360, tab Khách ở `/xac-minh`, bảng test SĐT (`antigravity-workflow.md` mục 4).
 
 **Quy ước mới (Phase 2):** dịch vụ chạy nền dùng `workspaceDb(id)` thay vì ngữ cảnh ALS; server action dùng `runAction()` ở `src/lib/action.ts`; nhãn trạng thái lấy từ `src/lib/status-badge.ts`, định dạng tiền/ngày từ `src/lib/format.ts`; mapper nền tảng là nơi DUY NHẤT biết hình dạng bản ghi gốc.
 

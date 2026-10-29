@@ -1,19 +1,22 @@
 # Phối hợp Claude Code + Gemini (Antigravity CLI)
 
-Cập nhật: 28/10/2026 (Phase 0). Nguồn: `CRM2_Claude_Antigravity_Tom_tat.md`, `tools/agy-runner/HUONG-DAN.md`. Người dùng yêu cầu (28/10): kết hợp Antigravity, rồi chỉnh lại: **Claude vẫn là người chỉ đạo, Gemini chỉ phụ trợ — khoảng 80/20** (D-27).
+Cập nhật: 28/10/2026 (Phase 0). Nguồn: `CRM2_Claude_Antigravity_Tom_tat.md`, `tools/agy-runner/HUONG-DAN.md`. Người dùng yêu cầu (28/10): kết hợp Antigravity với Claude chỉ đạo; tỷ lệ chỉnh từ 80/20 thành **60/40** ngày 29/10 (D-27).
 
 ## 1. Vai trò và tỷ lệ
 
-| | Claude Code — chỉ đạo, ~80% | Gemini qua `agy -p` — phụ trợ, ~20% |
+| | Claude Code — chỉ đạo, ~60% | Gemini qua `agy -p` — ~40% |
 |---|---|---|
 | Quyết định | Mọi quyết định: phạm vi, thiết kế, contract, chấp nhận hay bỏ output | Không quyết định gì |
-| Code lõi | Kiến trúc, Prisma schema, migration, `bindTenant`, `requirePerm`, approval, audit, idempotency, adapter, logic tiền, chống trùng, liên kết đơn, gộp khách, chấm điểm, journey, tool AI, prompt | Không chạm |
-| UI | Phần lớn: AppShell, trang, form, bảng, luồng, drawer/modal, dashboard, báo cáo | Component đơn giản, lặp lại (badge, skeleton, empty/error state) khi đã có token |
-| Dữ liệu | Zod schema của fixture, seed | Sinh fixture khối lượng lớn theo schema (đơn 12 tháng, khách, hội thoại, LLM replay) |
-| Test | Test nghiệp vụ, tích hợp, quyền, E2E | Test bảng cho hàm thuần đã có chữ ký; bảng ánh xạ trạng thái |
+| Code lõi | Kiến trúc, Prisma schema, migration, `db`, `session`, quyền, approval, audit, idempotency, adapter, logic tiền, chống trùng, liên kết đơn, gộp khách, chấm điểm, journey, tool AI, prompt | Không chạm |
+| Contract | Zod schema, kiểu TS trả về của service, server action (chỉ chuyển FormData → service) | Dùng đúng contract, không sửa |
+| UI | AppShell, design system lõi (Drawer/Modal/DataTable/Form), trang có luồng phức tạp hoặc chạm tiền/quyền (ví dụ hàng đợi xác minh, duyệt AI) | **Phần lớn trang**: danh sách, chi tiết, form, kanban, timeline, trang báo cáo + biểu đồ — gọi service/action Claude đã viết, theo `docs/ui-design-system.md` và một trang mẫu |
+| Dữ liệu | Zod schema của fixture, script sinh tất định khi có quy luật | Fixture cần văn bản tự nhiên (sản phẩm, hội thoại, ticket, bài tri thức, câu trả lời AI mẫu), đa ngôn ngữ |
+| Test | Test nghiệp vụ, tích hợp, quyền, cô lập workspace | Test bảng cho hàm thuần đã có chữ ký; test E2E Playwright theo kịch bản Claude viết |
 | Rà soát | Review mọi diff, chạy test, sửa, nghiệm thu, cập nhật docs | Ảnh chụp 4 trạng thái theo danh sách trang |
 
-**Cách giữ tỷ lệ:** mặc định Claude tự làm. Chỉ giao Gemini khi việc vừa lặp lại/khối lượng lớn, vừa có checker máy, và phần Claude phải review nhỏ hơn phần tự làm. Gemini không sẵn sàng hoặc batch thất bại thì Claude tự làm, không chờ. Cuối mỗi phase ghi tỷ lệ ước tính vào `implementation-status.md`; vượt quá ~25% là dấu hiệu giao quá nhiều.
+**Cách giữ tỷ lệ:** mỗi phase Claude viết schema + service + test trước (nguồn sự thật), rồi giao Gemini các trang và dữ liệu mẫu theo bảng mục 4 — chạy song song khi Claude làm lát kế tiếp. Batch thất bại hoặc review cần sửa nhiều hơn tự làm thì Claude tự làm, không chờ. Cuối mỗi phase ghi tỷ lệ ước tính vào `implementation-status.md`; dưới ~30% là đang giao quá ít, trên ~50% là đang giao cả phần lõi.
+
+**Đo tỷ lệ:** tính theo số dòng code + nội dung được merge (không tính docs), ghi ở `ai-jobs/LEDGER.md`.
 
 Luật phân luồng (HUONG-DAN §2): script làm được → viết script; "xong" kiểm được bằng máy → giao Gemini; cần phán đoán → Claude.
 
@@ -51,27 +54,27 @@ Bắt đầu `--max-parallel 1`; tăng lên 3 sau batch đầu ổn.
 
 Nghiệm thu: Claude `git diff` trên worktree, chạy checker + `npm run typecheck && npm test`, đọc từng component theo design system (4 trạng thái, z-index, tiếng Việt), rồi `git cherry-pick`/merge vào nhánh chính. Ghi một dòng vào `ai-jobs/LEDGER.md`.
 
-## 4. Phần phụ trợ có thể giao Gemini theo phase (~20%)
+## 4. Việc giao Gemini theo phase (~40%)
 
-Cột Claude là phần chính, Claude tự làm. Cột Gemini là phần **có thể** giao, không bắt buộc.
+Phase 1–2 đã làm theo tỷ lệ cũ (Phase 1: 0%, Phase 2: ~7%). Từ Phase 3 áp dụng bảng dưới. Cột Claude làm trước; cột Gemini giao sau khi service + test của Claude xanh.
 
-| Phase | Claude làm (chính) | Gemini có thể phụ trợ | Checker |
+| Phase | Claude làm (lõi) | Giao Gemini | Checker |
 |---|---|---|---|
-| 1 | Toàn bộ: scaffold, schema, `db`, `rbac`, auth, token, AppShell, Drawer/Modal, DataTable, Form, trang quản trị, seed | `Badge`, `Skeleton`, `EmptyState`, `ErrorState`, `Toast` | tsc, eslint, vitest render |
-| 2 | Adapter registry, normalize, liên kết đơn, sync worker, trang `/ket-noi`, `/don-hang`, `/xac-minh` | Sinh fixture đơn 12 tháng cho 2 adapter theo zod schema; bảng test ánh xạ trạng thái | zod parse; vitest |
-| 3 | Gộp/tách, chuẩn hóa SĐT, scope, toàn bộ trang 360 | Bảng test chuẩn hóa SĐT 6 quốc gia | vitest |
-| 4 | Toàn bộ (phân công, hàng đợi, kanban, task, nhắc) | Fixture lead/hội thoại mẫu | zod parse |
-| 5 | Toàn bộ (ticket, SLA, tri thức) | Bài tri thức mẫu 4 ngôn ngữ (Claude duyệt nội dung) | zod parse, đếm ngôn ngữ |
-| 6 | Toàn bộ (Warehouse, SQL chỉ số, Score, UI điểm) | Bảng test RFM với kỳ vọng Claude tính tay | vitest |
-| 7 | Toàn bộ (segment, journey, cap, outbox, UI) | — | — |
-| 8 | Toàn bộ (LlmProvider, tool, approval, lọc PII, AiPanel, `/ai`) | Fixture LLM replay 6 chức năng × 4 ngôn ngữ theo schema (Claude đọc từng câu) | zod parse |
-| 9 | Toàn bộ (truy vấn, 6 trang báo cáo, biểu đồ, xuất) | — | — |
-| 10 | Toàn bộ (vận đơn, COD 4 mốc, sản phẩm) | Fixture DeliveryEvent/Settlement | zod parse |
-| 11 | Rà soát UI/UX, sửa, E2E, kịch bản demo, deploy-checklist | Ảnh chụp 4 trạng thái mọi trang theo danh sách | tồn tại file ảnh |
+| 3 | Schema `Customer`/`CustomerIdentity`/`Address`/`ContactPreference`, chuẩn hóa SĐT E.164, hợp nhất/gộp/tách có bằng chứng, `scopeFor`, che PII, service `listCustomers`/`getCustomer360` + test | Trang `/khach-hang` (danh sách, lọc), trang 360 (thẻ tóm tắt, tab Đơn/Tương tác/Địa chỉ/Danh tính/Lịch sử gộp, `Timeline`), tab Khách ở `/xac-minh`; bảng test chuẩn hóa SĐT 6 quốc gia | tsc, eslint, vitest, E2E mở trang |
+| 4 | Schema Lead/Assignment/Activity/Task, quy tắc phân công, idempotency, worker nhắc, service + test | Kanban `/nhu-cau`, `/hang-doi`, `/nhiem-vu`, form Activity/Task, drawer chuyển phụ trách; fixture lead + hội thoại 4 ngôn ngữ | tsc, vitest, zod fixture, E2E kéo thả |
+| 5 | Schema Ticket/SLA/KnowledgeArticle, tính SLA, service + test | `/cham-soc` danh sách + chi tiết (timeline, phản hồi), `/tri-thuc` (danh sách, soạn markdown, phiên bản); 20 bài tri thức mẫu vi/en/ar/de | tsc, zod, đếm ngôn ngữ, E2E |
+| 6 | Warehouse interface, SQL chỉ số, Score engine + ScoreVersion, service + test | Hiển thị điểm/lý do ở 360 và bảng, trang cấu hình trọng số; bảng test RFM (Claude tính kỳ vọng) | tsc, vitest |
+| 7 | Segment/Journey engine, ContactCap, Outbox, service + test | `/phan-khuc` (builder điều kiện), `/hanh-trinh` (sơ đồ bước, danh sách run), `/chien-dich`; mẫu tin nhắn 4 ngôn ngữ | tsc, zod, E2E |
+| 8 | LlmProvider, tool registry, approval, lọc PII, prompt hệ thống, service + test | `AiPanel`, trang `/ai` (lịch sử run, duyệt, chi phí); fixture LLM replay 6 chức năng × 4 ngôn ngữ (Claude đọc từng câu) | tsc, zod, E2E |
+| 9 | Truy vấn báo cáo qua Warehouse + scope, service trả số liệu + test | 6 trang `/bao-cao/*` + biểu đồ Recharts + dashboard theo vai | tsc, snapshot số khớp service |
+| 10 | COD 4 mốc, Settlement, PurchasingLink, parser dán dữ liệu, service + test | `/van-don`, màn cập nhật hàng loạt, nâng cấp `/san-pham`; fixture Settlement | tsc, zod, E2E |
+| 11 | Kịch bản demo, deploy-checklist, sửa lỗi lõi | Bộ E2E Playwright đi hết kịch bản, ảnh chụp 4 trạng thái mọi trang, sửa lỗi UI theo danh sách Claude | E2E xanh, axe |
+
+**Cách giao UI cho Gemini:** work order nêu đường dẫn trang, service/action được gọi (chữ ký + kiểu trả về), một trang mẫu đã có để bắt chước (ví dụ `src/app/(app)/don-hang/page.tsx`), `docs/ui-design-system.md`, và danh sách 4 trạng thái phải có. Checker: `npx tsc --noEmit`, `npx vitest run`, chuỗi giao diện phải là tiếng Việt, không import `@/lib/db` trực tiếp trong file view (chỉ qua service).
 
 ## 5. Không giao Gemini
 
-Prisma schema/migration, `lib/db.ts`, `lib/rbac.ts`, `lib/money.ts`, mọi service nghiệp vụ, adapter (cả replay lẫn thật), trang/luồng UI chính, tool AI, prompt hệ thống, mọi thứ chạm bí mật, review bảo mật, nghiệm thu, cập nhật `docs/*`.
+Prisma schema/migration, `lib/db.ts`, `lib/session.ts`, `lib/permissions.ts`, mọi file `src/modules/**/service.ts` và logic nghiệp vụ (tiền, chống trùng, gộp, chấm điểm, journey), adapter (cả replay lẫn thật), server action có kiểm quyền, tool AI, prompt hệ thống, mọi thứ chạm bí mật, review bảo mật, nghiệm thu, cập nhật `docs/*`.
 
 ## 6. Rủi ro runner còn mở (từ review 28/10)
 

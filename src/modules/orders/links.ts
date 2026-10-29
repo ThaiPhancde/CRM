@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { HttpError } from "@/lib/errors";
 import { requirePerm, type SessionUser } from "@/lib/session";
+import { piiFor } from "@/lib/pii";
 
 const fullOrder = { items: true, payments: true, refunds: true, shipments: { include: { events: true } }, links: true, store: true } as const;
 
@@ -15,8 +16,10 @@ export async function listReviews(user: SessionUser) {
   const orders = await db.order.findMany({ where: { id: { in: ids } }, include: { store: true, items: true, links: true } });
   const byId = new Map(orders.map((o) => [o.id, o]));
   const merges = await db.mergeLog.findMany({ where: { entity: "ORDER" }, orderBy: { mergedAt: "desc" }, take: 30 });
+  const pii = piiFor(user);
+  const masked = (o: (typeof orders)[number]) => ({ ...o, customerPhone: pii.phone(o.customerPhone), customerEmail: pii.email(o.customerEmail) });
   return {
-    reviews: reviews.filter((r) => byId.has(r.orderAId) && byId.has(r.orderBId)).map((r) => ({ ...r, a: byId.get(r.orderAId)!, b: byId.get(r.orderBId)! })),
+    reviews: reviews.filter((r) => byId.has(r.orderAId) && byId.has(r.orderBId)).map((r) => ({ ...r, a: masked(byId.get(r.orderAId)!), b: masked(byId.get(r.orderBId)!) })),
     merges,
   };
 }

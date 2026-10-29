@@ -41,6 +41,14 @@ const MATRIX = {
   "order.link": ["MANAGER", "FULFILLMENT"],
   /** Xem sản phẩm và ánh xạ mã nguồn. */
   "product.view": ALL,
+  /** Xem hồ sơ khách (Customer 360). ponytail: Sales thấy mọi khách của team; giới hạn theo khách được giao ở Phase 4. */
+  "customer.view": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT", "FINANCE_VIEW"],
+  /** SĐT/email đầy đủ; thiếu quyền thì che giữa ở service (UI, API, CSV, AI đều nhận bản đã che). */
+  "customer.pii": ["MANAGER", "SALES_LEAD", "SALES", "FULFILLMENT"],
+  /** Sửa tên/thẻ khách, ghi lựa chọn liên hệ. */
+  "customer.edit": ["MANAGER", "SALES_LEAD", "SALES"],
+  /** Gộp/tách hồ sơ khách (/xac-minh tab Khách, lịch sử gộp). */
+  "customer.merge": ["MANAGER", "SALES_LEAD"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;

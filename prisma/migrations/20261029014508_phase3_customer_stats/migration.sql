@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Customer" ADD COLUMN     "deliveredOrders" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "statsAt" TIMESTAMP(3),
+ADD COLUMN     "valueUsd12m" DECIMAL(18,4) NOT NULL DEFAULT 0;

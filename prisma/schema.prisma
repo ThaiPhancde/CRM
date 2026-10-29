@@ -115,6 +115,7 @@ model Market {
   workspace   Workspace   @relation(fields: [workspaceId], references: [id])
   stores      Store[]
   orders      Order[]
+  customers   Customer[]
 
   @@unique([workspaceId, code])
 }
@@ -416,7 +417,8 @@ model Order {
   fxRate            Decimal           @db.Decimal(18, 8)
   fxDate            DateTime          @db.Date
   netUsd            Decimal           @db.Decimal(18, 4)
-  /// Ảnh chụp thông tin khách từ nguồn; Phase 3 gắn Customer.
+  /// Khách hợp nhất (Phase 3, D-08). Ảnh chụp thông tin khách từ nguồn giữ nguyên bên dưới để truy vết.
+  customerId        String?
   customerName      String?
   customerPhone     String?
   customerEmail     String?
@@ -435,9 +437,130 @@ model Order {
   payments          Payment[]
   refunds           Refund[]
   shipments         Shipment[]
+  customer          Customer?         @relation(fields: [customerId], references: [id])
 
   @@index([workspaceId, bookedAt])
   @@index([workspaceId, customerPhone])
+  @@index([workspaceId, customerId])
+}
+
+// ---- Phase 3: Customer 360 (D-08) -----------------------------------------------------------------
+
+enum ContactChannel {
+  EMAIL
+  SMS
+  PHONE
+  WHATSAPP
+  MESSENGER
+}
+
+enum ContactPurpose {
+  MARKETING
+  SERVICE
+}
+
+enum AddressKind {
+  SHIPPING
+  BILLING
+}
+
+/// Hồ sơ khách hợp nhất trong một workspace (không chia sẻ giữa workspace — HLD §6.1).
+model Customer {
+  id               String              @id @default(cuid())
+  workspaceId      String
+  displayName      String
+  primaryPhoneE164 String?
+  primaryEmail     String?
+  locale           String?
+  marketId         String?
+  /// Tổng hợp từ đơn, cập nhật khi gắn đơn (để lọc/sắp nhanh). Giá trị tiền tính ở service theo quyền.
+  orderCount       Int                 @default(0)
+  firstOrderAt     DateTime?
+  lastOrderAt      DateTime?
+  /// REV-03 (giá trị giao thành công − hoàn) 12 tháng gần nhất, quy USD. Tính lại khi gắn đơn và hằng ngày (worker); Phase 6 thay bằng Warehouse.
+  valueUsd12m      Decimal             @default(0) @db.Decimal(18, 4)
+  deliveredOrders  Int                 @default(0)
+  statsAt          DateTime?
+  tags             String[]
+  /// Đã bị gộp vào khách khác (giữ dòng để tách lại; ẩn khỏi danh sách).
+  mergedIntoId     String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  market           Market?             @relation(fields: [marketId], references: [id])
+  identities       CustomerIdentity[]
+  addresses        Address[]
+  preferences      ContactPreference[]
+  orders           Order[]
+
+  @@index([workspaceId, primaryPhoneE164])
+  @@index([workspaceId, lastOrderAt])
+}
+
+/// Một mã khách ở một nguồn (hoặc một SĐT/email thấy trong đơn). Bằng chứng để gộp.
+model CustomerIdentity {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  customerId       String
+  platform         String
+  connectionId     String?
+  sourceCustomerId String?
+  phoneE164        String?
+  emailNormalized  String?
+  emailVerified    Boolean   @default(false)
+  sourceUpdatedAt  DateTime?
+  createdAt        DateTime  @default(now())
+  customer         Customer  @relation(fields: [customerId], references: [id])
+
+  @@unique([workspaceId, connectionId, sourceCustomerId])
+  @@index([workspaceId, phoneE164])
+  @@index([workspaceId, emailNormalized])
+}
+
+model Address {
+  id          String      @id @default(cuid())
+  workspaceId String
+  customerId  String
+  kind        AddressKind
+  /// Bản gốc từ nguồn
+  raw         Json
+  /// Kết quả chuẩn hóa (demo: quốc gia + chuỗi gọn)
+  normalized  Json?
+  countryCode String?
+  isDefault   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  customer    Customer    @relation(fields: [customerId], references: [id])
+}
+
+/// Quyền liên hệ theo kênh × mục đích × brand, có lịch sử (mỗi thay đổi một dòng mới — HLD §6.2).
+model ContactPreference {
+  id          String         @id @default(cuid())
+  workspaceId String
+  customerId  String
+  channel     ContactChannel
+  purpose     ContactPurpose
+  brandId     String?
+  optIn       Boolean
+  source      String
+  changedById String?
+  changedAt   DateTime       @default(now())
+  customer    Customer       @relation(fields: [customerId], references: [id])
+
+  @@index([workspaceId, customerId, channel, purpose])
+}
+
+/// Hai khách nghi là một người nhưng chưa đủ bằng chứng tự gộp (ví dụ chỉ trùng email chưa xác minh) → /xac-minh tab Khách.
+model CustomerReview {
+  id          String       @id @default(cuid())
+  workspaceId String
+  customerAId String
+  customerBId String
+  reasons     Json
+  status      ReviewStatus @default(PENDING)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@unique([workspaceId, customerAId, customerBId])
 }
 
 model OrderItem {

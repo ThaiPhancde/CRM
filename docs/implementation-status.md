@@ -1,6 +1,6 @@
 # Trạng thái triển khai
 
-Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + kết quả thật) · còn thiếu/bị chặn · phần Claude / phần Gemini phụ trợ, tỷ lệ ước tính (mục tiêu ~80/20, D-27).
+Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + kết quả thật) · còn thiếu/bị chặn · phần Claude / phần Gemini phụ trợ, tỷ lệ ước tính (mục tiêu ~60/40 từ Phase 3, D-27).
 
 ## Tổng quan
 

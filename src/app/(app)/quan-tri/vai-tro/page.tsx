@@ -14,6 +14,10 @@ const PERM_LABEL: Record<Permission, string> = {
   "order.view": "Xem đơn hàng",
   "order.link": "Duyệt gộp/tách đơn nghi trùng",
   "product.view": "Xem sản phẩm",
+  "customer.view": "Xem hồ sơ khách (Customer 360)",
+  "customer.pii": "Xem SĐT/email đầy đủ",
+  "customer.edit": "Sửa hồ sơ khách, ghi lựa chọn liên hệ",
+  "customer.merge": "Gộp/tách hồ sơ khách",
 };
 
 export default async function RolesPage() {
