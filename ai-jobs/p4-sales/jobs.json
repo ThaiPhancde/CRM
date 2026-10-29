@@ -1,0 +1,17 @@
+[
+  {"id": "leads", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/leads.md",
+   "allowed_paths": ["src/app/(app)/nhu-cau/page.tsx", "src/app/(app)/nhu-cau/board.tsx", "src/app/(app)/nhu-cau/create-lead.tsx"],
+   "check": ["python", "-I", "ai-jobs/p4-sales/checker.py", "leads", "."], "timeout_s": 1800},
+  {"id": "lead-detail", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/lead-detail.md",
+   "allowed_paths": ["src/app/(app)/nhu-cau/[id]"],
+   "check": ["python", "-I", "ai-jobs/p4-sales/checker.py", "lead-detail", "."], "timeout_s": 1800},
+  {"id": "queue", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/queue.md",
+   "allowed_paths": ["src/app/(app)/hang-doi"],
+   "check": ["python", "-I", "ai-jobs/p4-sales/checker.py", "queue", "."], "timeout_s": 1200},
+  {"id": "tasks", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/tasks.md",
+   "allowed_paths": ["src/app/(app)/nhiem-vu/page.tsx", "src/app/(app)/nhiem-vu/create-task.tsx", "src/app/(app)/nhiem-vu/task-buttons.tsx"],
+   "check": ["python", "-I", "ai-jobs/p4-sales/checker.py", "tasks", "."], "timeout_s": 1500},
+  {"id": "content", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/content.md",
+   "allowed_paths": ["fixtures/leads.json", "fixtures/scripts.json"],
+   "check": ["python", "-I", "ai-jobs/p4-sales/checker.py", "content", "."], "timeout_s": 1800}
+]
