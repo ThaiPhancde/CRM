@@ -49,7 +49,7 @@ async function setup(tag: string, opts: { rules?: boolean; sourceOfTruth?: Recor
   const ws = await makeWorkspace(tag);
   const c = workspaceDb(ws.id);
   if (opts.fx !== false) {
-    for (const [currency, rate] of [["USD", "1"], ["EUR", "1.08"]]) await c.fxRate.create({ data: { currency, rateToUsd: rate, validFrom: new Date("2026-01-01") } as never });
+    for (const [currency, rate] of [["USD", "26300"], ["EUR", "28404"]]) await c.fxRate.create({ data: { currency, rateToBase: rate, validFrom: new Date("2026-01-01") } as never });
   }
   const brand = await c.brand.create({ data: { code: "ORBI", name: "Orbi" } as never });
   const market = await c.market.create({ data: { code: "DE", name: "Đức", currency: "EUR", paymentMode: "PREPAID", timezone: "Europe/Berlin", locale: "de-DE" } as never });
@@ -82,7 +82,7 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     const list = await listOrders(s.mgr, { page: 1 });
     expect(list.total).toBe(1);
     // 2 × 45 + 5 = 95 EUR × 1.08 = 102.6 USD
-    expect(Number(list.rev01Usd)).toBeCloseTo(102.6, 4);
+    expect(Number(list.rev01Base)).toBeCloseTo(102.6 * 26300, 2);
   });
 
   it("nhận lại cùng phiên bản (chồng lấn checkpoint) → DUPLICATE, không tạo đơn mới", async () => {
@@ -156,7 +156,7 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     expect(r.counts.ERROR).toBe(1);
     const ev = await s.c.sourceEvent.findFirstOrThrow({ where: { outcome: "ERROR" } });
     expect(ev.error).toMatch(/Thiếu tỷ giá EUR/);
-    await s.c.fxRate.create({ data: { currency: "EUR", rateToUsd: "1.08", validFrom: new Date("2026-01-01") } as never });
+    await s.c.fxRate.create({ data: { currency: "EUR", rateToBase: "28404", validFrom: new Date("2026-01-01") } as never });
     const retry = await retryErrorEvents(s.c, s.sh.conn.id);
     expect(retry.APPLIED).toBe(1);
     expect(await s.c.order.count()).toBe(1);
@@ -209,7 +209,7 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     fixture(store.code, [{ visible: 2, record: { ref: "W-1", ts: at(1), total: "25.00" } }]);
     const r = await runSync(s.ws.id, conn.id, "INCREMENTAL", s.now(3));
     expect(r.counts.APPLIED).toBe(1);
-    expect((await s.c.order.findFirstOrThrow({ where: { storeId: store.id } })).netUsd.toString()).toBe("25");
+    expect((await s.c.order.findFirstOrThrow({ where: { storeId: store.id } })).netBase.toString()).toBe("657500");
   });
 
   it("hai lượt đồng bộ cùng lúc trên một kết nối: một lượt bị từ chối (409)", async () => {
@@ -228,7 +228,7 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     const sales = (await loadUser((await makeUser("mask-sales", { workspaceId: s.ws.id, roles: ["SALES"] })).id))!;
     const list = await listOrders(sales, { page: 1 });
     expect(list.showMoney).toBe(false);
-    expect(list.rev01Usd).toBeNull();
+    expect(list.rev01Base).toBeNull();
     expect(list.rows[0].net).toBeNull();
     const other = await makeWorkspace("mask-other");
     const outsider = (await loadUser((await makeUser("mask-out", { workspaceId: other.id, roles: ["MANAGER"] })).id))!;

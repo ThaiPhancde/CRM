@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Badge, ButtonLink, Card, cx, EmptyState, PageHeader, SectionTitle, StatCard, type Tone } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
 import { HttpError } from "@/lib/errors";
-import { date, dateTime, money, num, usd } from "@/lib/format";
+import { date, dateTime, money, num, base } from "@/lib/format";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
 import { getCustomer360, type TimelineItem } from "@/modules/customers/service";
 import { PreferenceForm } from "./preference-form";
@@ -117,8 +117,8 @@ export default async function CustomerProfilePage({
         <StatCard
           label="Giá trị 12 tháng"
           metric="REV-03"
-          value={summary.valueUsd12m != null ? usd(summary.valueUsd12m) : "—"}
-          hint={summary.valueUsd12m != null ? "Giao thành công trừ hoàn (USD)" : "Cần quyền xem tiền"}
+          value={summary.valueBase12m != null ? base(summary.valueBase12m) : "—"}
+          hint={summary.valueBase12m != null ? "Giao thành công trừ hoàn (VND)" : "Cần quyền xem tiền"}
         />
         <StatCard
           label="Số đơn"
@@ -332,7 +332,7 @@ export default async function CustomerProfilePage({
                         {showMoney && o.net != null ? (
                           <>
                             <p className="text-fg">{money(o.net, o.currency)}</p>
-                            <p className="text-xs text-fg-subtle">{usd(o.netUsd)}</p>
+                            <p className="text-xs text-fg-subtle">{base(o.netBase)}</p>
                           </>
                         ) : (
                           <span className="text-fg-subtle">—</span>

@@ -12,7 +12,7 @@ type Brand = { id: string; code: string; name: string; active: boolean; stores: 
 type Store = { id: string; code: string; name: string; active: boolean; platform: string; externalId: string | null; brandId: string; brandName: string; marketIds: string[]; marketCodes: string[] };
 type Market = { id: string; code: string; name: string; active: boolean; currency: string; paymentMode: "PREPAID" | "COD"; timezone: string; locale: string };
 type TeamRow = { id: string; code: string; name: string; active: boolean; members: number };
-type Fx = { id: string; currency: string; rateToUsd: string; validFrom: string };
+type Fx = { id: string; currency: string; rateToBase: string; validFrom: string };
 type Props = { tab: Tab; brands: Brand[]; stores: Store[]; markets: Market[]; teams: TeamRow[]; fxRates: Fx[] };
 
 const LABEL: Record<Tab, { tab: string; one: string; desc: string }> = {
@@ -20,7 +20,7 @@ const LABEL: Record<Tab, { tab: string; one: string; desc: string }> = {
   store: { tab: "Shop", one: "shop", desc: "Mỗi shop thuộc một nền tảng bán (mã adapter) và bán ở một hoặc nhiều thị trường." },
   market: { tab: "Thị trường", one: "thị trường", desc: "Quốc gia bán hàng: tiền tệ, hình thức thanh toán, múi giờ." },
   team: { tab: "Nhóm", one: "nhóm", desc: "Nhóm nhân sự trong team, dùng để phân công." },
-  fxRate: { tab: "Tỷ giá", one: "tỷ giá", desc: "Quy đổi về USD cho báo cáo. Chỉ thêm mốc mới, không sửa mốc cũ để giữ lịch sử quy đổi." },
+  fxRate: { tab: "Tỷ giá", one: "tỷ giá", desc: "Quy đổi về VND cho báo cáo. Chỉ thêm mốc mới, không sửa mốc cũ để giữ lịch sử quy đổi." },
 };
 
 const status = (a: boolean) => (a ? <Badge tone="success">Đang dùng</Badge> : <Badge>Ngừng dùng</Badge>);
@@ -84,7 +84,7 @@ export function CatalogView(p: Props) {
         {p.tab === "fxRate" && (
           <DataTable caption="Tỷ giá" rows={p.fxRates} rowKey={(r) => r.id} empty={empty} columns={[
             { key: "cur", header: "Tiền tệ", sortValue: (r) => r.currency, cell: (r) => <span className="font-mono text-[13px] font-medium">{r.currency}</span> },
-            { key: "rate", header: "1 đơn vị = USD", align: "right", sortValue: (r) => Number(r.rateToUsd), cell: (r) => r.rateToUsd },
+            { key: "rate", header: "1 đơn vị = VND", align: "right", sortValue: (r) => Number(r.rateToBase), cell: (r) => Number(r.rateToBase).toLocaleString("vi-VN", { maximumFractionDigits: 8 }) },
             { key: "from", header: "Áp dụng từ", sortValue: (r) => r.validFrom, cell: (r) => new Date(r.validFrom).toLocaleDateString("vi-VN") },
           ]} />
         )}
@@ -121,7 +121,7 @@ function CatalogDrawer({ editing, brands, markets, onClose }: Props & { editing:
         {kind === "fxRate" ? (
           <>
             <TextField label="Tiền tệ" name="currency" required placeholder="AED" maxLength={3} defaultValue={v("currency")} error={f.currency} hint="Mã ISO 4217, 3 chữ." />
-            <TextField label="1 đơn vị bằng bao nhiêu USD" name="rateToUsd" required inputMode="decimal" placeholder="0.27229" defaultValue={v("rateToUsd")} error={f.rateToUsd} />
+            <TextField label="1 đơn vị bằng bao nhiêu VND" name="rateToBase" required inputMode="decimal" placeholder="7161.23" defaultValue={v("rateToBase")} error={f.rateToBase} />
             <TextField label="Áp dụng từ ngày" name="validFrom" type="date" required defaultValue={v("validFrom") || new Date().toISOString().slice(0, 10)} error={f.validFrom} />
           </>
         ) : (

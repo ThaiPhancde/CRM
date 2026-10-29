@@ -218,7 +218,7 @@ async function createOrder(tx: Tx, conn: Conn, n: NormalizedOrder) {
       storeId: conn.storeId, marketId: market?.id ?? null, orderNumber: n.orderNumber, status: n.status, paymentStatus: n.paymentStatus,
       ...derived, currency: n.currency, grossAmount: gross, discount: n.discount, shippingFee: n.shippingFee, netAmount: net,
       refundedAmount: n.refunds.reduce((s, r) => s.add(r.amount), new D(0)),
-      fxRate: fx.rateToUsd, fxDate: fx.validFrom, netUsd: net.mul(fx.rateToUsd).toDecimalPlaces(4),
+      fxRate: fx.rateToBase, fxDate: fx.validFrom, netBase: net.mul(fx.rateToBase).toDecimalPlaces(4),
       customerName: n.customer.name, customerPhone: n.customer.phone, customerEmail: n.customer.email, customerSourceId: n.customer.sourceId,
       shipCountry: n.shipCountry, bookedAt: n.bookedAt, confirmedAt: n.confirmedAt, cancelledAt: n.cancelledAt, deliveredAt: deliveredAt(n),
       items: { create: n.items.map((i) => ({ variantId: vmap.get(i.sourceSku) ?? null, sourceSku: i.sourceSku, name: i.name, qty: i.qty, qtyDelivered: i.qtyDelivered, qtyReturned: i.qtyReturned, unitPrice: i.unitPrice, lineAmount: new D(i.unitPrice).mul(i.qty) })) },
@@ -259,7 +259,7 @@ async function writeOrder(tx: Tx, orderId: string, n: NormalizedOrder, owned: Se
     const { gross, net } = amounts(n);
     Object.assign(data, {
       orderNumber: cur.orderNumber, status: n.status, confirmedAt: n.confirmedAt ?? cur.confirmedAt, cancelledAt: n.cancelledAt ?? null,
-      grossAmount: gross, discount: n.discount, shippingFee: n.shippingFee, netAmount: net, netUsd: net.mul(cur.fxRate).toDecimalPlaces(4),
+      grossAmount: gross, discount: n.discount, shippingFee: n.shippingFee, netAmount: net, netBase: net.mul(cur.fxRate).toDecimalPlaces(4),
       customerName: n.customer.name ?? cur.customerName, customerPhone: n.customer.phone ?? cur.customerPhone,
       customerEmail: n.customer.email ?? cur.customerEmail, shipCountry: n.shipCountry ?? cur.shipCountry,
     });
@@ -294,8 +294,8 @@ async function writeOrder(tx: Tx, orderId: string, n: NormalizedOrder, owned: Se
   await tx.order.update({ where: { id: orderId }, data });
 }
 
-/** Đơn vừa tạo giống một đơn khác (SĐT + tiền USD ±1% + đặt cách ≤ 30 phút) ở nguồn khác → hàng đợi xác minh. */
-async function flagSuspect(tx: Tx, conn: Conn, order: { id: string; customerPhone: string | null; netUsd: Prisma.Decimal; bookedAt: Date }) {
+/** Đơn vừa tạo giống một đơn khác (SĐT + tiền quy đổi VND ±1% + đặt cách ≤ 30 phút) ở nguồn khác → hàng đợi xác minh. */
+async function flagSuspect(tx: Tx, conn: Conn, order: { id: string; customerPhone: string | null; netBase: Prisma.Decimal; bookedAt: Date }) {
   const key = phoneKey(order.customerPhone);
   if (!key) return false;
   const win = 30 * 60 * 1000;
@@ -306,18 +306,18 @@ async function flagSuspect(tx: Tx, conn: Conn, order: { id: string; customerPhon
       customerPhone: { endsWith: key.slice(-4) },
       links: { none: { connectionId: conn.id } },
     },
-    select: { id: true, customerPhone: true, netUsd: true, bookedAt: true },
+    select: { id: true, customerPhone: true, netBase: true, bookedAt: true },
     take: 20,
   });
   let flagged = false;
   for (const c of candidates) {
     if (phoneKey(c.customerPhone) !== key) continue;
-    const diff = c.netUsd.sub(order.netUsd).abs();
-    if (diff.gt(order.netUsd.mul("0.01"))) continue;
+    const diff = c.netBase.sub(order.netBase).abs();
+    if (diff.gt(order.netBase.mul("0.01"))) continue;
     const [a, b] = [c.id, order.id].sort();
     try {
       await tx.orderLinkReview.create({
-        data: { orderAId: a, orderBId: b, reasons: { phone: true, amountDiffUsd: diff.toString(), minutesApart: Math.round(Math.abs(c.bookedAt.getTime() - order.bookedAt.getTime()) / 60000) } } as unknown as Prisma.OrderLinkReviewUncheckedCreateInput,
+        data: { orderAId: a, orderBId: b, reasons: { phone: true, amountDiffBase: diff.toString(), minutesApart: Math.round(Math.abs(c.bookedAt.getTime() - order.bookedAt.getTime()) / 60000) } } as unknown as Prisma.OrderLinkReviewUncheckedCreateInput,
       });
       flagged = true;
     } catch (e) {

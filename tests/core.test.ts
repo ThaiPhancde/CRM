@@ -6,6 +6,7 @@ import { loadUser, requirePerm, signSession, verifySession } from "@/lib/session
 import { once } from "@/lib/idempotency";
 import { audit } from "@/lib/audit";
 import { HttpError } from "@/lib/errors";
+import { base, money } from "@/lib/format";
 
 describe("cô lập workspace (D-03)", () => {
   it("truy vấn bảng thuộc workspace mà thiếu ngữ cảnh bị từ chối", async () => {
@@ -137,5 +138,15 @@ describe("idempotency và audit (D-16)", () => {
     const w = await makeWorkspace("audit");
     const row = await runInWorkspace(w.id, () => audit(db, { actorId: "u", entity: "Brand", entityId: "b1", action: "create", after: { a: 1 } }));
     expect(row.workspaceId).toBe(w.id);
+  });
+});
+
+describe("định dạng tiền (D-44)", () => {
+  it("VND không lẻ, KWD 3 số lẻ, còn lại 2", () => {
+    const digits = (x: string) => x.replace(/\D/g, "");
+    expect(digits(base("2698380.4"))).toBe("2698380");
+    expect(base("1")).toContain("₫");
+    expect(digits(money("3.25", "KWD"))).toBe("3250");
+    expect(digits(money("102.6", "USD"))).toBe("10260");
   });
 });

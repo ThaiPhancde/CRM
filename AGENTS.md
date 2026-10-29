@@ -31,7 +31,7 @@ Yêu cầu xuyên suốt:
 - UI tiếng Việt, trắng – cam theo `docs/ui-design-system.md`; mỗi màn đủ 4 trạng thái (tải/rỗng/lỗi/thành công); không chồng lớp: một drawer hoặc một modal tại một thời điểm.
 - Mọi bảng nghiệp vụ có `workspaceId`; lớp DB tự gắn; thiếu ngữ cảnh thì từ chối.
 - Một đơn kinh doanh nhiều liên kết nguồn; không gộp vì trùng tiền/SĐT; nghi ngờ thì vào hàng đợi xác minh.
-- Tiền `Decimal`, nguyên tệ + tỷ giá + USD báo cáo; doanh thu luôn ghi mã REV-01…REV-04 (`docs/metrics.md`).
+- Tiền `Decimal`, nguyên tệ + tỷ giá + VND quy đổi chung (D-44); doanh thu luôn ghi mã REV-01…REV-04 (`docs/metrics.md`).
 - Điểm có phiên bản, lý do, dữ liệu thiếu; AI có bằng chứng, không đoán SKU/đơn; tool ghi dữ liệu qua service có `requirePerm`.
 - Audit chỉ thêm; hành động lặp không nhân đôi (idempotency key).
 - Không bịa API/endpoint/token; endpoint thật ghi "chưa xác minh" đến khi có tài liệu.

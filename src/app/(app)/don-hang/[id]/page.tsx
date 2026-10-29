@@ -4,7 +4,7 @@ import { pageUser } from "@/lib/current-user";
 import { HttpError } from "@/lib/errors";
 import { getOrder } from "@/modules/orders/service";
 import { DELIVERY_EVENT, EVENT_OUTCOME, FAILURE_REASON, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, RETURN_STATUS, pickBadge } from "@/lib/status-badge";
-import { dateTime, money, usd } from "@/lib/format";
+import { dateTime, money, base } from "@/lib/format";
 import { Badge, ButtonLink, Card, PageHeader, SectionTitle, type Tone } from "@/components/ui";
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,8 +70,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 <dt className="text-fg-muted">Giảm giá</dt><dd className="tabular text-right">{Number(o.discount) ? `−${m(o.discount)}` : m(o.discount)}</dd>
                 <dt className="text-fg-muted">Phí vận chuyển</dt><dd className="tabular text-right">{m(o.shippingFee)}</dd>
                 <dt className="font-medium text-fg">Giá trị đơn</dt><dd className="tabular text-right font-semibold">{m(o.netAmount)}</dd>
-                <dt className="text-fg-muted">Quy USD <span className="text-[11px]">(REV-01)</span></dt><dd className="tabular text-right">{usd(o.netUsd)}</dd>
-                <dt className="text-xs text-fg-subtle">Tỷ giá chốt</dt><dd className="tabular text-right text-xs text-fg-subtle">1 {o.currency} = {o.fxRate} USD</dd>
+                <dt className="text-fg-muted">Quy VND <span className="text-[11px]">(REV-01)</span></dt><dd className="tabular text-right">{base(o.netBase)}</dd>
+                <dt className="text-xs text-fg-subtle">Tỷ giá chốt</dt><dd className="tabular text-right text-xs text-fg-subtle">1 {o.currency} = {Number(o.fxRate).toLocaleString("vi-VN", { maximumFractionDigits: 8 })} VND</dd>
               </dl>
             )}
           </Card>

@@ -145,8 +145,8 @@ model FxRate {
   id          String    @id @default(cuid())
   workspaceId String
   currency    String
-  /// 1 đơn vị tiền này = rateToUsd USD
-  rateToUsd   Decimal   @db.Decimal(18, 8)
+  /// 1 đơn vị tiền này = rateToBase đơn vị tiền quy đổi chung (BASE_CURRENCY = VND, D-44)
+  rateToBase  Decimal   @db.Decimal(18, 8)
   validFrom   DateTime  @db.Date
   createdAt   DateTime  @default(now())
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -413,10 +413,11 @@ model Order {
   /// gross − discount + shipping (nguyên tệ). REV-01/02 dùng giá trị này.
   netAmount         Decimal           @db.Decimal(18, 4)
   refundedAmount    Decimal           @default(0) @db.Decimal(18, 4)
-  /// 1 đơn vị tiền đơn = fxRate USD, chốt theo FxRate hiệu lực tại ngày đặt (D-09).
+  /// 1 đơn vị tiền đơn = fxRate VND (tiền quy đổi chung, D-44), chốt theo FxRate hiệu lực tại ngày đặt (D-09).
   fxRate            Decimal           @db.Decimal(18, 8)
   fxDate            DateTime          @db.Date
-  netUsd            Decimal           @db.Decimal(18, 4)
+  /// Giá trị đơn quy ra tiền quy đổi chung (VND).
+  netBase           Decimal           @db.Decimal(18, 4)
   /// Khách hợp nhất (Phase 3, D-08). Ảnh chụp thông tin khách từ nguồn giữ nguyên bên dưới để truy vết.
   customerId        String?
   customerName      String?
@@ -477,8 +478,8 @@ model Customer {
   orderCount       Int                 @default(0)
   firstOrderAt     DateTime?
   lastOrderAt      DateTime?
-  /// REV-03 (giá trị giao thành công − hoàn) 12 tháng gần nhất, quy USD. Tính lại khi gắn đơn và hằng ngày (worker); Phase 6 thay bằng Warehouse.
-  valueUsd12m      Decimal             @default(0) @db.Decimal(18, 4)
+  /// REV-03 (giá trị giao thành công − hoàn) 12 tháng gần nhất, quy ra VND (D-44). Tính lại khi gắn đơn và hằng ngày (worker); Phase 6 thay bằng Warehouse.
+  valueBase12m     Decimal             @default(0) @db.Decimal(18, 4)
   deliveredOrders  Int                 @default(0)
   statsAt          DateTime?
   tags             String[]

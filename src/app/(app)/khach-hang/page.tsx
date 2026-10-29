@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { pageUser } from "@/lib/current-user";
 import { getCatalog } from "@/modules/admin/service";
 import { listCustomers, parseCustomerFilter, type CustomerFilter } from "@/modules/customers/service";
-import { date, num, usd } from "@/lib/format";
+import { date, num, base } from "@/lib/format";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader, StatCard } from "@/components/ui";
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -77,7 +77,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             <Select name="market" value={f.market} options={catalog.markets.map((m) => [m.id, `${m.code} · ${m.name}`])} />
           </Filter>
           {data.showMoney && (
-            <Filter label="REV-03 tối thiểu (USD)">
+            <Filter label="REV-03 tối thiểu (VND)">
               <input
                 type="number"
                 name="minValue"
@@ -203,8 +203,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                     <td className="tabular px-4 py-2 whitespace-nowrap text-fg-muted">{date(c.firstOrderAt)}</td>
                     <td className="tabular px-4 py-2 whitespace-nowrap text-fg-muted">{date(c.lastOrderAt)}</td>
                     <td className="tabular px-4 py-2 text-right whitespace-nowrap">
-                      {c.valueUsd12m != null ? (
-                        <span className="font-medium text-fg">{usd(c.valueUsd12m)}</span>
+                      {c.valueBase12m != null ? (
+                        <span className="font-medium text-fg">{base(c.valueBase12m)}</span>
                       ) : (
                         <span className="text-fg-subtle">—</span>
                       )}

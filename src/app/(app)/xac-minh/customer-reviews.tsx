@@ -4,7 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useToast } from "@/components/overlay";
 import { Badge, Button, Card, EmptyState } from "@/components/ui";
 import type { ActionResult } from "@/components/form";
-import { date, dateTime, num, usd } from "@/lib/format";
+import { date, dateTime, num, base } from "@/lib/format";
 import type { listCustomerReviews } from "@/modules/customers/service";
 import { mergeCustomerAction, rejectCustomerReviewAction } from "@/app/(app)/khach-hang/actions";
 
@@ -91,7 +91,7 @@ function CustomerSide({ c }: { c: CustomerSideData }) {
         <dt className="text-fg-muted">Mua gần nhất</dt>
         <dd className="tabular text-fg">{date(c.lastOrderAt)}</dd>
         <dt className="text-fg-muted">Giá trị 12 tháng</dt>
-        <dd className="tabular text-fg">{c.valueUsd12m != null ? usd(c.valueUsd12m) : "—"}</dd>
+        <dd className="tabular text-fg">{c.valueBase12m != null ? base(c.valueBase12m) : "—"}</dd>
         <dt className="text-fg-muted">Nền tảng</dt>
         <dd className="text-fg">{c.platforms.length > 0 ? c.platforms.join(", ") : "—"}</dd>
       </dl>

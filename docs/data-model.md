@@ -2,9 +2,9 @@
 
 Cập nhật: 28/10/2026 (Phase 1). Nguồn: HLD §4; bản thiết kế mục 5.
 
-**As-built (Phase 1, migration `20261028092621_init_org`):** `Workspace`, `User` (`isCompanyAdmin`), `Membership` (`roles Role[]`, `teamId`), `Team`, `Brand`, `Market` (`paymentMode PREPAID|COD`), `Store` (`platform` chuỗi, nhiều-nhiều với `Market`), `FxRate` (`Decimal(18,8)`, chỉ thêm), `AuditLog`, `IdempotencyKey`. **Phase 2 (migration `phase2_connectors_orders`):** `Setting`, `Connection`, `SyncRun`, `SyncCheckpoint`, `SourceEvent`, `Product`, `Variant`, `SourceProductMapping`, `Order`, `OrderItem`, `SourceOrderLink` (thêm `orderNumberNorm`, `refs`), `OrderLinkReview`, `MergeLog`, `Payment`, `Refund`, `Shipment`, `DeliveryEvent`. `Order` giữ ảnh chụp khách (`customerName/Phone/Email/SourceId`) — Phase 3 gắn `Customer`. Chưa có: `Return` (dùng `OrderItem.qtyReturned` + `returnStatus`), `Settlement` (Phase 10). **Khác bản đích:** không có bảng `Role` (D-34). **Phase 3 (migration `phase3_customer360`, `phase3_customer_stats`):** `Customer` (thêm `orderCount`, `deliveredOrders`, `valueUsd12m`, `statsAt`, `mergedIntoId`), `CustomerIdentity` (unique theo kết nối + mã khách nguồn), `Address`, `ContactPreference` (chỉ thêm), `CustomerReview`; `Order.customerId`. `MergeLog` dùng chung cho đơn và khách (`entity`). Các nhóm còn lại (A2–A5) là bản đích, chưa có trong schema.
+**As-built (Phase 1, migration `20261028092621_init_org`):** `Workspace`, `User` (`isCompanyAdmin`), `Membership` (`roles Role[]`, `teamId`), `Team`, `Brand`, `Market` (`paymentMode PREPAID|COD`), `Store` (`platform` chuỗi, nhiều-nhiều với `Market`), `FxRate` (`Decimal(18,8)`, chỉ thêm), `AuditLog`, `IdempotencyKey`. **Phase 2 (migration `phase2_connectors_orders`):** `Setting`, `Connection`, `SyncRun`, `SyncCheckpoint`, `SourceEvent`, `Product`, `Variant`, `SourceProductMapping`, `Order`, `OrderItem`, `SourceOrderLink` (thêm `orderNumberNorm`, `refs`), `OrderLinkReview`, `MergeLog`, `Payment`, `Refund`, `Shipment`, `DeliveryEvent`. `Order` giữ ảnh chụp khách (`customerName/Phone/Email/SourceId`) — Phase 3 gắn `Customer`. Chưa có: `Return` (dùng `OrderItem.qtyReturned` + `returnStatus`), `Settlement` (Phase 10). **Khác bản đích:** không có bảng `Role` (D-34). **Phase 3 (migration `phase3_customer360`, `phase3_customer_stats`):** `Customer` (thêm `orderCount`, `deliveredOrders`, `valueBase12m`, `statsAt`, `mergedIntoId`), `CustomerIdentity` (unique theo kết nối + mã khách nguồn), `Address`, `ContactPreference` (chỉ thêm), `CustomerReview`; `Order.customerId`. `MergeLog` dùng chung cho đơn và khách (`entity`). **D-44 (migration `base_currency_vnd`):** đổi `rateToUsd→rateToBase`, `netUsd→netBase`, `valueUsd12m→valueBase12m`, tiền quy đổi chung là VND. Các nhóm còn lại (A2–A5) là bản đích, chưa có trong schema.
 
-Quy ước: mọi bảng nghiệp vụ có `id`, `workspaceId`, `createdAt`, `updatedAt`, `createdById`. Bản ghi nguồn thêm `connectionId`, `sourcePlatform`, `sourceStoreId`, `sourceRecordId`, `sourceUpdatedAt`, `ingestedAt`, `rawPayloadRef`. Tiền: `amount Decimal(18,4)`, `currency`, `fxRate`, `fxDate`, `reportingAmount` (USD).
+Quy ước: mọi bảng nghiệp vụ có `id`, `workspaceId`, `createdAt`, `updatedAt`, `createdById`. Bản ghi nguồn thêm `connectionId`, `sourcePlatform`, `sourceStoreId`, `sourceRecordId`, `sourceUpdatedAt`, `ingestedAt`, `rawPayloadRef`. Tiền: `amount Decimal(18,4)`, `currency`, `fxRate`, `fxDate`, `reportingAmount` (tiền quy đổi chung VND, D-44; trong schema là `netBase`/`valueBase12m`, tỷ giá `FxRate.rateToBase`).
 
 ## A1. Tổ chức và danh mục
 
@@ -31,7 +31,7 @@ erDiagram
     Membership { string id PK  string workspaceId FK  string userId FK  string roleId FK  string teamId FK  bool isActive }
     Role { string id PK  string workspaceId FK  string code  string[] permissions }
     Team { string id PK  string workspaceId FK  string code  string name }
-    FxRate { string id PK  string workspaceId FK  string currency  decimal rateToUsd  date validFrom }
+    FxRate { string id PK  string workspaceId FK  string currency  decimal rateToBase  date validFrom }
 ```
 
 ## A2. Khách và danh tính

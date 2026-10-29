@@ -205,7 +205,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     F[Bộ lọc: workspace, brand, store,<br/>market, kỳ, tiền tệ báo cáo] --> Q[Warehouse.query<br/>+ scopeFor(user)]
-    Q --> R[Kết quả: nguyên tệ,<br/>tỷ giá, USD, mã chỉ số]
+    Q --> R[Kết quả: nguyên tệ,<br/>tỷ giá, VND quy đổi, mã chỉ số]
     Q --> FR[freshness: lần refresh]
     R & FR --> V[Bảng + biểu đồ + định nghĩa]
     V --> X[Xuất Excel]

@@ -127,7 +127,7 @@ const schemas = {
   }),
   fxRate: z.object({
     currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Mã tiền tệ 3 chữ"),
-    rateToUsd: z.string().trim().regex(/^\d+(\.\d{1,8})?$/, "Số dương, tối đa 8 chữ số thập phân")
+    rateToBase: z.string().trim().regex(/^\d+(\.\d{1,8})?$/, "Số dương, tối đa 8 chữ số thập phân")
       .refine((v) => Number(v) > 0, "Phải lớn hơn 0"),
     validFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày dạng YYYY-MM-DD"),
   }),
@@ -145,7 +145,7 @@ export async function saveCatalog(user: SessionUser, kind: CatalogKind, input: u
     if (kind === "fxRate") {
       // Tỷ giá chỉ thêm mốc mới, không sửa mốc cũ (giữ lịch sử quy đổi của đơn đã chốt — D-09).
       const d = parse(schemas.fxRate, input);
-      const row = await db.fxRate.create({ data: { currency: d.currency, rateToUsd: d.rateToUsd, validFrom: new Date(d.validFrom) } as never });
+      const row = await db.fxRate.create({ data: { currency: d.currency, rateToBase: d.rateToBase, validFrom: new Date(d.validFrom) } as never });
       await log(row.id, "create", null, d);
       return row;
     }

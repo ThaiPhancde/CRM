@@ -40,7 +40,7 @@ const fixture = (code: string, records: unknown[]) => writeFileSync(path.join(di
 async function setup(tag: string) {
   const ws = await makeWorkspace(tag);
   const c = workspaceDb(ws.id);
-  for (const [currency, rate] of [["USD", "1"], ["EUR", "1.08"]]) await c.fxRate.create({ data: { currency, rateToUsd: rate, validFrom: new Date("2025-01-01") } as never });
+  for (const [currency, rate] of [["USD", "26300"], ["EUR", "28404"]]) await c.fxRate.create({ data: { currency, rateToBase: rate, validFrom: new Date("2025-01-01") } as never });
   const brand = await c.brand.create({ data: { code: "B", name: "B" } as never });
   await c.market.create({ data: { code: "DE", name: "Đức", currency: "EUR", paymentMode: "PREPAID", timezone: "Europe/Berlin", locale: "de-DE" } as never });
   const mk = async (code: string, platform: string) => {
@@ -120,7 +120,7 @@ describe("Phase 3 — hợp nhất khách (D-08)", () => {
     fixture(s.shS.store.code, [sh({ id: "1", cust: "gid://shopify/Customer/1", phone: "+49 151 3333 3333", delivered: true, updated: 120 })]);
     await s.sync(s.shS);
     const c = await s.c.customer.findFirstOrThrow();
-    expect(c.valueUsd12m.toString()).toBe("97.2"); // 2 × 45 EUR × 1.08
+    expect(c.valueBase12m.toString()).toBe("2556360"); // 2 × 45 EUR × 28.404 VND
     expect(c.deliveredOrders).toBe(1);
   });
 
@@ -133,7 +133,7 @@ describe("Phase 3 — hợp nhất khách (D-08)", () => {
     const masked = await listCustomers(s.mkt, { page: 1, sort: "value" });
     expect(masked.rows[0].phone).toBe("+49 1•••••••555");
     expect(masked.rows[0].email).toBe("se•••@example.invalid");
-    expect(masked.rows[0].valueUsd12m).toBeNull();
+    expect(masked.rows[0].valueBase12m).toBeNull();
     expect((await listCustomers(s.mkt, { page: 1, sort: "recent", q: "44445555" })).total).toBe(0);
     expect((await listCustomers(s.mgr, { page: 1, sort: "recent", q: "44445555" })).total).toBe(1);
     const orders = await listOrders(s.mkt, { page: 1 });

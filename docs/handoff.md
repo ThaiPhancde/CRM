@@ -2,6 +2,16 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 5) — tiền quy đổi chung đổi sang VND
+
+**Đã làm:** theo yêu cầu người dùng, mọi giá trị báo cáo quy về VND thay USD (D-44). Cột đổi tên `FxRate.rateToBase`, `Order.netBase`, `Customer.valueBase12m`; dữ liệu cũ đã quy đổi bằng migration (không cần reset). Định dạng: `base()` trong `src/lib/format.ts`.
+
+**Chạy:** `npx prisma migrate deploy` (DB khác máy này) → `npm test`. Dev server phải dừng trước `prisma generate` (Windows khóa file engine).
+
+**Quy ước mới:** không viết "USD" cứng cho giá trị quy đổi; dùng `base()` / `BASE_CURRENCY`. Chi phí AI (`costUsd`, Phase 8) vẫn là USD vì giá nhà cung cấp tính bằng USD.
+
+**Bước tiếp theo:** như lần 4 — chờ nghiệm thu Phase 3, rồi Phase 4.
+
 ## Checkpoint 29/10/2026 (lần 4) — Phase 3 xong, chờ nghiệm thu
 
 **Đã làm:** Customer 360 — hợp nhất khách theo D-08/D-41, gộp/tách có ảnh chụp, che PII theo quyền ở mọi dịch vụ, trang `/khach-hang`, hồ sơ 360, tab Khách ở `/xac-minh`. Lần đầu chạy tỷ lệ mới (Gemini làm giao diện + test SĐT). Chi tiết: `implementation-status.md` Phase 3.

@@ -5,7 +5,7 @@ Cập nhật: 28/10/2026 (Phase 0, bản gieo mầm). Nguồn: `D:\Work\levelup-
 ## 1. Luật
 
 - **L1** Cấm "doanh thu" trần. Mọi báo cáo, thẻ số liệu, câu trả lời AI ghi mã chỉ số.
-- **L2** Chỉ số tiền nêu loại tiền và nguồn tỷ giá; hợp nhất về USD theo `FxRate` tại `fxDate` của đơn.
+- **L2** Chỉ số tiền nêu loại tiền và nguồn tỷ giá; hợp nhất về **VND** (D-44) theo `FxRate.rateToBase` tại `fxDate` của đơn; cột `netBase`.
 - **L3** Bất đồng về số → Quản lý workspace chốt, cập nhật file này và `MetricDefinition`.
 
 ## 2. Nhóm REV — bốn mốc
@@ -46,7 +46,7 @@ REV-02 (xác nhận) không phải mốc COD; mốc "đã thu" chỉ có ở CAS
 
 | Mã | Tên | Công thức | Ghi chú |
 |---|---|---|---|
-| CUS-01 | RFM | R = ngày từ lần mua hợp lệ cuối; F = số đơn hợp lệ 12 tháng; M = Σ REV-03 12 tháng USD; mỗi chiều chia 5 bậc theo ngũ phân vị trong workspace | "Hợp lệ" = REV-03 (Q-20) |
+| CUS-01 | RFM | R = ngày từ lần mua hợp lệ cuối; F = số đơn hợp lệ 12 tháng; M = Σ REV-03 12 tháng VND; mỗi chiều chia 5 bậc theo ngũ phân vị trong workspace | "Hợp lệ" = REV-03 (Q-20) |
 | CUS-02 | Chu kỳ mua lại | TB khoảng cách giữa các đơn hợp lệ của khách; < 2 đơn → TB brand | Dùng cho journey |
 | CUS-03 | Mua lại 60 ngày | % khách có đơn hợp lệ thứ 2 trong 60 ngày sau đơn đầu, theo cohort tháng đầu | Cohort |
 | CUS-04 | Giá trị đã tạo | Σ REV-03 − hoàn − chi phí có dữ liệu, trọn đời | Không phải CLV dự báo |

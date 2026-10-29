@@ -13,8 +13,8 @@ const MARKETS: Record<string, { name: string; currency: string; paymentMode: Pay
   KW: { name: "Kuwait", currency: "KWD", paymentMode: "COD", timezone: "Asia/Kuwait", locale: "ar-KW" },
 };
 
-// Tỷ giá demo cố định (D-09), sửa được ở Danh mục. 1 đơn vị = rateToUsd USD.
-const FX: Record<string, string> = { USD: "1", EUR: "1.08", AED: "0.27229", SAR: "0.26667", KWD: "3.25" };
+// Tỷ giá demo cố định (D-09), sửa được ở Danh mục. 1 đơn vị = rateToBase VND (D-44, quy từ 1 USD = 26.300 VND).
+const FX: Record<string, string> = { VND: "1", USD: "26300", EUR: "28404", AED: "7161.23", SAR: "7013.42", KWD: "85475" };
 // Hiệu lực từ đầu 2025: dữ liệu demo kéo dài 12 tháng trước 28/10/2026.
 const FX_DATE = new Date("2025-01-01");
 
@@ -76,11 +76,11 @@ async function main() {
       });
       marketIds[code] = m.id;
     }
-    for (const currency of new Set(w.markets.map((c) => MARKETS[c].currency).concat("USD"))) {
+    for (const currency of new Set(w.markets.map((c) => MARKETS[c].currency).concat("USD", "VND"))) {
       await db.fxRate.upsert({
         where: { workspaceId_currency_validFrom: { workspaceId: ws.id, currency, validFrom: FX_DATE } },
         update: {},
-        create: { workspaceId: ws.id, currency, rateToUsd: FX[currency], validFrom: FX_DATE },
+        create: { workspaceId: ws.id, currency, rateToBase: FX[currency], validFrom: FX_DATE },
       });
     }
     for (const t of w.teams) {

@@ -4,7 +4,7 @@ import { currentUserOrRedirect } from "@/lib/current-user";
 import { can } from "@/lib/permissions";
 import { listReviews } from "@/modules/orders/links";
 import { listCustomerReviews } from "@/modules/customers/service";
-import { dateTime, money, num } from "@/lib/format";
+import { base, dateTime, money, num } from "@/lib/format";
 import { Badge, Card, cx, EmptyState, PageHeader, SectionTitle } from "@/components/ui";
 import { ReviewButtons } from "./buttons";
 import { CustomerReviewList } from "./customer-reviews";
@@ -85,12 +85,12 @@ export default async function VerifyPage({
           ) : (
             <div className="space-y-4">
               {reviews.map((r) => {
-                const reasons = r.reasons as { amountDiffUsd?: string; minutesApart?: number };
+                const reasons = r.reasons as { amountDiffBase?: string; minutesApart?: number };
                 return (
                   <Card key={r.id}>
                     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3 text-sm">
                       <Badge tone="warning">Nghi trùng</Badge>
-                      <span className="text-fg-muted">Cùng SĐT · chênh {reasons.amountDiffUsd ?? "0"} USD · đặt cách {reasons.minutesApart ?? "?"} phút</span>
+                      <span className="text-fg-muted">Cùng SĐT · chênh {base(reasons.amountDiffBase ?? "0")} · đặt cách {reasons.minutesApart ?? "?"} phút</span>
                       <span className="tabular ml-auto text-xs text-fg-subtle">phát hiện {dateTime(r.createdAt)}</span>
                     </div>
                     <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">

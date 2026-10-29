@@ -3,7 +3,7 @@ import { pageUser } from "@/lib/current-user";
 import { bindTenant, db } from "@/lib/db";
 import { listOrders, parseFilter, type OrderFilter } from "@/modules/orders/service";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
-import { dateTime, money, num, usd } from "@/lib/format";
+import { dateTime, money, num, base } from "@/lib/format";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader, StatCard } from "@/components/ui";
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -33,8 +33,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       />
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Số đơn (theo bộ lọc)" value={num(data.total)} />
-        <StatCard label="Giá trị đặt, quy USD" metric="REV-01" value={data.rev01Usd != null ? usd(data.rev01Usd) : "—"}
-          hint={data.rev01Usd != null ? `${num(data.rev01Count)} đơn chưa hủy · tỷ giá chốt theo ngày đặt` : "Cần quyền xem tiền"} />
+        <StatCard label="Giá trị đặt, quy VND" metric="REV-01" value={data.rev01Base != null ? base(data.rev01Base) : "—"}
+          hint={data.rev01Base != null ? `${num(data.rev01Count)} đơn chưa hủy · tỷ giá chốt theo ngày đặt` : "Cần quyền xem tiền"} />
         <StatCard label="Đơn có nhiều nguồn" value={<Link href={qs({ multi: f.multi ? undefined : "1", page: undefined })} className="hover:text-brand">{f.multi ? "Đang lọc" : "Xem"}</Link>} hint="Đơn được liên kết từ hơn một nền tảng" />
       </div>
       <Card>
@@ -75,7 +75,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     <td className="px-4 py-2.5 whitespace-nowrap"><p className="text-fg">{o.customerName ?? "—"}</p><p className="tabular text-xs text-fg-subtle">{o.customerPhone}</p></td>
                     <td className="px-4 py-2.5 whitespace-nowrap"><p className="text-fg">{o.store}</p><p className="text-xs text-fg-subtle">{o.market ?? "—"}</p></td>
                     <td className="tabular px-4 py-2.5 text-right whitespace-nowrap">
-                      {o.net != null ? <><p className="text-fg">{money(o.net, o.currency)}</p><p className="text-xs text-fg-subtle">{usd(o.netUsd)}</p></> : <span className="text-fg-subtle">—</span>}
+                      {o.net != null ? <><p className="text-fg">{money(o.net, o.currency)}</p><p className="text-xs text-fg-subtle">{base(o.netBase)}</p></> : <span className="text-fg-subtle">—</span>}
                     </td>
                     <td className="px-4 py-2.5"><B m={ORDER_STATUS} k={o.status} /></td>
                     <td className="px-4 py-2.5"><B m={PAYMENT_STATUS} k={o.paymentStatus} /></td>

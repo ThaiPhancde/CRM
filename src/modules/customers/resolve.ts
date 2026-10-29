@@ -132,7 +132,7 @@ async function ensureAddress(tx: Client, customerId: string, country: string) {
   }
 }
 
-/** Số đơn, lần mua đầu/cuối, REV-03 12 tháng (giao thành công − hoàn, quy USD theo tỷ giá chốt của từng đơn). */
+/** Số đơn, lần mua đầu/cuối, REV-03 12 tháng (giao thành công − hoàn, quy VND theo tỷ giá chốt của từng đơn). */
 export async function refreshCustomerStats(tx: Client, customerId: string, now = new Date()) {
   const orders = await tx.order.findMany({
     where: { customerId, status: { not: "CANCELLED" } },
@@ -154,7 +154,7 @@ export async function refreshCustomerStats(tx: Client, customerId: string, now =
       deliveredOrders: delivered,
       firstOrderAt: times.length ? new Date(Math.min(...times)) : null,
       lastOrderAt: times.length ? new Date(Math.max(...times)) : null,
-      valueUsd12m: value.toDecimalPlaces(4),
+      valueBase12m: value.toDecimalPlaces(4),
       statsAt: now,
     },
   });

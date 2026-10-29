@@ -15,7 +15,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       stores={c.stores.map((s) => ({ id: s.id, code: s.code, name: s.name, active: s.active, platform: s.platform, externalId: s.externalId, brandId: s.brandId, brandName: s.brand.name, marketIds: s.markets.map((m) => m.id), marketCodes: s.markets.map((m) => m.code) }))}
       markets={c.markets.map((m) => ({ id: m.id, code: m.code, name: m.name, active: m.active, currency: m.currency, paymentMode: m.paymentMode, timezone: m.timezone, locale: m.locale }))}
       teams={c.teams.map((t) => ({ id: t.id, code: t.code, name: t.name, active: t.active, members: t._count.members }))}
-      fxRates={c.fxRates.map((r) => ({ id: r.id, currency: r.currency, rateToUsd: r.rateToUsd.toString(), validFrom: r.validFrom.toISOString().slice(0, 10) }))}
+      fxRates={c.fxRates.map((r) => ({ id: r.id, currency: r.currency, rateToBase: r.rateToBase.toString(), validFrom: r.validFrom.toISOString().slice(0, 10) }))}
     />
   );
 }

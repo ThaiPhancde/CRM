@@ -17,7 +17,7 @@ export const customerFilter = z.object({
   q: z.string().trim().max(100).optional(),
   brand: z.string().optional(),
   market: z.string().optional(),
-  /** Giá trị REV-03 12 tháng tối thiểu (USD). Bỏ qua khi người xem thiếu finance.view. */
+  /** Giá trị REV-03 12 tháng tối thiểu (VND). Bỏ qua khi người xem thiếu finance.view. */
   minValue: z.coerce.number().min(0).optional(),
   /** Lần mua gần nhất từ/đến (YYYY-MM-DD). */
   lastFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -47,7 +47,7 @@ export type CustomerRow = {
   firstOrderAt: string | null;
   lastOrderAt: string | null;
   /** null khi thiếu finance.view */
-  valueUsd12m: string | null;
+  valueBase12m: string | null;
   platforms: string[];
   tags: string[];
 };
@@ -60,7 +60,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
   if (f.market) w.marketId = f.market;
   if (f.brand) w.orders = { some: { store: { brandId: f.brand } } };
   if (f.repeat) w.orderCount = { gte: 2 };
-  if (money && f.minValue != null) w.valueUsd12m = { gte: f.minValue };
+  if (money && f.minValue != null) w.valueBase12m = { gte: f.minValue };
   if (f.lastFrom || f.lastTo) w.lastOrderAt = { ...(f.lastFrom ? { gte: new Date(f.lastFrom) } : {}), ...(f.lastTo ? { lt: new Date(new Date(f.lastTo).getTime() + 86400000) } : {}) };
   if (f.q) {
     const digits = f.q.replace(/\D/g, "");
@@ -76,7 +76,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
   }
   const sort = f.sort === "value" && !money ? "recent" : f.sort;
   const orderBy: Prisma.CustomerOrderByWithRelationInput[] =
-    sort === "value" ? [{ valueUsd12m: "desc" }] : sort === "orders" ? [{ orderCount: "desc" }] : sort === "name" ? [{ displayName: "asc" }] : [{ lastOrderAt: { sort: "desc", nulls: "last" } }];
+    sort === "value" ? [{ valueBase12m: "desc" }] : sort === "orders" ? [{ orderCount: "desc" }] : sort === "name" ? [{ displayName: "asc" }] : [{ lastOrderAt: { sort: "desc", nulls: "last" } }];
   const [total, rows, repeatCount] = await Promise.all([
     db.customer.count({ where: w }),
     db.customer.findMany({
@@ -90,7 +90,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
     rows: rows.map((c): CustomerRow => ({
       id: c.id, name: c.displayName, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), market: c.market?.code ?? null,
       orderCount: c.orderCount, deliveredOrders: c.deliveredOrders, firstOrderAt: c.firstOrderAt?.toISOString() ?? null, lastOrderAt: c.lastOrderAt?.toISOString() ?? null,
-      valueUsd12m: money ? c.valueUsd12m.toString() : null, platforms: c.identities.map((i) => i.platform), tags: c.tags,
+      valueBase12m: money ? c.valueBase12m.toString() : null, platforms: c.identities.map((i) => i.platform), tags: c.tags,
     })),
   };
 }
@@ -176,14 +176,14 @@ export async function getCustomer360(user: SessionUser, id: string) {
     summary: {
       orderCount: c.orderCount, deliveredOrders: delivered, failedOrders: failed,
       firstOrderAt: c.firstOrderAt?.toISOString() ?? null, lastOrderAt: c.lastOrderAt?.toISOString() ?? null,
-      valueUsd12m: money ? c.valueUsd12m.toString() : null,
+      valueBase12m: money ? c.valueBase12m.toString() : null,
       /** Điểm có ở Phase 6; giờ luôn null → giao diện hiện "Chưa đủ dữ liệu". */
       score: null as null,
     },
     orders: c.orders.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), store: o.store.name, platform: o.store.platform,
       status: o.status, paymentStatus: o.paymentStatus, fulfillmentStatus: o.fulfillmentStatus, currency: o.currency,
-      net: money ? o.netAmount.toString() : null, netUsd: money ? o.netUsd.toString() : null,
+      net: money ? o.netAmount.toString() : null, netBase: money ? o.netBase.toString() : null,
     })),
     identities: c.identities.map((i) => ({
       id: i.id, platform: i.platform, store: i.connectionId ? (storeOf.get(i.connectionId) ?? null) : null, sourceCustomerId: i.sourceCustomerId,
@@ -209,7 +209,7 @@ export async function listCustomerReviews(user: SessionUser) {
   const byId = new Map(cs.map((c) => [c.id, c]));
   const side = (c: (typeof cs)[number]) => ({
     id: c.id, name: c.displayName, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), market: c.market?.code ?? null,
-    orderCount: c.orderCount, lastOrderAt: c.lastOrderAt?.toISOString() ?? null, valueUsd12m: money ? c.valueUsd12m.toString() : null,
+    orderCount: c.orderCount, lastOrderAt: c.lastOrderAt?.toISOString() ?? null, valueBase12m: money ? c.valueBase12m.toString() : null,
     platforms: [...new Set(c.identities.map((i) => i.platform))],
   });
   return reviews

@@ -1,7 +1,7 @@
 import { pageUser } from "@/lib/current-user";
 import { bindTenant, db } from "@/lib/db";
 import { can } from "@/lib/permissions";
-import { num, usd } from "@/lib/format";
+import { money, num } from "@/lib/format";
 import { Badge, Card, EmptyState, PageHeader, StatCard } from "@/components/ui";
 
 // Phase 2: danh mục sản phẩm chung + ánh xạ mã nguồn. Giá vốn/tồn qua tích hợp Mua hàng ở Phase 10.
@@ -45,7 +45,7 @@ export default async function ProductsPage() {
                     <td className="px-4 py-2.5"><div className="flex flex-wrap gap-1">{p.variants.map((v) => <Badge key={v.id}>{Object.values(v.attributes as Record<string, string>).join(" / ") || v.sku}</Badge>)}</div></td>
                     <td className="tabular px-4 py-2.5 text-right">{num(p.variants.reduce((s, v) => s + v._count.items, 0))}</td>
                     <td className="tabular px-4 py-2.5 text-right">{num(p.variants.reduce((s, v) => s + v._count.mappings, 0))}</td>
-                    {showCost && <td className="tabular px-4 py-2.5 text-right">{p.variants[0]?.costPrice ? usd(p.variants[0].costPrice.toString()) : "—"}</td>}
+                    {showCost && <td className="tabular px-4 py-2.5 text-right">{p.variants[0]?.costPrice ? money(p.variants[0].costPrice.toString(), p.variants[0].costCurrency ?? "USD") : "—"}</td>}
                   </tr>
                 ))}
               </tbody>

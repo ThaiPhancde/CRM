@@ -1,10 +1,16 @@
 // Định dạng hiển thị: tiền theo đơn vị tiền tệ, ngày giờ theo tiếng Việt (ui-design-system mục 1.5).
+import { BASE_CURRENCY } from "./money";
+
+// Số chữ số lẻ theo ISO 4217 cho các đồng tiền đang dùng.
+const DIGITS: Record<string, number> = { KWD: 3, VND: 0 };
+
 export function money(v: string | number | null | undefined, currency: string) {
   if (v == null) return "—";
-  const digits = currency === "KWD" ? 3 : 2;
+  const digits = DIGITS[currency] ?? 2;
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Number(v));
 }
-export const usd = (v: string | number | null | undefined) => money(v, "USD");
+/** Giá trị đã quy ra tiền quy đổi chung (VND, D-44). */
+export const base = (v: string | number | null | undefined) => money(v, BASE_CURRENCY);
 export const dateTime = (d: Date | string | null | undefined) =>
   d ? new Date(d).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 export const date = (d: Date | string | null | undefined) => (d ? new Date(d).toLocaleDateString("vi-VN") : "—");

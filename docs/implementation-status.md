@@ -9,7 +9,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 0 Audit + đặc tả | **Xong bản nháp, chờ duyệt** | 28/10/2026 | Bộ tài liệu vai trò + thiết kế + prompt phase; chưa có code |
 | 1 Nền tảng, quyền, UI shell | **Xong, chờ nghiệm thu** | 28/10/2026 | 22 test xanh; thử trình duyệt 2 vai; chưa commit/worktree |
 | 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
-| 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 132 test xanh; 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
+| 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
 | 4 Nhu cầu mua + sales | Chưa | | |
 | 5 Dịch vụ + tri thức | Chưa | | |
 | 6 Chỉ số + điểm + Warehouse | Chưa | | |
@@ -19,6 +19,14 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Đổi tiền quy đổi chung USD → VND (29/10/2026, D-44)
+
+**Đã làm (Claude, 100%):** migration `20261029030000_base_currency_vnd` (đổi tên cột `rateToBase`/`netBase`/`valueBase12m`, nhân dữ liệu cũ × 26.300, thêm tỷ giá VND = 1, đổi khóa `amountDiffBase` trong hàng đợi nghi trùng); `src/lib/money.ts` (`BASE_CURRENCY`); `format.ts` hàm `base()` — VND 0 số lẻ; nhãn "quy VND" ở đơn hàng, chi tiết đơn ("1 USD = 26.300 VND"), khách hàng, danh mục tỷ giá, CSV, hàng đợi xác minh; giá vốn sản phẩm hiển thị theo nguyên tệ của nó; seed tỷ giá theo VND.
+
+**Test:** `npx tsc --noEmit` sạch; `npx vitest run` → 5 file, **133/133 passed** (thêm 1 ca định dạng tiền; REV-01 = 102,6 × 26.300; REV-03 khách = 2.556.360; gift card 25 USD = 657.500); `next build` thành công; trình duyệt vai Quản lý: REV-01 1.883.309.452 ₫, đơn 32,95 US$ → 866.585 ₫, danh mục tỷ giá AED 7.161,227.
+
+**Còn thiếu:** không. Tỷ giá AED/SAR trong DB demo cũ là 7.161,227 / 7.013,421 (quy từ số USD cũ); DB mới seed dùng 7.161,23 / 7.013,42.
 
 ## Phase 3 — đã làm (29/10/2026)
 

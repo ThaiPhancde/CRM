@@ -80,10 +80,10 @@ describe("danh mục", () => {
 
   it("tỷ giá chỉ thêm mốc mới, giữ Decimal chính xác; trùng ngày báo lỗi", async () => {
     const { mgr } = await setup("fx");
-    const r = await saveCatalog(mgr, "fxRate", { currency: "kwd", rateToUsd: "3.25123456", validFrom: "2026-02-01" });
-    expect((r as unknown as { rateToUsd: { toString(): string } }).rateToUsd.toString()).toBe("3.25123456");
-    expect(await fieldsOf(saveCatalog(mgr, "fxRate", { currency: "KWD", rateToUsd: "3.3", validFrom: "2026-02-01" }))).toHaveProperty("validFrom");
-    expect(await fieldsOf(saveCatalog(mgr, "fxRate", { currency: "KWD", rateToUsd: "-1", validFrom: "2026-03-01" }))).toHaveProperty("rateToUsd");
+    const r = await saveCatalog(mgr, "fxRate", { currency: "kwd", rateToBase: "85475.12345678", validFrom: "2026-02-01" });
+    expect((r as unknown as { rateToBase: { toString(): string } }).rateToBase.toString()).toBe("85475.12345678");
+    expect(await fieldsOf(saveCatalog(mgr, "fxRate", { currency: "KWD", rateToBase: "85000", validFrom: "2026-02-01" }))).toHaveProperty("validFrom");
+    expect(await fieldsOf(saveCatalog(mgr, "fxRate", { currency: "KWD", rateToBase: "-1", validFrom: "2026-03-01" }))).toHaveProperty("rateToBase");
   });
 
   it("Sales xem được danh mục nhưng không sửa", async () => {

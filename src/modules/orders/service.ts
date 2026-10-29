@@ -68,8 +68,8 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
       take: PAGE_SIZE,
       include: { store: { select: { name: true, platform: true } }, market: { select: { code: true } }, links: { select: { platform: true, isPrimary: true } } },
     }),
-    // REV-01: Σ giá trị đặt của đơn chưa hủy, quy USD (docs/metrics.md).
-    db.order.aggregate({ where: { ...w, status: { not: "CANCELLED" } }, _sum: { netUsd: true }, _count: true }),
+    // REV-01: Σ giá trị đặt của đơn chưa hủy, quy VND (docs/metrics.md, D-44).
+    db.order.aggregate({ where: { ...w, status: { not: "CANCELLED" } }, _sum: { netBase: true }, _count: true }),
   ]);
   const showMoney = money(user);
   return {
@@ -77,13 +77,13 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
     page: f.page,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
     showMoney,
-    rev01Usd: showMoney ? (agg._sum.netUsd?.toString() ?? "0") : null,
+    rev01Base: showMoney ? (agg._sum.netBase?.toString() ?? "0") : null,
     rev01Count: agg._count,
     rows: rows.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: pii.phone(o.customerPhone), customerId: o.customerId,
       store: o.store.name, platform: o.store.platform, market: o.market?.code ?? o.shipCountry ?? null,
       status: o.status, paymentStatus: o.paymentStatus, fulfillmentStatus: o.fulfillmentStatus, returnStatus: o.returnStatus,
-      currency: o.currency, net: showMoney ? o.netAmount.toString() : null, netUsd: showMoney ? o.netUsd.toString() : null,
+      currency: o.currency, net: showMoney ? o.netAmount.toString() : null, netBase: showMoney ? o.netBase.toString() : null,
       sources: o.links.map((l) => l.platform),
     })),
   };
@@ -112,7 +112,7 @@ export async function getOrder(user: SessionUser, id: string) {
       ...o,
       customerPhone: pii.phone(o.customerPhone), customerEmail: pii.email(o.customerEmail),
       grossAmount: m(o.grossAmount), discount: m(o.discount), shippingFee: m(o.shippingFee), netAmount: m(o.netAmount), refundedAmount: m(o.refundedAmount),
-      netUsd: m(o.netUsd), fxRate: m(o.fxRate),
+      netBase: m(o.netBase), fxRate: m(o.fxRate),
       items: o.items.map((i) => ({ ...i, unitPrice: m(i.unitPrice), lineAmount: m(i.lineAmount) })),
       payments: showMoney ? o.payments.map((p) => ({ ...p, amount: p.amount.toString() })) : [],
       refunds: showMoney ? o.refunds.map((r) => ({ ...r, amount: r.amount.toString() })) : [],
@@ -123,7 +123,7 @@ export async function getOrder(user: SessionUser, id: string) {
   };
 }
 
-const CSV_HEAD = ["Mã đơn", "Ngày đặt", "Shop", "Nền tảng", "Thị trường", "Khách", "SĐT", "Trạng thái", "Thanh toán", "Giao hàng", "Tiền tệ", "Giá trị (nguyên tệ)", "Tỷ giá", "Giá trị USD (REV-01)", "Số nguồn"];
+const CSV_HEAD = ["Mã đơn", "Ngày đặt", "Shop", "Nền tảng", "Thị trường", "Khách", "SĐT", "Trạng thái", "Thanh toán", "Giao hàng", "Tiền tệ", "Giá trị (nguyên tệ)", "Tỷ giá", "Giá trị VND (REV-01)", "Số nguồn"];
 
 /** CSV UTF-8 có BOM (Excel mở đúng tiếng Việt). ponytail: tối đa 10.000 dòng; lớn hơn thì xuất từ Warehouse (Phase 9). */
 export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
@@ -141,7 +141,7 @@ export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
   const lines = rows.map((o) => [
     o.orderNumber, o.bookedAt.toISOString(), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, pii.phone(o.customerPhone),
     o.status, o.paymentStatus, o.fulfillmentStatus, o.currency,
-    showMoney ? o.netAmount.toString() : "", showMoney ? o.fxRate.toString() : "", showMoney ? o.netUsd.toString() : "", o._count.links,
+    showMoney ? o.netAmount.toString() : "", showMoney ? o.fxRate.toString() : "", showMoney ? o.netBase.toString() : "", o._count.links,
   ].map(esc).join(","));
   return "﻿" + [CSV_HEAD.join(","), ...lines].join("\r\n");
 }
