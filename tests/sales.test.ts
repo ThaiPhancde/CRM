@@ -4,8 +4,9 @@ import { rootDb, runInWorkspace, workspaceDb } from "@/lib/db";
 import { ValidationError } from "@/lib/errors";
 import { loadUser } from "@/lib/session";
 import { getCustomer360, listCustomers, mergeFromReview, parseCustomerFilter } from "@/modules/customers/service";
-import { changeStage, claimLead, createLead, getLead, leadBoard, listLeads, logActivity, parseLeadFilter, reassignLead } from "@/modules/sales/leads";
-import { assignPendingLeads, listNotifications, myQueue, remindDue } from "@/modules/sales/queue";
+import { bulkLeads, changeStage, claimLead, createLead, getLead, leadBoard, listLeads, logActivity, parseLeadFilter, reassignLead } from "@/modules/sales/leads";
+import { closeLeadsOnOrder } from "@/modules/sales/routing";
+import { assignPendingLeads, closeStaleLeads, listNotifications, myQueue, remindDue } from "@/modules/sales/queue";
 import { createTask, listTasks, parseTaskFilter, setTaskStatus } from "@/modules/sales/tasks";
 
 const T0 = new Date("2026-10-20T03:00:00Z");
@@ -31,7 +32,7 @@ async function setup(tag: string, routing: object = { rules: [{ market: "AE", te
   // Service đọc ngữ cảnh workspace từ ALS (trang gọi bindTenant); test bọc từng lời gọi.
   const as = <T,>(fn: () => Promise<T>) => runInWorkspace(ws.id, fn);
   const newLead = (by = mgr, extra: Record<string, string> = {}, at = T0) =>
-    as(() => createLead(by, { contactName: `Khách ${Math.random().toString(36).slice(2, 6)}`, phone: "+971 50 123 4567", source: "inbox", brandId: brand.id, marketId: ae.id, ...extra }, at));
+    as(() => createLead(by, { contactName: `Khách ${Math.random().toString(36).slice(2, 6)}`, phone: `+97150${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox", brandId: brand.id, marketId: ae.id, ...extra }, at));
   return { ws, c, teamA, teamB, brand, ae, de, mgr, lead, s1, s2, s3, mkt, as, newLead };
 }
 
@@ -147,7 +148,7 @@ describe("Phase 4 — tương tác, giai đoạn, nhiệm vụ", () => {
     const key = `lead-${RUN}`;
     const a = await s.newLead(s.mgr, { idempotencyKey: key });
     const b = await s.newLead(s.mgr, { idempotencyKey: key });
-    expect(b).toEqual({ id: a.id, replayed: true });
+    expect(b).toEqual({ id: a.id, replayed: true, merged: false });
     expect(await s.c.lead.count()).toBe(1);
 
     const task = { type: "CALL_BACK", title: "Gọi lại", dueAt: h(5).toISOString(), leadId: a.id, idempotencyKey: `task-${RUN}` };
@@ -191,5 +192,80 @@ describe("Phase 4 — tương tác, giai đoạn, nhiệm vụ", () => {
     const { unmergeCustomers } = await import("@/modules/customers/service");
     await s.as(() => unmergeCustomers(s.mgr, (res as { mergeLogId: string }).mergeLogId));
     expect((await s.c.lead.findUniqueOrThrow({ where: { id: l.id } })).customerId).toBe(b.id);
+  });
+});
+
+describe("Chịu tải — luồng lead ở khối lượng lớn (D-49)", () => {
+  it("khách liên hệ lại khi còn lead mở cùng SĐT + brand → ghi vào lead cũ, không tạo lead mới; khác brand thì tạo mới", async () => {
+    const s = await setup("dedupe");
+    const a = await s.newLead(s.mgr, { phone: "+971 50 777 0001" }, T0);
+    const b = await s.newLead(s.mgr, { phone: "+971507770001", source: "ads", interest: "Hỏi lại giá" }, h(5));
+    expect(b).toMatchObject({ id: a.id, merged: true });
+    expect(await s.c.lead.count()).toBe(1);
+    expect((await s.c.activity.findFirstOrThrow({ where: { leadId: a.id, type: "MESSAGE" } })).body).toMatch(/liên hệ lại qua ads: Hỏi lại giá/);
+    const otherBrand = await s.c.brand.create({ data: { code: "NOVA", name: "Nova" } as never });
+    const c = await s.newLead(s.mgr, { phone: "+971507770001", brandId: otherBrand.id }, h(6));
+    expect(c.merged).toBe(false);
+    // quá 7 ngày không tương tác → lead mới
+    const d = await s.newLead(s.mgr, { phone: "+971507770001" }, h(24 * 9));
+    expect(d.merged).toBe(false);
+  });
+
+  it("lead im lặng quá 14 ngày tự chuyển Mất liên lạc (trừ khi có hẹn liên hệ lại); mở lại không bị đóng ngay", async () => {
+    const s = await setup("stale");
+    const quiet = await s.newLead(s.s1, {}, T0);
+    const planned = await s.newLead(s.s1, {}, T0);
+    await s.as(() => changeStage(s.s1, { id: planned.id, stage: "CHO_QUYET_DINH", nextActionAt: h(24 * 20).toISOString() }, T0));
+    const r = await closeStaleLeads(s.c, h(24 * 15));
+    expect(r.closed).toBe(1);
+    const q = await s.c.lead.findUniqueOrThrow({ where: { id: quiet.id } });
+    expect([q.stage, q.lostReason]).toEqual(["MAT_LIEN_LAC", "Tự động: không có tương tác 14 ngày"]);
+    expect((await s.c.lead.findUniqueOrThrow({ where: { id: planned.id } })).stage).toBe("CHO_QUYET_DINH");
+    await s.as(() => changeStage(s.s1, { id: quiet.id, stage: "DANG_TU_VAN" }, h(24 * 16)));
+    expect((await closeStaleLeads(s.c, h(24 * 17))).closed).toBe(0);
+  });
+
+  it("đơn mới của khách đặt sau khi tạo lead → lead mở tự chuyển Đã mua; đơn hủy thì không", async () => {
+    const s = await setup("won");
+    const cust = await s.c.customer.create({ data: { displayName: "Mua", primaryPhoneE164: "+971508880001" } as never });
+    const l = await s.newLead(s.s1, { phone: "+971508880001" }, T0);
+    expect(await closeLeadsOnOrder(s.c, { id: "o1", customerId: cust.id, orderNumber: "#1", bookedAt: h(1), status: "CANCELLED" })).toBe(0);
+    expect(await closeLeadsOnOrder(s.c, { id: "o2", customerId: cust.id, orderNumber: "#2", bookedAt: h(2), status: "CONFIRMED" })).toBe(1);
+    const won = await s.c.lead.findUniqueOrThrow({ where: { id: l.id } });
+    expect(won.stage).toBe("DA_MUA");
+    expect((await s.as(() => listNotifications(s.s1))).rows[0].title).toMatch(/^Đã mua/);
+  });
+
+  it("nhiều lead không giao được trong một giờ → một thông báo gộp cho Trưởng nhóm; quá hạn chỉ báo một lần", async () => {
+    const s = await setup("digest", { rules: [{ market: "AE", team: "A" }], maxOpenPerUser: 1 });
+    for (let i = 0; i < 6; i++) await s.newLead(s.mgr, {}, T0);
+    const n = await s.c.notification.count({ where: { userId: s.lead.id, title: "Có lead chưa giao được" } });
+    expect(n).toBe(1);
+    const first = await remindDue(s.c, h(6));
+    expect(first.leadAlerts).toBeGreaterThan(0);
+    expect((await remindDue(s.c, h(7))).leadAlerts).toBe(0);
+    expect(await s.c.lead.count({ where: { overdueNotifiedAt: { not: null } } })).toBe(2);
+  });
+
+  it("thao tác hàng loạt: đổi giai đoạn / chuyển phụ trách nhiều lead, lead ngoài phạm vi bị bỏ qua và đếm", async () => {
+    const s = await setup("bulk");
+    const mine = [await s.newLead(s.s1), await s.newLead(s.s1)];
+    const other = await s.newLead(s.s3, { marketId: s.de.id });
+    const r = await s.as(() => bulkLeads(s.s1, { ids: [...mine.map((m) => m.id), other.id], action: "stage", stage: "CHO_QUYET_DINH" }));
+    expect(r).toEqual({ done: 2, failed: [other.id] });
+    await expect(s.as(() => bulkLeads(s.s1, { ids: [mine[0].id], action: "assign", toUserId: s.s2.id, reason: "Nghỉ" }))).rejects.toMatchObject({ status: 403 });
+    await expect(s.as(() => bulkLeads(s.lead, { ids: [mine[0].id], action: "stage", stage: "TU_CHOI" }))).rejects.toBeInstanceOf(ValidationError);
+    const moved = await s.as(() => bulkLeads(s.lead, { ids: mine.map((m) => m.id), action: "assign", toUserId: s.s2.id, reason: "Nghỉ phép" }));
+    expect(moved.done).toBe(2);
+    expect(await s.c.lead.count({ where: { ownerId: s.s2.id } })).toBe(2);
+  });
+
+  it("Kanban: giai đoạn đóng chỉ trả số 30 ngày, không tải thẻ", async () => {
+    const s = await setup("board30");
+    const l = await s.newLead(s.s1);
+    await s.as(() => changeStage(s.s1, { id: l.id, stage: "DA_MUA" }));
+    const b = await s.as(() => leadBoard(s.s1, parseLeadFilter({})));
+    const won = b.columns.find((c) => c.stage === "DA_MUA")!;
+    expect([won.closed, won.total, won.rows.length]).toEqual([true, 1, 0]);
   });
 });

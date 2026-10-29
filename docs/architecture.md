@@ -105,7 +105,7 @@ Khóa kết nối AES-256-GCM bằng `INTEGRATION_SECRET_KEY`; session ký `SESS
 | Nhóm | Mục tiêu demo | Khi lên thật |
 |---|---|---|
 | Độ tin cậy | Replay sự kiện không nhân đôi; worker lỗi một workspace không chặn workspace khác | Retry có giới hạn, DLQ |
-| Hiệu năng | Trang danh sách < 1s với 2.000 đơn; báo cáo < 3s | Index, materialized, BigQuery |
+| Hiệu năng (D-48) | 1 team/12 tháng: 200k khách, 600k đơn, 180k lead. Danh sách < 500 ms, chi tiết < 300 ms, worker < 5 s/lượt, nhập nguồn ≥ 30 bản ghi/s; báo cáo < 3 s | Index mọi khóa ngoại + trigram tìm kiếm; job theo lô; đo `scripts/load/` — kết quả `docs/performance.md` (0/28 vượt mục tiêu) |
 | Bảo mật | Quyền server, cô lập workspace, không bí mật ở client | SSO, MFA, secret manager |
 | Khôi phục | `npm run backup`/`restore` | Lịch, kiểm tra phục hồi |
 | Chi phí AI | Đếm token/USD ước tính cả khi replay | Ngân sách, giới hạn |

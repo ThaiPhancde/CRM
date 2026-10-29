@@ -66,7 +66,30 @@ export async function createLead(user: SessionUser, input: unknown, now = new Da
 
   if (d.idempotencyKey) {
     const prev = await db.lead.findFirst({ where: { idempotencyKey: d.idempotencyKey }, select: { id: true } });
-    if (prev) return { id: prev.id, replayed: true };
+    if (prev) return { id: prev.id, replayed: true, merged: false };
+  }
+  // Chống lead trùng (D-49): còn lead mở cùng SĐT/email + cùng brand, có tương tác trong `dedupeDays` ngày → ghi vào lead cũ.
+  const routing = await loadRouting(db);
+  if (routing.dedupeDays && (phone || email)) {
+    const dup = await db.lead.findFirst({
+      where: {
+        stage: { in: [...OPEN_STAGES] }, brandId: brand?.id ?? null, lastActivityAt: { gte: new Date(now.getTime() - routing.dedupeDays * 86400000) },
+        OR: [...(phone ? [{ contactPhoneE164: phone.e164 }] : []), ...(email ? [{ contactEmail: email }] : [])],
+      },
+      orderBy: { lastActivityAt: "desc" },
+    });
+    if (dup) {
+      if (d.idempotencyKey && (await db.activity.findFirst({ where: { idempotencyKey: d.idempotencyKey }, select: { id: true } }))) return { id: dup.id, replayed: true, merged: true };
+      const body = d.note ?? `Khách liên hệ lại qua ${d.source}${d.interest ? `: ${d.interest}` : ""}`;
+      await db.$transaction(async (tx) => {
+        await tx.activity.create({ data: { type: "MESSAGE", direction: "IN", channel: d.source, leadId: dup.id, customerId: dup.customerId, actorId: user.id, body, occurredAt: now, idempotencyKey: d.idempotencyKey } as never });
+        await tx.lead.update({ where: { id: dup.id }, data: { lastActivityAt: now } });
+        await audit(tx, { actorId: user.id, entity: "Lead", entityId: dup.id, action: "dedupe", after: { source: d.source, contactName: d.contactName } });
+      });
+      if (dup.ownerId && dup.ownerId !== user.id)
+        await notify(db, { userId: dup.ownerId, title: `Khách liên hệ lại: ${dup.contactName}`, body, link: `/nhu-cau/${dup.id}`, key: `lead-again:${dup.id}:${Math.floor(now.getTime() / 3600000)}` });
+      return { id: dup.id, replayed: false, merged: true };
+    }
   }
   // Gắn hồ sơ khách chỉ khi SĐT E.164 khớp đúng một khách (bằng chứng D-08); không khớp/nhiều khớp → để trống.
   const matches = phone ? await db.customer.findMany({ where: { mergedIntoId: null, OR: [{ primaryPhoneE164: phone.e164 }, { identities: { some: { phoneE164: phone.e164 } } }] }, select: { id: true }, take: 2 }) : [];
@@ -79,7 +102,7 @@ export async function createLead(user: SessionUser, input: unknown, now = new Da
         data: {
           contactName: d.contactName, contactPhoneE164: phone?.e164, contactEmail: email ?? undefined, language: d.language, source: d.source,
           brandId: brand?.id, marketId: market?.id, interest: d.interest, budgetAmount: d.budgetAmount, budgetCurrency: d.budgetCurrency,
-          customerId: matches.length === 1 ? matches[0].id : null, idempotencyKey: d.idempotencyKey, createdById: user.id, createdAt: now,
+          customerId: matches.length === 1 ? matches[0].id : null, idempotencyKey: d.idempotencyKey, createdById: user.id, createdAt: now, lastActivityAt: now,
           ...(selfOwn ? { ownerId: user.id, teamId: user.teamId } : {}),
         } as Prisma.LeadUncheckedCreateInput,
       });
@@ -91,14 +114,14 @@ export async function createLead(user: SessionUser, input: unknown, now = new Da
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002" && d.idempotencyKey) {
       const prev = await db.lead.findFirstOrThrow({ where: { idempotencyKey: d.idempotencyKey }, select: { id: true } });
-      return { id: prev.id, replayed: true };
+      return { id: prev.id, replayed: true, merged: false };
     }
     throw e;
   }
   // Ngoài transaction: phân công lỗi thì lead vẫn còn, worker giao lại (assignPendingLeads).
-  if (selfOwn) await db.lead.update({ where: { id: lead.id }, data: { firstResponseDueAt: new Date(lead.createdAt.getTime() + (await loadRouting(db)).firstResponseHours * 3600000) } });
+  if (selfOwn) await db.lead.update({ where: { id: lead.id }, data: { firstResponseDueAt: new Date(lead.createdAt.getTime() + routing.firstResponseHours * 3600000) } });
   else await autoAssign(db, lead.id, now);
-  return { id: lead.id, replayed: false };
+  return { id: lead.id, replayed: false, merged: false };
 }
 
 export const leadFilterSchema = z.object({
@@ -173,16 +196,22 @@ export async function listLeads(user: SessionUser, f: LeadFilter, now = new Date
   return { total, page: f.page, pageSize: LEAD_PAGE_SIZE, rows: rows.map((l) => toRow(user, l, now)), canEdit: can(user.roles, "lead.edit"), canAssign: can(user.roles, "lead.assign") };
 }
 
-/** Kanban: mỗi giai đoạn tối đa `perStage` lead mới nhất + tổng số. Cùng bộ lọc với danh sách (trừ giai đoạn). */
+/**
+ * Kanban "pipeline" (D-49): chỉ giai đoạn MỞ có thẻ (tối đa `perStage`, kèm tổng để hiện "còn N"); giai đoạn ĐÓNG chỉ trả số đóng trong
+ * 30 ngày qua — là ô thả để đóng lead, không tải thẻ (lead đóng tích lũy mãi, hiện thành thẻ chỉ làm chậm và rối). Cùng bộ lọc với danh sách.
+ */
 export async function leadBoard(user: SessionUser, f: LeadFilter, now = new Date(), perStage = 50) {
   requirePerm(user, "lead.view");
+  const since = new Date(now.getTime() - 30 * 86400000);
   const columns = await Promise.all(LEAD_STAGES.map(async (stage) => {
+    const closed = CLOSED.includes(stage);
     const w = leadWhere(user, { ...f, stage }, now);
+    if (closed) return { stage, closed, total: await db.lead.count({ where: { AND: [w, { closedAt: { gte: since } }] } }), rows: [] as LeadListRow[] };
     const [total, rows] = await Promise.all([
       db.lead.count({ where: w }),
       db.lead.findMany({ where: w, include: listInclude, orderBy: [{ updatedAt: "desc" }], take: perStage }),
     ]);
-    return { stage, total, rows: rows.map((l) => toRow(user, l, now)) };
+    return { stage, closed, total, rows: rows.map((l) => toRow(user, l, now)) };
   }));
   return { columns, canEdit: can(user.roles, "lead.edit") };
 }
@@ -248,6 +277,7 @@ export async function changeStage(user: SessionUser, input: unknown, now = new D
       data: {
         stage: d.stage, lostReason: NEED_REASON.includes(d.stage) ? d.lostReason : null,
         closedAt: CLOSED.includes(d.stage) ? (l.closedAt ?? now) : null,
+        ...(CLOSED.includes(l.stage) && !CLOSED.includes(d.stage) ? { lastActivityAt: now } : {}),
         ...(d.nextActionAt ? { nextActionAt: d.nextActionAt } : {}),
       },
     });
@@ -281,9 +311,10 @@ export async function logActivity(user: SessionUser, input: unknown, now = new D
       const a = await tx.activity.create({
         data: { type: d.type, direction: d.direction ?? (outbound ? "OUT" : undefined), channel: d.channel, leadId: l.id, customerId: l.customerId, actorId: user.id, body: d.body, outcome: d.outcome, durationSec: d.durationSec, occurredAt: d.occurredAt ?? now, idempotencyKey: d.idempotencyKey } as never,
       });
-      if (outbound && !l.firstRespondedAt) {
-        await tx.lead.update({ where: { id: l.id }, data: { firstRespondedAt: now, ...(l.stage === "MOI" ? { stage: "DANG_TU_VAN" } : {}) } });
-      }
+      await tx.lead.update({
+        where: { id: l.id },
+        data: { lastActivityAt: now, ...(outbound && !l.firstRespondedAt ? { firstRespondedAt: now, ...(l.stage === "MOI" ? { stage: "DANG_TU_VAN" as const } : {}) } : {}) },
+      });
       return a;
     });
   } catch (e) {
@@ -327,6 +358,44 @@ async function transfer(user: SessionUser, l: { id: string; ownerId: string | nu
   });
   if (toUserId !== user.id) await notify(db, { userId: toUserId, title: `Bạn được giao lead: ${l.contactName}`, body: reason, link: `/nhu-cau/${l.id}`, key: `lead-assigned:${l.id}:${toUserId}:${now.getTime()}` });
   return res;
+}
+
+export const bulkSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, "Chọn ít nhất một lead").max(200, "Tối đa 200 lead mỗi lần"),
+  action: z.enum(["assign", "stage"], { message: "Chọn thao tác" }),
+  toUserId: z.string().optional().transform((v) => v || undefined),
+  stage: z.enum(LEAD_STAGES).optional().or(z.literal("").transform(() => undefined)),
+  lostReason: z.string().trim().max(500).optional().transform((v) => v || undefined),
+  reason: z.string().trim().max(300).optional().transform((v) => v || undefined),
+});
+
+/**
+ * Thao tác hàng loạt trên danh sách (D-49): chuyển phụ trách hoặc đổi giai đoạn tối đa 200 lead. Mỗi lead đi qua đúng hàm đơn lẻ
+ * (quyền, phạm vi, lý do, lịch sử, audit) — lead nào lỗi thì bỏ qua và đếm, không làm hỏng cả lô.
+ */
+export async function bulkLeads(user: SessionUser, input: unknown, now = new Date()) {
+  const d = parse(bulkSchema, input);
+  if (d.action === "assign") {
+    requirePerm(user, "lead.assign");
+    if (!d.toUserId) throw new ValidationError({ toUserId: "Chọn người nhận" });
+    if (!d.reason || d.reason.length < 3) throw new ValidationError({ reason: "Nhập lý do chuyển (tối thiểu 3 ký tự)" });
+  } else {
+    requirePerm(user, "lead.edit");
+    if (!d.stage) throw new ValidationError({ stage: "Chọn giai đoạn" });
+    if (NEED_REASON.includes(d.stage) && !d.lostReason) throw new ValidationError({ lostReason: "Nhập lý do khi chuyển sang Từ chối / Mất liên lạc" });
+  }
+  let done = 0;
+  const failed: string[] = [];
+  for (const id of [...new Set(d.ids)]) {
+    try {
+      if (d.action === "assign") await reassignLead(user, { id, toUserId: d.toUserId, reason: d.reason }, now);
+      else await changeStage(user, { id, stage: d.stage, lostReason: d.lostReason }, now);
+      done++;
+    } catch {
+      failed.push(id);
+    }
+  }
+  return { done, failed };
 }
 
 /** Người có thể nhận lead/việc từ người dùng hiện tại (cho ô chọn ở drawer chuyển phụ trách / form việc). */

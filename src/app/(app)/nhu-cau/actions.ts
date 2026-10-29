@@ -1,7 +1,7 @@
 "use server";
 // Server action nhu cầu mua — chỉ chuyển FormData → service (quyền, phạm vi, validate, audit ở service). Giao diện gọi qua useActionState.
 import { runAction, sent } from "@/lib/action";
-import { changeStage, claimLead, createLead, logActivity, reassignLead } from "@/modules/sales/leads";
+import { bulkLeads, changeStage, claimLead, createLead, logActivity, reassignLead } from "@/modules/sales/leads";
 import type { ActionResult } from "@/components/form";
 
 const PATHS = ["/nhu-cau", "/hang-doi", "/nhiem-vu"];
@@ -10,6 +10,7 @@ const PATHS = ["/nhu-cau", "/hang-doi", "/nhiem-vu"];
 export async function createLeadAction(_: ActionResult | null, fd: FormData) {
   return runAction(fd, async (u) => {
     const r = await createLead(u, sent(fd));
+    if (r.merged) return "Khách đang có nhu cầu mở — đã ghi thêm vào lead cũ thay vì tạo lead mới.";
     return r.replayed ? "Lead này đã được tạo trước đó." : undefined;
   }, PATHS, "Đã tạo nhu cầu mua và giao người phụ trách.");
 }
@@ -28,4 +29,11 @@ export async function reassignLeadAction(_: ActionResult | null, fd: FormData) {
 /** FormData: id */
 export async function claimLeadAction(_: ActionResult | null, fd: FormData) {
   return runAction(null, async (u) => void (await claimLead(u, String(fd.get("id")))), PATHS, "Bạn đã nhận lead này.");
+}
+/** FormData: ids[] (nhiều ô chọn), action (assign | stage), toUserId, reason, stage, lostReason */
+export async function bulkLeadsAction(_: ActionResult | null, fd: FormData) {
+  return runAction(fd, async (u) => {
+    const r = await bulkLeads(u, { ...sent(fd), ids: fd.getAll("ids").map(String) });
+    return `Đã xử lý ${r.done} lead${r.failed.length ? `, ${r.failed.length} lead bỏ qua (ngoài phạm vi hoặc không hợp lệ)` : ""}.`;
+  }, PATHS, "Đã xử lý.");
 }

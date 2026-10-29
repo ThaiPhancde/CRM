@@ -9,6 +9,7 @@
 import { Prisma } from "@prisma/client";
 import type { Db } from "@/lib/db";
 import { normRef, type NormalizedOrder, type Platform } from "@/adapters/connectors/types";
+import { closeLeadsOnOrder } from "@/modules/sales/routing";
 import { resolveCustomer, type CustomerInput } from "@/modules/customers/resolve";
 
 const D = Prisma.Decimal;
@@ -116,6 +117,9 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
   const order = await createOrder(tx, ctx.conn, n);
   await tx.sourceOrderLink.create({ data: { ...linkData, orderId: order.id, isPrimary: true } as Prisma.SourceOrderLinkUncheckedCreateInput });
   await resolveCustomer(tx, customerInput(ctx.conn, n), order.id, true);
+  // Phase 4 (D-49): đơn mới của khách đang có nhu cầu mở → lead tự chuyển Đã mua.
+  const linked = await tx.order.findUniqueOrThrow({ where: { id: order.id }, select: { id: true, customerId: true, orderNumber: true, bookedAt: true, status: true } });
+  await closeLeadsOnOrder(tx, linked);
   const review = await flagSuspect(tx, ctx.conn, order);
   return { outcome: "APPLIED", orderId: order.id, review };
 }

@@ -8,6 +8,7 @@ import { dateTime, money, num } from "@/lib/format";
 import { getCatalog } from "@/modules/admin/service";
 import {
   LEAD_STAGES,
+  assignableUsers,
   leadBoard,
   listLeads,
   parseLeadFilter,
@@ -16,6 +17,7 @@ import {
 } from "@/modules/sales/leads";
 import { SOURCE_LABEL, STAGE_TONE } from "@/modules/sales/labels";
 import { LeadBoard } from "./board";
+import { BulkBar } from "./bulk-bar";
 import { CreateLead } from "./create-lead";
 
 const LANGUAGE_SHORT: Record<string, string> = {
@@ -37,14 +39,19 @@ export default async function LeadsPage({
   const f = parseLeadFilter(sp);
   const rawView = Array.isArray(sp.view) ? sp.view[0] : sp.view;
   const isBoard = rawView === "board";
+  // Kanban là pipeline của MỘT người (D-49): Sales mặc định "của tôi"; Quản lý/Trưởng nhóm chọn người — không hiện cả nhóm thành thẻ.
+  const salesOnly = user.roles.includes("SALES") && !user.roles.some((r) => r === "MANAGER" || r === "SALES_LEAD");
+  if (isBoard && !f.owner && salesOnly) f.owner = "me";
+  const needPerson = isBoard && !f.owner;
 
-  const [catalog, listData, boardData] = await Promise.all([
+  const [catalog, listData, boardData, people] = await Promise.all([
     getCatalog(user),
     isBoard ? Promise.resolve(null) : listLeads(user, f),
-    isBoard ? leadBoard(user, f) : Promise.resolve(null),
+    isBoard && !needPerson ? leadBoard(user, f) : Promise.resolve(null),
+    assignableUsers(user),
   ]);
 
-  const canEdit = isBoard ? boardData!.canEdit : listData!.canEdit;
+  const canEdit = isBoard ? (boardData?.canEdit ?? false) : listData!.canEdit;
 
   const qs = (patch: Partial<Record<keyof LeadFilter | "view", string | number | undefined>>) => {
     const p = new URLSearchParams();
@@ -76,9 +83,9 @@ export default async function LeadsPage({
   const clearHref = isBoard ? "/nhu-cau?view=board" : "/nhu-cau";
 
   const totalCount = isBoard
-    ? boardData!.columns.reduce((sum, c) => sum + c.total, 0)
+    ? (boardData?.columns.filter((c) => !c.closed).reduce((sum, c) => sum + c.total, 0) ?? 0)
     : listData!.total;
-  const visibleRows = isBoard ? boardData!.columns.flatMap((c) => c.rows) : listData!.rows;
+  const visibleRows = isBoard ? (boardData?.columns.flatMap((c) => c.rows) ?? []) : listData!.rows;
   const overdueCount = visibleRows.filter((r) => r.overdue).length;
   const unassignedCount = visibleRows.filter((r) => !r.owner).length;
   const pages = listData ? Math.max(1, Math.ceil(listData.total / listData.pageSize)) : 1;
@@ -168,6 +175,7 @@ export default async function LeadsPage({
               options={[
                 ["me", "Của tôi"],
                 ["none", "Chưa giao"],
+                ...people.filter((u) => u.id !== user.id).map((u): [string, string] => [u.id, u.team ? `${u.name} — ${u.team}` : u.name]),
               ]}
             />
           </Filter>
@@ -214,7 +222,15 @@ export default async function LeadsPage({
         </form>
       </Card>
 
-      {isBoard ? (
+      {isBoard && needPerson ? (
+        <Card>
+          <EmptyState
+            title="Chọn người phụ trách để xem pipeline"
+            description="Kanban hiển thị pipeline của một người (mỗi người tối đa 30 lead mở) để kéo thả gọn gàng. Xem cả nhóm ở dạng Danh sách — có chọn nhiều để chuyển phụ trách hoặc đổi giai đoạn hàng loạt."
+            action={<ButtonLink href={qs({ view: undefined, page: undefined })}>Xem danh sách</ButtonLink>}
+          />
+        </Card>
+      ) : isBoard ? (
         totalCount === 0 ? (
           <Card>
             {filtered ? (
@@ -252,10 +268,16 @@ export default async function LeadsPage({
             )
           ) : (
             <div className="overflow-x-auto">
+              {canEdit && <BulkBar canAssign={listData!.canAssign} people={people.map((u) => ({ id: u.id, name: u.team ? `${u.name} — ${u.team}` : u.name }))} />}
               <table className="w-full border-collapse text-sm">
                 <caption className="sr-only">Danh sách nhu cầu mua</caption>
                 <thead className="sticky top-0 z-[var(--z-sticky)] bg-bg-subtle">
                   <tr className="text-left text-xs font-medium text-fg-muted">
+                    {canEdit && (
+                      <th scope="col" className="h-10 w-10 border-b border-border pl-4">
+                        <span className="sr-only">Chọn</span>
+                      </th>
+                    )}
                     {[
                       "Khách",
                       "Nhu cầu",
@@ -275,6 +297,11 @@ export default async function LeadsPage({
                 <tbody>
                   {listData!.rows.map((l) => (
                     <tr key={l.id} className="h-11 border-b border-border last:border-0 hover:bg-bg-subtle">
+                      {canEdit && (
+                        <td className="pl-4">
+                          <input type="checkbox" name="ids" value={l.id} form="bulk-form" aria-label={`Chọn ${l.contactName}`} className="size-4 accent-[var(--brand)]" />
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <Link
                           href={`/nhu-cau/${l.id}`}

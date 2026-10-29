@@ -64,7 +64,7 @@ Mã **D-xx** là quyết định; chi tiết và trạng thái (ĐÃ CHỐT / M�
 | D-06 | **Một đơn kinh doanh, nhiều liên kết nguồn** (`Order` ↔ `SourceOrderLink`). Chỉ gộp khi có mã tham chiếu gốc; nghi ngờ thì đưa vào hàng đợi xác minh. Không gộp vì trùng tiền/SĐT/thời điểm. |
 | D-07 | Tách trạng thái **đơn / thanh toán / giao hàng / hoàn-đổi**; giữ trạng thái nguyên bản của nguồn. Cập nhật đến muộn (`source_updated_at` cũ hơn) không ghi đè. |
 | D-08 | Hợp nhất khách bằng bằng chứng: SĐT chuẩn E.164 + email xác minh + mã khách nguồn; tên/IP không đủ. Lưu `MergeLog`, cho phép tách lại. |
-| D-09 | Tiền: `Decimal`, lưu nguyên tệ + tỷ giá + ngày quy đổi + tiền báo cáo (USD). Tỷ giá demo seed theo bảng cố định, sửa được ở Danh mục. |
+| D-09 | Tiền: `Decimal`, lưu nguyên tệ + tỷ giá + ngày quy đổi + tiền quy đổi chung (**VND theo D-44**, trước là USD). Tỷ giá demo seed theo bảng cố định, sửa được ở Danh mục. |
 | D-10 | Bốn mốc doanh thu đặt tên theo từ điển LevelUp: **REV-01 Đặt (booked), REV-02 Xác nhận (confirmed), REV-03 Giao thành công (delivered), REV-04 Thực thu (remitted)**. Không có cột "doanh thu" trần. |
 | D-11 | Điểm khách hàng là **quy tắc + SQL** có phiên bản, lý do, dữ liệu thiếu; LLM không tự sinh xác suất. Khách chưa đủ dữ liệu ghi "chưa đủ dữ liệu". |
 | D-12 | AI đi qua giao diện `LlmProvider`: `ReplayLlm` (demo, kết quả cố định theo fixture) và `AnthropicLlm` (bật bằng `ANTHROPIC_API_KEY`). Mọi lần chạy ghi `AgentRun`/`ToolCall`; tác vụ ghi dữ liệu cần `Approval` khi vượt quyền. |
@@ -76,6 +76,8 @@ Mã **D-xx** là quyết định; chi tiết và trạng thái (ĐÃ CHỐT / M�
 | D-18 | Dữ liệu mẫu: công ty LevelUp, 2 workspace = team (PiAlpha, Team EU — hư cấu), 3 brand, 5 store trên ≥ 2 nền tảng (hư cấu), 6 market (US, DE, FR, AE, SA, KW), ~300 khách, ~2.000 đơn 12 tháng, có cặp giao dịch xuất hiện ở hai nguồn, COD các mốc, ticket, hội thoại. Sinh bằng seed có hạt cố định. |
 | D-32 | **Nguồn chính theo trường** (HLD §5.3): `Setting.sourceOfTruth` theo cặp nền tảng; "mới hơn thắng" chỉ áp giữa các bản của nguồn chủ trường. Mặc định. |
 | D-33 | Trọng số điểm 25/35/25/15 là **giả thuyết v1**, chưa kiểm chứng; hiệu chỉnh bằng dữ liệu thật ở Phase 12. Mặc định. |
+| D-48 | **Chịu tải dữ liệu lớn.** Mục tiêu một team/12 tháng: 200k khách, 600k đơn, 180k lead (~500/ngày), 1,4M tương tác. Trang danh sách < 500 ms, chi tiết < 300 ms, job worker < 5 s/lượt, nhập nguồn ≥ 30 bản ghi/s. Mọi khóa ngoại có index; tìm "chứa chuỗi" dùng trigram. Đo bằng `scripts/load/` trên DB riêng `crm_load`, kết quả ở `docs/performance.md`. |
+| D-49 | **Luồng lead ở khối lượng lớn:** hàng đợi là nơi làm việc chính; Kanban là pipeline của MỘT người (chỉ giai đoạn mở có thẻ); giai đoạn tự chuyển (liên hệ đầu → Đang tư vấn, khách đặt đơn → Đã mua, im lặng 14 ngày → Mất liên lạc); chống lead trùng 7 ngày; thao tác hàng loạt; thông báo gộp theo giờ. |
 | D-27 | **Hai agent, Claude chỉ đạo ~60% / Gemini ~40%** (chỉnh 29/10 từ 80/20): Claude Code là agent chính, làm lõi và review; Gemini qua Antigravity CLI (`agy -p`, runner `tools/agy-runner/run_agy.py`) làm batch độc lập có contract + checker máy (UI component, trang danh sách/form, fixture, mapper, test hàm thuần). Quy trình và bảng giao việc theo phase ở `docs/antigravity-workflow.md`. Claude nghiệm thu mọi output của Gemini. |
 
 ## 3. Kiến trúc
@@ -190,12 +192,13 @@ Quy tắc bắt buộc (kiểm bằng test):
 2. **Liên kết đơn hai nguồn (bất kỳ cặp nền tảng nào, D-28):** chỉ tự liên kết khi một nguồn giữ mã tham chiếu của nguồn kia theo `linkRules` cấu hình cho cặp (platformA, trườngA, platformB, trườngB). Không có quy tắc hoặc không khớp mã → ghi `OrderLinkReview` chờ người duyệt. Không gộp vì trùng tiền/SĐT/thời điểm.
 3. **Cập nhật đến muộn:** bỏ qua nếu `sourceUpdatedAt` ≤ bản đã lưu; ghi `SourceEvent` với `outcome = STALE`. **Nguồn chính theo trường (HLD §5.3, D-32):** "mới hơn thắng" chỉ áp trong cùng nhóm trường của nguồn chịu trách nhiệm theo `Setting.sourceOfTruth`; nguồn không phải chủ của nhóm trường thì không ghi đè (ghi `SourceEvent` với `outcome = NOT_OWNER`). Có test.
 4. **Trạng thái tách:** `Order.status` (đặt/xác nhận/hủy), `Order.paymentStatus`, `Order.fulfillmentStatus`, `Order.returnStatus`; giao/hoàn một phần giữ số lượng theo dòng.
-5. **Tiền:** `amount` Decimal(18,4) + `currency` + `fxRate` + `fxDate` + `reportingAmount` (USD). Không cộng hai tiền tệ không quy đổi.
+5. **Tiền:** `amount` Decimal(18,4) + `currency` + `fxRate` + `fxDate` + tiền quy đổi chung (VND, D-44; cột `netBase`). Không cộng hai tiền tệ không quy đổi.
 6. **Gộp khách:** `MergeLog` giữ `survivorId`, `mergedId`, `evidence[]`, `mergedById`; tách lại khôi phục `CustomerIdentity` về khách cũ.
 7. **Điểm:** `Score` có `version`, `computedAt`, `reasons[]`, `missingData[]`, `suggestedAction`. Không có `Score` thì hiển thị "chưa đủ dữ liệu".
 8. **AI:** `AgentRun` lưu prompt (đã lọc bí mật), model, token, chi phí, `ToolCall[]`; tool ghi dữ liệu phải gọi service nghiệp vụ (qua `requirePerm`), không truy cập DB trực tiếp.
 9. **Outbox:** mọi gửi ra ngoài tạo `Outbox` với `channel`, `status` (`SIMULATED` khi `EXTERNAL_WRITES_ENABLED=false`), `idempotencyKey`.
 10. **Audit:** mọi sửa dữ liệu nghiệp vụ ghi `AuditLog` (`actorId`, `workspaceId`, `entity`, `entityId`, `before`, `after`, `reason`).
+11. **Chịu tải (D-48):** mọi `@relation` có `@@index` cho khóa ngoại (Prisma không tự tạo trên PostgreSQL); ô tìm "chứa chuỗi" có index trigram; danh sách luôn phân trang ở server; job worker xử lý theo lô, đánh dấu đã xử lý để lượt sau không làm lại; thông báo hàng loạt phải gộp. Phase thêm bảng lớn hoặc màn hình danh sách mới phải bổ sung phép đo vào `scripts/load/bench.ts` và đạt mục tiêu ở `docs/performance.md`.
 
 ## 6. Chiến lược demo và điểm cắm tích hợp thật
 
@@ -282,7 +285,8 @@ Yêu cầu xuyên suốt:
 - UI tiếng Việt, trắng – cam theo docs/ui-design-system.md; mỗi màn đủ 4 trạng thái; không chồng lớp (một drawer hoặc một modal).
 - Mọi bảng nghiệp vụ có workspaceId; lớp DB tự gắn; thiếu ngữ cảnh thì từ chối.
 - Một đơn kinh doanh nhiều liên kết nguồn; không gộp vì trùng tiền/SĐT; nghi ngờ thì vào hàng đợi xác minh.
-- Tiền Decimal, nguyên tệ + tỷ giá + USD báo cáo; doanh thu luôn ghi mã REV-01…04.
+- Tiền Decimal, nguyên tệ + tỷ giá + VND quy đổi chung (D-44); doanh thu luôn ghi mã REV-01…04.
+- Chịu tải (D-48): khóa ngoại có index, tìm kiếm có trigram, phân trang ở server, job theo lô; phase có bảng/màn hình lớn mới phải đo bằng scripts/load/bench.ts trên DB crm_load và đạt docs/performance.md.
 - Điểm có phiên bản, lý do, dữ liệu thiếu; AI có bằng chứng, không đoán SKU/đơn; tool ghi dữ liệu qua service có kiểm quyền.
 - Audit chỉ thêm; hành động lặp không nhân đôi.
 - Không bịa API/endpoint/token; endpoint thật ghi "chưa xác minh" đến khi có tài liệu.
@@ -350,9 +354,11 @@ Nghiệm thu: gộp sai tách lại được và đơn về đúng; người thi
 ```text
 Phase 4. Lead (customerId nullable, nguồn, sản phẩm quan tâm, ngân sách khai báo, giai đoạn: MOI|DANG_TU_VAN|CHO_QUYET_DINH|DA_MUA|TU_CHOI|MAT_LIEN_LAC, lý do chưa mua, nextActionAt, ownerId, teamId), Assignment (lịch sử phụ trách, lý do chuyển), Activity (gọi, nhắn, hẹn, ghi chú; kết quả; thời lượng), Task (loại, hạn, trạng thái, liên kết khách/lead/đơn/ticket), kịch bản tư vấn theo brand/market (bảng Script đơn giản).
 
-Phân công: quy tắc theo market + brand + năng lực team, vòng tròn trong team, giới hạn tải; chuyển phụ trách ghi lịch sử. Trang /nhu-cau (bảng + kanban theo giai đoạn), /hang-doi (việc của tôi: lead chưa phản hồi, task đến hạn, ticket được giao, sắp theo ưu tiên), /nhiem-vu. Nhắc hạn: worker tạo Outbox SIMULATED + thông báo trong app.
+Phân công: quy tắc theo market + brand + năng lực team, vòng tròn trong team, giới hạn tải; chuyển phụ trách ghi lịch sử. Trang /hang-doi là nơi làm việc chính (việc của tôi: lead chưa phản hồi, liên hệ lại, task đến hạn, ticket được giao, sắp theo ưu tiên — quá hạn trước), /nhu-cau (danh sách có chọn nhiều để đổi giai đoạn/chuyển phụ trách hàng loạt; Kanban là pipeline của MỘT người — Sales mặc định của mình, Quản lý/Trưởng nhóm chọn người; chỉ giai đoạn mở có thẻ, giai đoạn đóng là ô thả có số đếm 30 ngày), /nhiem-vu. Nhắc hạn: worker tạo Outbox SIMULATED + thông báo trong app.
 
-Nghiệm thu: lead mới có người và hạn phản hồi trong ≤ 1 phút worker; chuyển phụ trách có lịch sử; task trùng (bấm hai lần) không nhân đôi; trưởng nhóm thấy cả team, sales chỉ thấy của mình và team theo permissions.md.
+Khối lượng lớn (D-48, D-49): ~500 lead/ngày/team. Chống lead trùng (cùng SĐT/email + brand, còn lead mở có tương tác trong 7 ngày → ghi vào lead cũ); giai đoạn tự chuyển (liên hệ ra đầu tiên → Đang tư vấn; khách đặt đơn sau ngày tạo lead → Đã mua; im lặng quá 14 ngày, không có hẹn → Mất liên lạc); báo quá hạn một lần; thông báo "lead chưa giao được" gộp theo giờ; nhóm hết chỗ thì worker không thử lại từng lead. Ngưỡng cấu hình theo team (Setting.leadRouting).
+
+Nghiệm thu: lead mới có người và hạn phản hồi trong ≤ 1 phút worker; chuyển phụ trách có lịch sử; task trùng (bấm hai lần) không nhân đôi; trưởng nhóm thấy cả team, sales chỉ thấy của mình và team theo permissions.md; khách nhắn lại không tạo lead trùng; lead im lặng tự đóng có lý do; bench trên crm_load đạt docs/performance.md (danh sách/Kanban/hàng đợi < 500 ms, worker < 5 s/lượt với 180k lead).
 ```
 
 ### Phase 5 — Dịch vụ sau bán và tri thức
@@ -402,7 +408,7 @@ Nghiệm thu: nhân viên không thấy dữ liệu ngoài quyền qua AI (test:
 ### Phase 9 — Báo cáo và dashboard
 
 ```text
-Phase 9. Trang / (dashboard theo vai: Quản lý thấy REV-01..04 theo brand × market, phễu lead, SLA, cảnh báo; Sales thấy hàng đợi và kết quả cá nhân; Marketing thấy nguồn và mua lại). /bao-cao/[nhom] với 6 nhóm HLD §9.2: sales, khach-hang, marketing, van-don, tai-chinh, ai. Mỗi báo cáo: bộ lọc workspace/brand/store/market/kỳ/tiền tệ báo cáo, hiển thị mã chỉ số, độ mới dữ liệu (Warehouse.freshness), định nghĩa khi rê chuột, bảng + biểu đồ (Recharts), xuất Excel. Đa tiền tệ: nguyên tệ và USD theo FxRate, có cột tỷ giá đã dùng. Cohort mua lại theo tháng đầu mua. Tất cả qua Warehouse interface.
+Phase 9. Trang / (dashboard theo vai: Quản lý thấy REV-01..04 theo brand × market, phễu lead, SLA, cảnh báo; Sales thấy hàng đợi và kết quả cá nhân; Marketing thấy nguồn và mua lại). /bao-cao/[nhom] với 6 nhóm HLD §9.2: sales, khach-hang, marketing, van-don, tai-chinh, ai. Mỗi báo cáo: bộ lọc workspace/brand/store/market/kỳ/tiền tệ báo cáo, hiển thị mã chỉ số, độ mới dữ liệu (Warehouse.freshness), định nghĩa khi rê chuột, bảng + biểu đồ (Recharts), xuất Excel. Đa tiền tệ: nguyên tệ và USD theo FxRate, có cột tỷ giá đã dùng. Cohort mua lại theo tháng đầu mua. Tất cả qua Warehouse interface. Ở khối lượng lớn (D-48): quản lý xem phễu và số liệu tổng hợp (đếm theo giai đoạn, tỷ lệ chốt, quá hạn theo người/nhóm) đọc từ bảng chỉ số dựng sẵn qua Warehouse, không tải danh sách thẻ; mỗi báo cáo có phép đo trong scripts/load/bench.ts (< 3 s).
 
 Nghiệm thu: tổng REV-03 báo cáo khớp tổng đơn trên /don-hang cùng bộ lọc; đổi tiền tệ báo cáo thấy tỷ giá; người thiếu finance.view không thấy nhóm tài chính; biểu đồ và bảng cùng số.
 ```
@@ -460,4 +466,5 @@ Theo HLD §14.2, mỗi mục có test hoặc bước kiểm thử trình duyệt
 - [ ] Điểm có phiên bản, lý do, dữ liệu thiếu; không dùng dữ liệu tương lai.
 - [ ] UI trắng – cam, đủ 4 trạng thái, không chồng lớp, tiếng Việt, AA.
 - [ ] Không có gì gửi ra ngoài: `Outbox` toàn `SIMULATED`, không gọi API thật.
+- [ ] Chịu tải (D-48): `scripts/load/bench.ts` trên dữ liệu 1 team/12 tháng (200k khách, 600k đơn, 180k lead) đạt toàn bộ mục tiêu `docs/performance.md`; đo thêm đồng thời 20 người dùng.
 - [ ] Mọi điểm cắm tích hợp thật có adapter khung, biến env, test hợp đồng bỏ qua khi thiếu khóa, ghi trong `docs/deploy-checklist.md`.

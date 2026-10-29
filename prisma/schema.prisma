@@ -72,6 +72,7 @@ model Membership {
   team        Team?     @relation(fields: [teamId], references: [id])
 
   @@unique([workspaceId, userId])
+  @@index([teamId])
 }
 
 model Team {
@@ -346,6 +347,7 @@ model Variant {
   mappings     SourceProductMapping[]
 
   @@unique([workspaceId, sku])
+  @@index([productId])
 }
 
 model SourceProductMapping {
@@ -357,6 +359,7 @@ model SourceProductMapping {
   variant      Variant @relation(fields: [variantId], references: [id])
 
   @@unique([workspaceId, connectionId, sourceSku])
+  @@index([variantId])
 }
 
 // ---- Phase 2: đơn chuẩn (một đơn kinh doanh, nhiều liên kết nguồn — D-06, D-07) -------------------
@@ -456,6 +459,12 @@ model Order {
   @@index([workspaceId, bookedAt])
   @@index([workspaceId, customerPhone])
   @@index([workspaceId, customerId])
+  @@index([workspaceId, storeId, bookedAt])
+  @@index([workspaceId, marketId, bookedAt])
+  @@index([orderNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_orderNumber_trgm_idx")
+  @@index([customerName(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerName_trgm_idx")
+  @@index([customerPhone(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerPhone_trgm_idx")
+  @@index([customerEmail(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerEmail_trgm_idx")
 }
 
 // ---- Phase 3: Customer 360 (D-08) -----------------------------------------------------------------
@@ -511,6 +520,10 @@ model Customer {
 
   @@index([workspaceId, primaryPhoneE164])
   @@index([workspaceId, lastOrderAt])
+  @@index([workspaceId, marketId])
+  @@index([workspaceId, valueBase12m])
+  @@index([workspaceId, orderCount])
+  @@index([displayName(ops: raw("gin_trgm_ops"))], type: Gin, map: "Customer_displayName_trgm_idx")
 }
 
 /// Một mã khách ở một nguồn (hoặc một SĐT/email thấy trong đơn). Bằng chứng để gộp.
@@ -531,6 +544,8 @@ model CustomerIdentity {
   @@unique([workspaceId, connectionId, sourceCustomerId])
   @@index([workspaceId, phoneE164])
   @@index([workspaceId, emailNormalized])
+  @@index([customerId])
+  @@index([phoneE164(ops: raw("gin_trgm_ops"))], type: Gin, map: "CustomerIdentity_phoneE164_trgm_idx")
 }
 
 model Address {
@@ -546,6 +561,8 @@ model Address {
   isDefault   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   customer    Customer    @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
 }
 
 /// Quyền liên hệ theo kênh × mục đích × brand, có lịch sử (mỗi thay đổi một dòng mới — HLD §6.2).
@@ -594,6 +611,9 @@ model OrderItem {
   lineAmount   Decimal  @db.Decimal(18, 4)
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant      Variant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([workspaceId, variantId])
 }
 
 model SourceOrderLink {
@@ -617,6 +637,7 @@ model SourceOrderLink {
 
   @@unique([workspaceId, connectionId, sourceRecordId])
   @@index([workspaceId, platform, orderNumberNorm])
+  @@index([orderId])
 }
 
 model OrderLinkReview {
@@ -660,6 +681,8 @@ model Payment {
   status      String
   paidAt      DateTime?
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
 model Refund {
@@ -671,6 +694,8 @@ model Refund {
   reason      String?
   refundedAt  DateTime
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
 model Shipment {
@@ -686,6 +711,8 @@ model Shipment {
   collectedAt   DateTime?
   order         Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
   events        DeliveryEvent[]
+
+  @@index([orderId])
 }
 
 model DeliveryEvent {
@@ -696,6 +723,8 @@ model DeliveryEvent {
   reasonCode  String?
   occurredAt  DateTime
   shipment    Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
 }
 
 // ---- Phase 4: nhu cầu mua + không gian sales (thiết kế mục 10 Phase 4) ------------------------------
@@ -737,6 +766,10 @@ model Lead {
   firstRespondedAt   DateTime?
   nextActionAt       DateTime?
   closedAt           DateTime?
+  /// Tương tác gần nhất (tạo lead, tin/cuộc gọi, ghi chú) — lead mở im lặng quá autoCloseDays thì tự đóng (D-49).
+  lastActivityAt     DateTime?
+  /// Đã báo quá hạn phản hồi — worker không báo lại mỗi lượt (D-49).
+  overdueNotifiedAt  DateTime?
   /// Chống tạo trùng: nguồn gửi lại (mã hội thoại) hoặc bấm hai lần.
   idempotencyKey     String?
   createdById        String?
@@ -754,6 +787,10 @@ model Lead {
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, ownerId, stage])
   @@index([workspaceId, teamId, stage])
+  @@index([customerId])
+  @@index([workspaceId, contactPhoneE164])
+  @@index([workspaceId, stage, lastActivityAt])
+  @@index([contactName(ops: raw("gin_trgm_ops"))], type: Gin, map: "Lead_contactName_trgm_idx")
 }
 
 /// Lịch sử phụ trách (chỉ thêm). byId null = phân công tự động.
@@ -770,6 +807,7 @@ model Assignment {
   lead        Lead     @relation(fields: [leadId], references: [id])
 
   @@index([workspaceId, toUserId, createdAt])
+  @@index([leadId])
 }
 
 enum ActivityType {
@@ -852,6 +890,10 @@ model Task {
 
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, assigneeId, status, dueAt])
+  @@index([leadId])
+  @@index([customerId])
+  @@index([orderId])
+  @@index([workspaceId, status, remindedAt, dueAt])
 }
 
 /// Kịch bản tư vấn theo brand/market/giai đoạn/ngôn ngữ (null = áp mọi giá trị).

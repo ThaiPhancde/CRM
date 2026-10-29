@@ -54,7 +54,7 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
   };
 
   const colMap = new Map(columns.map((c) => [c.stage, c]));
-  const orderedColumns = LEAD_STAGES.map((stage) => colMap.get(stage) ?? { stage, total: 0, rows: [] });
+  const orderedColumns = LEAD_STAGES.map((stage) => colMap.get(stage) ?? { stage, closed: NEED_REASON.includes(stage) || stage === "DA_MUA", total: 0, rows: [] });
 
   const d = pick(state, null);
   const fieldErrors = state?.fields ?? {};
@@ -110,7 +110,13 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
                 </header>
 
                 <div className="flex-1 space-y-2 overflow-y-auto p-2.5">
-                  {col.rows.length === 0 ? (
+                  {col.closed ? (
+                    <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-1.5 rounded-[var(--radius-sm)] border border-dashed border-border px-2 py-6 text-center text-xs text-fg-muted">
+                      <span>{canEdit ? "Thả thẻ vào đây để đóng lead" : "Lead đã đóng không hiện thành thẻ"}</span>
+                      <span className="tabular text-fg">{num(col.total)} lead trong 30 ngày qua</span>
+                      <Link href={`/nhu-cau?stage=${col.stage}`} className="text-brand-active hover:underline">Xem danh sách</Link>
+                    </div>
+                  ) : col.rows.length === 0 ? (
                     <p className="py-8 text-center text-xs text-fg-subtle">Chưa có nhu cầu ở giai đoạn này</p>
                   ) : (
                     col.rows.map((lead) => (
@@ -207,6 +213,11 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
                         )}
                       </article>
                     ))
+                  )}
+                  {!col.closed && col.total > col.rows.length && (
+                    <Link href={`/nhu-cau?stage=${col.stage}`} className="block py-2 text-center text-xs text-brand-active hover:underline">
+                      Còn {num(col.total - col.rows.length)} lead — xem danh sách
+                    </Link>
                   )}
                 </div>
               </section>

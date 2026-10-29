@@ -1,0 +1,208 @@
+{
+  "at": "2026-10-29T04:31:58.778Z",
+  "scale": 1,
+  "counts": {
+    "orders": 600000,
+    "customers": 200000,
+    "leads": 180000,
+    "activities": 1440000
+  },
+  "target": {
+    "page": 500,
+    "detail": 300,
+    "job": 5000,
+    "export": 5000,
+    "write": 300
+  },
+  "rows": [
+    {
+      "name": "Đơn: danh sách trang 1 (Quản lý)",
+      "kind": "page",
+      "p50": 220,
+      "max": 280,
+      "ok": true
+    },
+    {
+      "name": "Đơn: trang 500 (offset sâu)",
+      "kind": "page",
+      "p50": 280,
+      "max": 377,
+      "ok": true
+    },
+    {
+      "name": "Đơn: lọc trạng thái giao + thị trường",
+      "kind": "page",
+      "p50": 212,
+      "max": 244,
+      "ok": true
+    },
+    {
+      "name": "Đơn: tìm theo mã/tên",
+      "kind": "page",
+      "p50": 2177,
+      "max": 2287,
+      "ok": false
+    },
+    {
+      "name": "Đơn: danh sách (Sales, theo phạm vi)",
+      "kind": "page",
+      "p50": 896,
+      "max": 930,
+      "ok": false
+    },
+    {
+      "name": "Đơn: chi tiết",
+      "kind": "detail",
+      "p50": 569,
+      "max": 644,
+      "ok": false
+    },
+    {
+      "name": "Đơn: xuất CSV 10.000 dòng",
+      "kind": "export",
+      "p50": 4868,
+      "max": 4868,
+      "ok": true
+    },
+    {
+      "name": "Khách: danh sách mặc định",
+      "kind": "page",
+      "p50": 180,
+      "max": 232,
+      "ok": true
+    },
+    {
+      "name": "Khách: sắp theo giá trị",
+      "kind": "page",
+      "p50": 166,
+      "max": 232,
+      "ok": true
+    },
+    {
+      "name": "Khách: tìm theo SĐT",
+      "kind": "page",
+      "p50": 553,
+      "max": 610,
+      "ok": false
+    },
+    {
+      "name": "Khách: danh sách (Sales, theo phạm vi)",
+      "kind": "page",
+      "p50": 240,
+      "max": 270,
+      "ok": true
+    },
+    {
+      "name": "Khách: hồ sơ 360",
+      "kind": "detail",
+      "p50": 517,
+      "max": 577,
+      "ok": false
+    },
+    {
+      "name": "Lead: danh sách (Quản lý)",
+      "kind": "page",
+      "p50": 133,
+      "max": 176,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách quá hạn",
+      "kind": "page",
+      "p50": 15,
+      "max": 57,
+      "ok": true
+    },
+    {
+      "name": "Lead: Kanban (Quản lý)",
+      "kind": "page",
+      "p50": 186,
+      "max": 326,
+      "ok": true
+    },
+    {
+      "name": "Lead: Kanban (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 145,
+      "max": 149,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách (Sales)",
+      "kind": "page",
+      "p50": 22,
+      "max": 22,
+      "ok": true
+    },
+    {
+      "name": "Lead: chi tiết",
+      "kind": "detail",
+      "p50": 151,
+      "max": 236,
+      "ok": true
+    },
+    {
+      "name": "Hàng đợi của tôi (Sales)",
+      "kind": "page",
+      "p50": 15,
+      "max": 17,
+      "ok": true
+    },
+    {
+      "name": "Hàng đợi của tôi (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 5,
+      "max": 7,
+      "ok": true
+    },
+    {
+      "name": "Thông báo (Sales)",
+      "kind": "detail",
+      "p50": 12,
+      "max": 31,
+      "ok": true
+    },
+    {
+      "name": "Việc: danh sách (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 201,
+      "max": 218,
+      "ok": true
+    },
+    {
+      "name": "Tạo lead + phân công tự động",
+      "kind": "write",
+      "p50": 93,
+      "max": 197,
+      "ok": true
+    },
+    {
+      "name": "Worker: giao lead treo + nhắc hạn (1 lượt)",
+      "kind": "job",
+      "p50": 7219,
+      "max": 7219,
+      "ok": false
+    },
+    {
+      "name": "Worker: tính lại giá trị 100 khách",
+      "kind": "job",
+      "p50": 22027,
+      "max": 22027,
+      "ok": false
+    },
+    {
+      "name": "Nhập đơn: đồng bộ 1.000 bản ghi Pancake",
+      "kind": "job",
+      "p50": 162916,
+      "max": 162916,
+      "ok": false
+    },
+    {
+      "name": "Nhập đơn: đồng bộ lại (1.000 bản trùng)",
+      "kind": "job",
+      "p50": 1998,
+      "max": 1998,
+      "ok": true
+    }
+  ]
+}

@@ -13,6 +13,10 @@ const routingSchema = z.object({
   rules: z.array(z.object({ brand: z.string().optional(), market: z.string().optional(), team: z.string() })).default([]),
   maxOpenPerUser: z.number().int().positive().default(30),
   firstResponseHours: z.number().positive().default(4),
+  /** Lead mở không có tương tác quá N ngày → tự chuyển Mất liên lạc (0 = tắt). D-49. */
+  autoCloseDays: z.number().int().min(0).default(14),
+  /** Khách liên hệ lại trong N ngày khi còn lead mở cùng SĐT/email + brand → ghi vào lead cũ, không tạo lead mới. D-49. */
+  dedupeDays: z.number().int().min(0).default(7),
 });
 export type Routing = z.infer<typeof routingSchema>;
 
@@ -48,7 +52,7 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
   const due = lead.firstResponseDueAt ?? new Date(lead.createdAt.getTime() + r.firstResponseHours * 3600000);
   if (!teamId) {
     await client.lead.update({ where: { id: lead.id }, data: { firstResponseDueAt: due } });
-    await alertLeads(client, lead, null, "chưa có quy tắc phân nhóm khớp brand/market");
+    await alertLeads(client, null, "chưa có quy tắc phân nhóm khớp brand/market", now);
     return null;
   }
   const members = await client.membership.findMany({ where: { teamId, active: true, roles: { has: "SALES" }, user: { active: true } }, select: { userId: true } });
@@ -65,7 +69,7 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
 
   await client.lead.update({ where: { id: lead.id }, data: { teamId, ownerId: pick ?? null, firstResponseDueAt: due } });
   if (!pick) {
-    await alertLeads(client, lead, teamId, ids.length ? `mọi Sales trong nhóm đã đủ ${r.maxOpenPerUser} lead mở` : "nhóm chưa có Sales");
+    await alertLeads(client, teamId, ids.length ? `mọi Sales trong nhóm đã đủ ${r.maxOpenPerUser} lead mở` : "nhóm chưa có Sales", now);
     return null;
   }
   await client.assignment.create({ data: { leadId: lead.id, toUserId: pick, teamId, reason: "Tự động: ít lead mở nhất trong nhóm" } as never });
@@ -74,12 +78,34 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
   return pick;
 }
 
-/** Báo Trưởng nhóm (của nhóm) hoặc Quản lý (khi chưa có nhóm) rằng lead chưa giao được. */
-async function alertLeads(client: Db, lead: LeadLite, teamId: string | null, why: string) {
+/**
+ * Báo Trưởng nhóm (của nhóm) hoặc Quản lý (khi chưa có nhóm) rằng có lead chưa giao được. GỘP theo giờ: một thông báo/người/nhóm/giờ
+ * thay vì một thông báo mỗi lead — 500 lead dồn lại không thành 500 thông báo (D-49).
+ */
+async function alertLeads(client: Db, teamId: string | null, why: string, now: Date) {
+  const hour = Math.floor(now.getTime() / 3600000);
   const to = await client.membership.findMany({
     where: teamId ? { teamId, active: true, roles: { has: "SALES_LEAD" } } : { active: true, roles: { has: "MANAGER" } },
     select: { userId: true },
   });
   for (const m of to)
-    await notify(client, { userId: m.userId, title: `Lead chưa giao được: ${lead.contactName}`, body: why, link: `/nhu-cau/${lead.id}`, key: `lead-unassigned:${lead.id}:${m.userId}` });
+    await notify(client, { userId: m.userId, title: "Có lead chưa giao được", body: why, link: "/nhu-cau?owner=none", key: `lead-unassigned:${teamId ?? "none"}:${m.userId}:${hour}` });
+}
+
+/**
+ * Khách có đơn mới (không hủy) đặt SAU khi tạo lead → các lead mở của khách tự chuyển Đã mua, báo người phụ trách (D-49).
+ * Gọi trong transaction nhập đơn, ngay sau khi đơn được gắn khách.
+ */
+export async function closeLeadsOnOrder(tx: Pick<Db, "lead" | "activity" | "notification">, order: { id: string; customerId: string | null; orderNumber: string; bookedAt: Date; status: string }) {
+  if (!order.customerId || order.status === "CANCELLED") return 0;
+  const leads = await tx.lead.findMany({ where: { customerId: order.customerId, stage: { in: [...OPEN_STAGES] }, createdAt: { lte: order.bookedAt } }, select: { id: true, ownerId: true, contactName: true } });
+  if (!leads.length) return 0;
+  const ids = leads.map((l) => l.id);
+  await tx.lead.updateMany({ where: { id: { in: ids } }, data: { stage: "DA_MUA", closedAt: order.bookedAt, lastActivityAt: order.bookedAt } });
+  await tx.activity.createMany({ data: leads.map((l) => ({ type: "SYSTEM", leadId: l.id, customerId: order.customerId, body: `Tự động: khách đặt đơn ${order.orderNumber} → Đã mua`, occurredAt: order.bookedAt })) as never });
+  await tx.notification.createMany({
+    data: leads.filter((l) => l.ownerId).map((l) => ({ userId: l.ownerId, title: `Đã mua: ${l.contactName}`, body: `Đơn ${order.orderNumber}`, link: `/nhu-cau/${l.id}`, idempotencyKey: `lead-won:${l.id}:${order.id}` })) as never,
+    skipDuplicates: true,
+  });
+  return leads.length;
 }

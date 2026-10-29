@@ -20,6 +20,32 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
 
+## Chịu tải dữ liệu lớn + luồng lead khối lượng lớn (29/10/2026, D-48, D-49)
+
+**Vì sao:** người dùng yêu cầu kiểm hệ thống có chịu được dữ liệu lớn không, nếu không thì nâng cấp và sửa kế hoạch; và hỏi Kanban kéo thả có hợp lý với hàng trăm khách/ngày không (không hợp lý — xem D-49).
+
+**Đo trước khi sửa (Claude, 100%).** `scripts/load/generate.ts` sinh 1 team/12 tháng vào DB riêng `crm_load` (602k đơn, 200k khách, 180k lead, 1,44M tương tác, 1,8M sự kiện giao — ~10 phút); `scripts/load/bench.ts` gọi đúng service của trang web với 3 vai. Kết quả trước: **8/27 vượt mục tiêu**, nặng nhất: nhập đơn 163 ms/bản ghi, tính giá trị khách 220 ms/khách, worker 7 s/lượt, tìm đơn 2,2 s, chi tiết đơn/hồ sơ 360 ~0,55 s.
+
+**Nguyên nhân + sửa.**
+- 21 khóa ngoại không có index (Prisma không tự tạo) → migration `scale_indexes` (25 index + trigram `pg_trgm` cho tìm kiếm) và `order_email_trgm`.
+- Phạm vi đơn của Sales lọc qua quan hệ lồng → lấy danh sách khách trước rồi `IN`.
+- Worker báo lại mọi lead quá hạn mỗi phút → `Lead.overdueNotifiedAt`, ghi theo lô.
+- Worker thử giao lại khi nhóm đã hết chỗ → bỏ qua nhóm hết chỗ trong lượt.
+- Thông báo "chưa giao được" từng lead → gộp theo giờ.
+
+Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; tìm đơn 2.177 → 11 ms; giá trị 100 khách 22 s → 0,25 s; worker 7,2 → 0,7 s; nhập đơn 6 → 46 bản ghi/s). Bảng đủ ở `docs/performance.md`.
+
+**Luồng lead khối lượng lớn (D-49).**
+- Chống lead trùng 7 ngày (ghi vào lead cũ, báo người phụ trách).
+- `Lead.lastActivityAt`; tự đóng lead im lặng 14 ngày (`closeStaleLeads`, chạy trong worker).
+- Đơn mới của khách → lead tự chuyển Đã mua (`closeLeadsOnOrder`, gọi trong nhập đơn).
+- Thao tác hàng loạt `bulkLeads` + thanh chọn nhiều ở `/nhu-cau`.
+- Kanban thành pipeline của một người: Sales mặc định của mình, người khác phải chọn người; giai đoạn đóng là ô thả + số đếm 30 ngày; cột vượt 50 thẻ có đường dẫn "còn N".
+
+**Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
+
+**Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
 ## Phase 4 — đã làm (29/10/2026)
 
 **Rà Phase 2 trước khi làm (theo yêu cầu người dùng).** Đối chiếu lát 2.1–2.4 và mục nghiệm thu: 5 tình huống fixture, tính một lần, không lùi trạng thái, phát lại không tạo đơn — đều có test. Lệch thiết kế tìm thấy và sửa: quy tắc 3 yêu cầu ghi `NOT_OWNER` khi nguồn không làm chủ nhóm trường nào — trước đây ghi `APPLIED`; nay ghi `NOT_OWNER`, giữ mốc liên kết, không ghi vào đơn, cột "Không chủ" ở `/ket-noi` (migration `event_not_owner`, có test). Để lại có chủ ý: nút xác minh kết nối và test hợp đồng adapter thật (cần endpoint đã xác minh — Phase 12); bảng `Return` (dùng số hoàn theo dòng); màn ánh xạ SKU tay (Phase 10).

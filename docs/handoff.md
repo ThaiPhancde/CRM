@@ -2,6 +2,18 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 7) — kiểm chịu tải + nâng cấp, sắp vào Phase 5
+
+**Đã làm:** đo tải trên 1 team/12 tháng (DB `crm_load`), sửa toàn bộ chỗ chậm (trước 8/27 → sau 0/28), luồng lead khối lượng lớn (chống trùng, tự đóng, tự Đã mua, hàng loạt, Kanban một người). Kế hoạch sửa: thiết kế mục 2 (D-48, D-49), mục 5 quy tắc 11, prompt nền, prompt Phase 4 và 9, checklist mục 12; AGENTS.md; architecture NFR. Chi tiết: `docs/performance.md`, `implementation-status.md`.
+
+**Chạy:** `npx prisma migrate deploy` (2 migration index mới — trên DB lớn mất ~1 phút). Đo lại: xem `docs/performance.md` mục 2.
+
+**Quy ước mới:** mọi `@relation` mới kèm `@@index`; ô tìm "chứa chuỗi" kèm index trigram; job worker đánh dấu đã xử lý; thông báo hàng loạt phải gộp; phase có bảng/màn hình lớn thêm phép đo vào `scripts/load/bench.ts`.
+
+**Chờ người dùng:** xác nhận khối lượng mục tiêu (D-48) theo quy mô thật; ngưỡng 7/14 ngày (D-49); nghiệm thu Phase 3 + 4.
+
+**Bước tiếp theo:** Phase 5 (người dùng đã yêu cầu làm tiếp).
+
 ## Checkpoint 29/10/2026 (lần 6) — Phase 2 đã rà, Phase 4 xong, chờ nghiệm thu
 
 **Đã làm:** rà Phase 2 (vá `NOT_OWNER`); Phase 4 nhu cầu mua + không gian sales (lead, phân công, Kanban, hàng đợi, nhiệm vụ, nhắc hạn, Outbox SIMULATED). Phase 3 chưa nghiệm thu nhưng người dùng yêu cầu đi tiếp. Chi tiết: `implementation-status.md` Phase 4.

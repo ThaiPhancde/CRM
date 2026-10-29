@@ -69,7 +69,7 @@ export async function seedSales(now = new Date()) {
       await c.lead.update({
         where: { id: lead.id },
         data: {
-          stage: d.stage, lostReason: d.lostReason, firstRespondedAt: firstOut, closedAt: closed ? lastAt : null,
+          stage: d.stage, lostReason: d.lostReason, firstRespondedAt: firstOut, closedAt: closed ? lastAt : null, lastActivityAt: lastAt,
           nextActionAt: d.stage === "CHO_QUYET_DINH" || d.stage === "DANG_TU_VAN" ? new Date(now.getTime() + ((i % 5) - 1) * 86400000) : null,
         },
       });

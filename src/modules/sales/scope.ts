@@ -3,6 +3,7 @@
 // - Trưởng nhóm sales: lead/việc của nhóm mình (Team).
 // - Sales: lead của mình + lead chưa giao của nhóm; việc của mình; khách/đơn chỉ khi có lead/việc liên quan tới mình.
 import type { Prisma } from "@prisma/client";
+import { db } from "@/lib/db";
 import type { SessionUser } from "@/lib/session";
 
 const has = (u: SessionUser, ...roles: SessionUser["roles"]) => u.roles.some((r) => roles.includes(r));
@@ -51,8 +52,13 @@ export function customerScopeWhere(u: SessionUser): Prisma.CustomerWhereInput {
   return { OR: [{ leads: { some: leadEditWhere(u) } }, { tasks: { some: { assigneeId: u.id } } }] };
 }
 
-/** Đơn được xem: Sales chỉ đơn của khách trong phạm vi. */
-export function orderScopeWhere(u: SessionUser): Prisma.OrderWhereInput {
+/**
+ * Đơn được xem: Sales chỉ đơn của khách trong phạm vi. Lấy danh sách khách được phép TRƯỚC rồi lọc `customerId IN (…)`:
+ * điều kiện quan hệ lồng (đơn → khách → lead) bị Postgres đánh giá trên mọi đơn — 0,8 s với 600k đơn (D-48, docs/performance.md).
+ */
+export async function orderScopeWhere(u: SessionUser): Promise<Prisma.OrderWhereInput> {
   const c = customerScopeWhere(u);
-  return Object.keys(c).length ? { customer: c } : {};
+  if (!Object.keys(c).length) return {};
+  const ids = await db.customer.findMany({ where: c, select: { id: true } });
+  return { customerId: { in: ids.map((x) => x.id) } };
 }

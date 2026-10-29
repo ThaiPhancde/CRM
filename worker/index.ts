@@ -5,7 +5,7 @@
 import { rootDb, workspaceDb } from "../src/lib/db";
 import { runSync } from "../src/modules/connectors/service";
 import { refreshCustomerStats } from "../src/modules/customers/resolve";
-import { assignPendingLeads, remindDue } from "../src/modules/sales/queue";
+import { assignPendingLeads, closeStaleLeads, remindDue } from "../src/modules/sales/queue";
 
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify({ at: new Date().toISOString(), ...o }));
 
@@ -48,12 +48,13 @@ export async function refreshStaleCustomerStats(now = new Date(), limit = 500) {
 export async function salesJobs(now = new Date()) {
   const teams = await rootDb.workspace.findMany({ where: { active: true }, select: { id: true } });
   let failed = 0;
-  const total = { assigned: 0, taskReminders: 0, leadAlerts: 0 };
+  const total = { assigned: 0, taskReminders: 0, leadAlerts: 0, autoClosed: 0 };
   for (const w of teams) {
     try {
       const c = workspaceDb(w.id);
       const a = await assignPendingLeads(c, now);
       const r = await remindDue(c, now);
+      total.autoClosed += (await closeStaleLeads(c, now)).closed;
       total.assigned += a.assigned;
       total.taskReminders += r.taskReminders;
       total.leadAlerts += r.leadAlerts;

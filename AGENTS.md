@@ -32,6 +32,7 @@ Yêu cầu xuyên suốt:
 - Mọi bảng nghiệp vụ có `workspaceId`; lớp DB tự gắn; thiếu ngữ cảnh thì từ chối.
 - Một đơn kinh doanh nhiều liên kết nguồn; không gộp vì trùng tiền/SĐT; nghi ngờ thì vào hàng đợi xác minh.
 - Tiền `Decimal`, nguyên tệ + tỷ giá + VND quy đổi chung (D-44); doanh thu luôn ghi mã REV-01…REV-04 (`docs/metrics.md`).
+- Chịu tải (D-48): mọi `@relation` có `@@index`; tìm "chứa chuỗi" có trigram; phân trang ở server; job worker theo lô và không làm lại việc đã xử lý; phase có bảng/màn hình lớn mới phải đo bằng `scripts/load/bench.ts` trên DB `crm_load` và đạt `docs/performance.md`.
 - Điểm có phiên bản, lý do, dữ liệu thiếu; AI có bằng chứng, không đoán SKU/đơn; tool ghi dữ liệu qua service có `requirePerm`.
 - Audit chỉ thêm; hành động lặp không nhân đôi (idempotency key).
 - Không bịa API/endpoint/token; endpoint thật ghi "chưa xác minh" đến khi có tài liệu.
@@ -78,3 +79,4 @@ Người dùng yêu cầu (28/10/2026) kết hợp Antigravity với Claude ch�
 | `future-expansion.md` | Ngoài demo: lên thật, mở rộng | Khi phát sinh |
 | `deploy-checklist.md` | Điểm cắm tích hợp thật (Phase 11.4) | Phase 11 |
 | `demo-script.md` | Kịch bản bấm demo 15 phút theo vai (Phase 11.3) | Phase 11 |
+| `performance.md` | Mục tiêu khối lượng, cách đo tải, kết quả trước/sau, giới hạn còn lại | Khi thêm bảng/màn hình lớn, mỗi lần đo |

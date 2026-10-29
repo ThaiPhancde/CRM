@@ -61,7 +61,7 @@ const money = (user: SessionUser) => can(user.roles, "finance.view");
 export async function listOrders(user: SessionUser, f: OrderFilter) {
   requirePerm(user, "order.view");
   const pii = piiFor(user);
-  const w: Prisma.OrderWhereInput = { AND: [where(f, pii.full), orderScopeWhere(user)] };
+  const w: Prisma.OrderWhereInput = { AND: [where(f, pii.full), await orderScopeWhere(user)] };
   const [total, rows, agg] = await Promise.all([
     db.order.count({ where: w }),
     db.order.findMany({
@@ -95,7 +95,7 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
 export async function getOrder(user: SessionUser, id: string) {
   requirePerm(user, "order.view");
   const o = await db.order.findFirst({
-    where: { id, ...orderScopeWhere(user) },
+    where: { id, ...(await orderScopeWhere(user)) },
     include: {
       store: { include: { brand: true } }, market: true, items: { include: { variant: { include: { product: true } } } },
       payments: { orderBy: { paidAt: "asc" } }, refunds: { orderBy: { refundedAt: "asc" } },
@@ -134,7 +134,7 @@ export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
   const showMoney = money(user);
   const pii = piiFor(user);
   const rows = await db.order.findMany({
-    where: { AND: [where(f, pii.full), orderScopeWhere(user)] }, orderBy: { bookedAt: "desc" }, take: 10000,
+    where: { AND: [where(f, pii.full), await orderScopeWhere(user)] }, orderBy: { bookedAt: "desc" }, take: 10000,
     include: { store: { select: { name: true, platform: true } }, market: { select: { code: true } }, _count: { select: { links: true } } },
   });
   const esc = (v: unknown) => {

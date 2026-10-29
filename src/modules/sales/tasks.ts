@@ -46,7 +46,7 @@ export async function createTask(user: SessionUser, input: unknown) {
   const [lead, customer, order] = await Promise.all([
     d.leadId ? db.lead.findFirst({ where: { AND: [{ id: d.leadId }, leadEditWhere(user)] }, select: { id: true, customerId: true } }) : null,
     d.customerId ? db.customer.findFirst({ where: { id: d.customerId, mergedIntoId: null, ...customerScopeWhere(user) }, select: { id: true } }) : null,
-    d.orderId ? db.order.findFirst({ where: { id: d.orderId, ...orderScopeWhere(user) }, select: { id: true, customerId: true } }) : null,
+    d.orderId ? db.order.findFirst({ where: { id: d.orderId, ...(await orderScopeWhere(user)) }, select: { id: true, customerId: true } }) : null,
   ]);
   if (d.leadId && !lead) throw new ValidationError({ leadId: "Không tìm thấy nhu cầu mua trong phạm vi của bạn" });
   if (d.customerId && !customer) throw new ValidationError({ customerId: "Không tìm thấy khách trong phạm vi của bạn" });
