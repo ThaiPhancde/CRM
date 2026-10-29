@@ -232,7 +232,8 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     const s = await setup("mask");
     fixture(s.sh.store.code, [{ visible: 2, record: shopifyOrder({ id: "8001", name: "#8001", updated: 2 }) }]);
     await s.sync(s.sh, 3);
-    const sales = (await loadUser((await makeUser("mask-sales", { workspaceId: s.ws.id, roles: ["SALES"] })).id))!;
+    // Marketing: xem mọi đơn của team nhưng không có finance.view (Sales chỉ thấy đơn của khách được giao — Phase 4).
+    const sales = (await loadUser((await makeUser("mask-mkt", { workspaceId: s.ws.id, roles: ["MARKETING"] })).id))!;
     const list = await listOrders(sales, { page: 1 });
     expect(list.showMoney).toBe(false);
     expect(list.rev01Base).toBeNull();

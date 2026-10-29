@@ -12,9 +12,9 @@ export const NAV: NavGroup[] = [
     label: "Khách hàng",
     items: [
       { href: "/khach-hang", label: "Khách hàng", icon: "users", perm: "customer.view" },
-      { href: "/nhu-cau", label: "Nhu cầu mua", icon: "target", phase: 4 },
-      { href: "/hang-doi", label: "Hàng đợi của tôi", icon: "inbox", phase: 4 },
-      { href: "/nhiem-vu", label: "Nhiệm vụ", icon: "check", phase: 4 },
+      { href: "/nhu-cau", label: "Nhu cầu mua", icon: "target", perm: "lead.view" },
+      { href: "/hang-doi", label: "Hàng đợi của tôi", icon: "inbox", anyPerm: ["lead.view", "task.manage"] },
+      { href: "/nhiem-vu", label: "Nhiệm vụ", icon: "check", perm: "task.manage" },
     ],
   },
   {

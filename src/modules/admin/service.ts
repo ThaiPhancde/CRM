@@ -4,7 +4,9 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db, rootDb } from "@/lib/db";
 import { audit } from "@/lib/audit";
-import { HttpError } from "@/lib/errors";
+import { HttpError, parse, ValidationError } from "@/lib/errors";
+
+export { ValidationError };
 import { ROLES } from "@/lib/permissions";
 import { requirePerm, type SessionUser } from "@/lib/session";
 
@@ -13,19 +15,6 @@ const code = z.string().trim().min(1, "Bắt buộc").max(30, "Tối đa 30 ký 
 const name = z.string().trim().min(1, "Bắt buộc").max(120, "Tối đa 120 ký tự");
 const active = z.coerce.boolean().default(true);
 
-/** Lỗi validate gom theo trường để form hiện inline. */
-export class ValidationError extends HttpError {
-  constructor(public fields: Record<string, string>) {
-    super(400, "Dữ liệu chưa hợp lệ");
-  }
-}
-function parse<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
-  const r = schema.safeParse(input);
-  if (r.success) return r.data;
-  const fields: Record<string, string> = {};
-  for (const i of r.error.issues) fields[String(i.path[0] ?? "_")] ??= i.message;
-  throw new ValidationError(fields);
-}
 function duplicate(e: unknown, field: string): never {
   if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new ValidationError({ [field]: "Đã tồn tại trong team này" });
   throw e;

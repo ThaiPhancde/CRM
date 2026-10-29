@@ -47,6 +47,8 @@ export type SessionUser = {
   email: string;
   /** Vai trò trong workspace đang làm việc. */
   roles: Role[];
+  /** Nhóm (Team) trong workspace đang làm việc — phạm vi lead/task của Sales và Trưởng nhóm (Phase 4). */
+  teamId: string | null;
   workspaceId: string;
   workspace: SessionWorkspace;
   /** Workspace được vào (quản trị công ty: mọi workspace đang hoạt động). */
@@ -81,7 +83,7 @@ export async function loadUser(userId: string | null, workspaceId?: string | nul
   const workspace = workspaces.find((w) => w.id === workspaceId) ?? workspaces.find((w) => w.id === home) ?? workspaces[0];
   const m = u.memberships.find((x) => x.workspaceId === workspace.id);
   const roles: Role[] = m ? m.roles : u.isCompanyAdmin ? ["MANAGER"] : [];
-  return { id: u.id, name: u.name, email: u.email, roles, workspaceId: workspace.id, workspace, workspaces, isCompanyAdmin: u.isCompanyAdmin };
+  return { id: u.id, name: u.name, email: u.email, roles, teamId: m?.teamId ?? null, workspaceId: workspace.id, workspace, workspaces, isCompanyAdmin: u.isCompanyAdmin };
 }
 
 function readCookie(header: string | null, name: string): string | undefined {

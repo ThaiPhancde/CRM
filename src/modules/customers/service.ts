@@ -8,6 +8,7 @@ import { HttpError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
 import { piiFor } from "@/lib/pii";
 import { FAILURE_REASON } from "@/lib/status-badge";
+import { customerScopeWhere } from "@/modules/sales/scope";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
 
@@ -56,7 +57,7 @@ export async function listCustomers(user: SessionUser, f: CustomerFilter) {
   requirePerm(user, "customer.view");
   const money = can(user.roles, "finance.view");
   const pii = piiFor(user);
-  const w: Prisma.CustomerWhereInput = { mergedIntoId: null };
+  const w: Prisma.CustomerWhereInput = { mergedIntoId: null, AND: [customerScopeWhere(user)] };
   if (f.market) w.marketId = f.market;
   if (f.brand) w.orders = { some: { store: { brandId: f.brand } } };
   if (f.repeat) w.orderCount = { gte: 2 };
@@ -114,7 +115,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
   const money = can(user.roles, "finance.view");
   const pii = piiFor(user);
   const c = await db.customer.findFirst({
-    where: { id },
+    where: { id, ...customerScopeWhere(user) },
     include: {
       market: true,
       identities: { orderBy: { createdAt: "asc" } },
@@ -217,7 +218,7 @@ export async function listCustomerReviews(user: SessionUser) {
     .map((r) => ({ id: r.id, createdAt: r.createdAt.toISOString(), reasons: r.reasons as Record<string, unknown>, a: side(byId.get(r.customerAId)!), b: side(byId.get(r.customerBId)!) }));
 }
 
-type Snapshot = { customer: Record<string, unknown>; identityIds: string[]; orderIds: string[]; addressIds: string[]; preferenceIds: string[] };
+type Snapshot = { customer: Record<string, unknown>; identityIds: string[]; orderIds: string[]; addressIds: string[]; preferenceIds: string[]; leadIds?: string[]; activityIds?: string[]; taskIds?: string[] };
 
 /** Gộp: hồ sơ tạo trước giữ lại; mọi danh tính/đơn/địa chỉ/lựa chọn liên hệ của hồ sơ kia chuyển sang. Ghi danh sách id để tách lại. */
 async function mergeCustomers(user: SessionUser, survivorId: string, mergedId: string, evidence: Prisma.InputJsonValue) {
@@ -230,11 +231,13 @@ async function mergeCustomers(user: SessionUser, survivorId: string, mergedId: s
       customer: JSON.parse(JSON.stringify(merged)),
       identityIds: await pick(tx.customerIdentity as never), orderIds: await pick(tx.order as never),
       addressIds: await pick(tx.address as never), preferenceIds: await pick(tx.contactPreference as never),
+      leadIds: await pick(tx.lead as never), activityIds: await pick(tx.activity as never), taskIds: await pick(tx.task as never),
     };
     await tx.customerIdentity.updateMany({ where: { customerId: merged.id }, data: { customerId: survivor.id } });
     await tx.order.updateMany({ where: { customerId: merged.id }, data: { customerId: survivor.id } });
     await tx.address.updateMany({ where: { customerId: merged.id }, data: { customerId: survivor.id, isDefault: false } });
     await tx.contactPreference.updateMany({ where: { customerId: merged.id }, data: { customerId: survivor.id } });
+    for (const m of [tx.lead, tx.activity, tx.task] as unknown as { updateMany(x: object): Promise<unknown> }[]) await m.updateMany({ where: { customerId: merged.id }, data: { customerId: survivor.id } });
     await tx.customer.update({ where: { id: merged.id }, data: { mergedIntoId: survivor.id } });
     if (!survivor.primaryPhoneE164 && merged.primaryPhoneE164) await tx.customer.update({ where: { id: survivor.id }, data: { primaryPhoneE164: merged.primaryPhoneE164 } });
     if (!survivor.primaryEmail && merged.primaryEmail) await tx.customer.update({ where: { id: survivor.id }, data: { primaryEmail: merged.primaryEmail } });
@@ -274,6 +277,10 @@ export async function unmergeCustomers(user: SessionUser, mergeLogId: string) {
     await tx.order.updateMany({ where: { id: { in: s.orderIds } }, data: { customerId: log.mergedId } });
     await tx.address.updateMany({ where: { id: { in: s.addressIds } }, data: { customerId: log.mergedId } });
     await tx.contactPreference.updateMany({ where: { id: { in: s.preferenceIds } }, data: { customerId: log.mergedId } });
+    // Bản ghi gộp trước Phase 4 không có các danh sách này.
+    await tx.lead.updateMany({ where: { id: { in: s.leadIds ?? [] } }, data: { customerId: log.mergedId } });
+    await tx.activity.updateMany({ where: { id: { in: s.activityIds ?? [] } }, data: { customerId: log.mergedId } });
+    await tx.task.updateMany({ where: { id: { in: s.taskIds ?? [] } }, data: { customerId: log.mergedId } });
     await tx.customer.update({ where: { id: log.mergedId }, data: { mergedIntoId: null } });
     await refreshCustomerStats(tx, log.survivorId);
     await refreshCustomerStats(tx, log.mergedId);

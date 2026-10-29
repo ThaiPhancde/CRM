@@ -49,6 +49,14 @@ const MATRIX = {
   "customer.edit": ["MANAGER", "SALES_LEAD", "SALES"],
   /** Gộp/tách hồ sơ khách (/xac-minh tab Khách, lịch sử gộp). */
   "customer.merge": ["MANAGER", "SALES_LEAD"],
+  /** Xem nhu cầu mua. Phạm vi lọc ở service (src/modules/sales/scope.ts): Sales của mình + chưa giao của nhóm, Trưởng nhóm cả nhóm. */
+  "lead.view": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING"],
+  /** Tạo/sửa lead, đổi giai đoạn, ghi tương tác. */
+  "lead.edit": ["MANAGER", "SALES_LEAD", "SALES"],
+  /** Chuyển phụ trách (Trưởng nhóm chỉ trong nhóm mình). */
+  "lead.assign": ["MANAGER", "SALES_LEAD"],
+  /** Tạo/hoàn thành nhiệm vụ. Người không có quyền giao chỉ tạo/sửa việc của chính mình. */
+  "task.manage": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;

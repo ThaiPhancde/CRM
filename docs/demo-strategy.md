@@ -33,7 +33,7 @@ Cập nhật: 28/10/2026 (Phase 0). Nguồn: D-00, D-05, D-12, D-13, D-18, D-25;
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_HD` | trống | thật | auth OIDC |
 | `PURCHASING_LINK` | `fixture` | `api` | adapters/purchasing |
 | `PURCHASING_API_URL`, `PURCHASING_API_KEY` | trống | thật | purchasing/api |
-| `WORKER_INTERVAL_MIN` | `5` | theo tải | worker |
+| `WORKER_INTERVAL_MIN` | `1` | theo tải | worker |
 | `PG_BIN` | đường dẫn pg_dump | — | backup |
 
 ## 3. Adapter và cài đặt

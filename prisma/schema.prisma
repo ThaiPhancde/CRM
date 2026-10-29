@@ -43,15 +43,19 @@ model Workspace {
 }
 
 model User {
-  id             String       @id @default(cuid())
-  email          String       @unique
+  id             String         @id @default(cuid())
+  email          String         @unique
   name           String
   /// Quản trị công ty LevelUp: vào mọi workspace; ở workspace không có membership thì mang quyền Quản lý (D-29).
-  isCompanyAdmin Boolean      @default(false)
-  active         Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  isCompanyAdmin Boolean        @default(false)
+  active         Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   memberships    Membership[]
+  ownedLeads     Lead[]         @relation("LeadOwner")
+  tasks          Task[]         @relation("TaskAssignee")
+  activities     Activity[]
+  notifications  Notification[]
 }
 
 model Membership {
@@ -80,6 +84,7 @@ model Team {
   updatedAt   DateTime     @updatedAt
   workspace   Workspace    @relation(fields: [workspaceId], references: [id])
   members     Membership[]
+  leads       Lead[]
 
   @@unique([workspaceId, code])
 }
@@ -95,6 +100,8 @@ model Brand {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   stores      Store[]
   products    Product[]
+  leads       Lead[]
+  scripts     Script[]
 
   @@unique([workspaceId, code])
 }
@@ -116,6 +123,8 @@ model Market {
   stores      Store[]
   orders      Order[]
   customers   Customer[]
+  leads       Lead[]
+  scripts     Script[]
 
   @@unique([workspaceId, code])
 }
@@ -442,6 +451,7 @@ model Order {
   refunds           Refund[]
   shipments         Shipment[]
   customer          Customer?         @relation(fields: [customerId], references: [id])
+  tasks             Task[]
 
   @@index([workspaceId, bookedAt])
   @@index([workspaceId, customerPhone])
@@ -495,6 +505,9 @@ model Customer {
   addresses        Address[]
   preferences      ContactPreference[]
   orders           Order[]
+  leads            Lead[]
+  activities       Activity[]
+  tasks            Task[]
 
   @@index([workspaceId, primaryPhoneE164])
   @@index([workspaceId, lastOrderAt])
@@ -683,4 +696,220 @@ model DeliveryEvent {
   reasonCode  String?
   occurredAt  DateTime
   shipment    Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+}
+
+// ---- Phase 4: nhu cầu mua + không gian sales (thiết kế mục 10 Phase 4) ------------------------------
+
+enum LeadStage {
+  MOI
+  DANG_TU_VAN
+  CHO_QUYET_DINH
+  DA_MUA
+  TU_CHOI
+  MAT_LIEN_LAC
+}
+
+/// Nhu cầu mua: một người hỏi mua, có thể chưa có hồ sơ khách (gắn khi SĐT khớp đúng một khách — D-08).
+model Lead {
+  id                 String       @id @default(cuid())
+  workspaceId        String
+  customerId         String?
+  contactName        String
+  contactPhoneE164   String?
+  contactEmail       String?
+  /// vi | en | ar | de — ngôn ngữ khách dùng, chọn kịch bản theo đây.
+  language           String?
+  /// Nguồn tiếp cận: inbox, website, quảng cáo, giới thiệu, nhập tay… (chuỗi tự do, D-28).
+  source             String
+  brandId            String?
+  marketId           String?
+  /// Sản phẩm quan tâm, văn bản tự do (Phase 10 gắn Variant).
+  interest           String?
+  budgetAmount       Decimal?     @db.Decimal(18, 4)
+  budgetCurrency     String?
+  stage              LeadStage    @default(MOI)
+  /// Lý do chưa mua / từ chối / mất liên lạc — bắt buộc khi đóng không thành đơn.
+  lostReason         String?
+  teamId             String?
+  ownerId            String?
+  /// Hạn phản hồi đầu tiên (Q-23 mặc định 4 giờ từ lúc tạo).
+  firstResponseDueAt DateTime?
+  firstRespondedAt   DateTime?
+  nextActionAt       DateTime?
+  closedAt           DateTime?
+  /// Chống tạo trùng: nguồn gửi lại (mã hội thoại) hoặc bấm hai lần.
+  idempotencyKey     String?
+  createdById        String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  customer           Customer?    @relation(fields: [customerId], references: [id])
+  brand              Brand?       @relation(fields: [brandId], references: [id])
+  market             Market?      @relation(fields: [marketId], references: [id])
+  team               Team?        @relation(fields: [teamId], references: [id])
+  owner              User?        @relation("LeadOwner", fields: [ownerId], references: [id])
+  assignments        Assignment[]
+  activities         Activity[]
+  tasks              Task[]
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, ownerId, stage])
+  @@index([workspaceId, teamId, stage])
+}
+
+/// Lịch sử phụ trách (chỉ thêm). byId null = phân công tự động.
+model Assignment {
+  id          String   @id @default(cuid())
+  workspaceId String
+  leadId      String
+  fromUserId  String?
+  toUserId    String?
+  teamId      String?
+  reason      String
+  byId        String?
+  createdAt   DateTime @default(now())
+  lead        Lead     @relation(fields: [leadId], references: [id])
+
+  @@index([workspaceId, toUserId, createdAt])
+}
+
+enum ActivityType {
+  CALL
+  MESSAGE
+  MEETING
+  NOTE
+  /// Đổi giai đoạn, chuyển phụ trách — hệ thống ghi để dòng thời gian đầy đủ.
+  SYSTEM
+}
+
+enum Direction {
+  IN
+  OUT
+}
+
+model Activity {
+  id             String       @id @default(cuid())
+  workspaceId    String
+  type           ActivityType
+  direction      Direction?
+  /// Kênh (PHONE, WHATSAPP, MESSENGER, EMAIL…) — chuỗi tự do theo nguồn hội thoại.
+  channel        String?
+  leadId         String?
+  customerId     String?
+  /// null = khách hoặc hệ thống.
+  actorId        String?
+  body           String
+  outcome        String?
+  durationSec    Int?
+  language       String?
+  occurredAt     DateTime
+  idempotencyKey String?
+  createdAt      DateTime     @default(now())
+  lead           Lead?        @relation(fields: [leadId], references: [id])
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  actor          User?        @relation(fields: [actorId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, leadId, occurredAt])
+  @@index([workspaceId, customerId, occurredAt])
+}
+
+enum TaskType {
+  CALL_BACK
+  FOLLOW_UP
+  MEETING
+  OTHER
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+model Task {
+  id             String     @id @default(cuid())
+  workspaceId    String
+  type           TaskType
+  title          String
+  note           String?
+  dueAt          DateTime
+  status         TaskStatus @default(OPEN)
+  assigneeId     String
+  leadId         String?
+  customerId     String?
+  orderId        String?
+  createdById    String?
+  completedAt    DateTime?
+  /// Đã nhắc hạn (worker) — không nhắc lại.
+  remindedAt     DateTime?
+  idempotencyKey String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  assignee       User       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  lead           Lead?      @relation(fields: [leadId], references: [id])
+  customer       Customer?  @relation(fields: [customerId], references: [id])
+  order          Order?     @relation(fields: [orderId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, assigneeId, status, dueAt])
+}
+
+/// Kịch bản tư vấn theo brand/market/giai đoạn/ngôn ngữ (null = áp mọi giá trị).
+model Script {
+  id          String     @id @default(cuid())
+  workspaceId String
+  brandId     String?
+  marketId    String?
+  stage       LeadStage?
+  language    String
+  title       String
+  body        String
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  brand       Brand?     @relation(fields: [brandId], references: [id])
+  market      Market?    @relation(fields: [marketId], references: [id])
+}
+
+enum OutboxStatus {
+  /// EXTERNAL_WRITES_ENABLED=false: ghi lại, không gửi (D-13).
+  SIMULATED
+  /// Chờ adapter gửi thật (Phase 12).
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Mọi gửi ra ngoài đi qua đây (thiết kế mục 5 quy tắc 9).
+model Outbox {
+  id             String       @id @default(cuid())
+  workspaceId    String
+  channel        String
+  recipient      String
+  subject        String?
+  body           String
+  status         OutboxStatus
+  entity         String?
+  entityId       String?
+  idempotencyKey String
+  createdAt      DateTime     @default(now())
+
+  @@unique([workspaceId, idempotencyKey])
+}
+
+/// Thông báo trong ứng dụng.
+model Notification {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  userId         String
+  title          String
+  body           String?
+  link           String?
+  readAt         DateTime?
+  idempotencyKey String
+  createdAt      DateTime  @default(now())
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, userId, readAt])
 }

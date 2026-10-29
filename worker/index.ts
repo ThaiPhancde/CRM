@@ -1,10 +1,11 @@
-// Worker nền (tiến trình riêng): đồng bộ các kết nối đến hạn. Các job Phase sau (chấm điểm, journey, nhắc việc) thêm vào đây.
-// Chạy: npm run worker          (lặp mỗi WORKER_INTERVAL_MIN phút, mặc định 5)
+// Worker nền (tiến trình riêng): đồng bộ các kết nối đến hạn, giao lead còn treo + nhắc hạn (Phase 4). Job phase sau (chấm điểm, journey) thêm vào đây.
+// Chạy: npm run worker          (lặp mỗi WORKER_INTERVAL_MIN phút, mặc định 1 — lead treo được giao trong ≤ 1 phút)
 //       npm run worker -- --once (một lượt; có lỗi thì thoát mã 1)
 // Mỗi kết nối chạy trong try/catch riêng: lỗi một kết nối không chặn kết nối khác; lượt sau thử lại.
 import { rootDb, workspaceDb } from "../src/lib/db";
 import { runSync } from "../src/modules/connectors/service";
 import { refreshCustomerStats } from "../src/modules/customers/resolve";
+import { assignPendingLeads, remindDue } from "../src/modules/sales/queue";
 
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify({ at: new Date().toISOString(), ...o }));
 
@@ -43,16 +44,38 @@ export async function refreshStaleCustomerStats(now = new Date(), limit = 500) {
   return { refreshed: stale.length - failed, failed };
 }
 
+/** Phase 4: giao lead còn treo + nhắc hạn, từng team riêng; lỗi một team không chặn team khác. */
+export async function salesJobs(now = new Date()) {
+  const teams = await rootDb.workspace.findMany({ where: { active: true }, select: { id: true } });
+  let failed = 0;
+  const total = { assigned: 0, taskReminders: 0, leadAlerts: 0 };
+  for (const w of teams) {
+    try {
+      const c = workspaceDb(w.id);
+      const a = await assignPendingLeads(c, now);
+      const r = await remindDue(c, now);
+      total.assigned += a.assigned;
+      total.taskReminders += r.taskReminders;
+      total.leadAlerts += r.leadAlerts;
+    } catch (e) {
+      failed++;
+      log({ job: "sales", workspaceId: w.id, error: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  return { ...total, failed };
+}
+
 async function main() {
   const once = process.argv.includes("--once");
-  const minutes = Math.max(1, Number(process.env.WORKER_INTERVAL_MIN ?? 5));
+  const minutes = Math.max(1, Number(process.env.WORKER_INTERVAL_MIN ?? 1));
   do {
     const r = await syncDue();
     const stats = await refreshStaleCustomerStats();
-    log({ job: "tick", ...r, customerStats: stats });
+    const sales = await salesJobs();
+    log({ job: "tick", ...r, customerStats: stats, sales });
     if (once) {
       await rootDb.$disconnect();
-      process.exit(r.failed.length || stats.failed ? 1 : 0);
+      process.exit(r.failed.length || stats.failed || sales.failed ? 1 : 0);
     }
     await new Promise((res) => setTimeout(res, minutes * 60000));
   } while (true);

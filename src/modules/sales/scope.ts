@@ -1,0 +1,58 @@
+// Phạm vi dữ liệu Phase 4 (docs/permissions.md mục 3, D-45). Lọc ở service, không ở UI; vai trò rộng nhất của người dùng thắng.
+// - Quản lý: cả workspace. Marketing: xem mọi lead (không sửa).
+// - Trưởng nhóm sales: lead/việc của nhóm mình (Team).
+// - Sales: lead của mình + lead chưa giao của nhóm; việc của mình; khách/đơn chỉ khi có lead/việc liên quan tới mình.
+import type { Prisma } from "@prisma/client";
+import type { SessionUser } from "@/lib/session";
+
+const has = (u: SessionUser, ...roles: SessionUser["roles"]) => u.roles.some((r) => roles.includes(r));
+
+/** Lead được xem. */
+export function leadViewWhere(u: SessionUser): Prisma.LeadWhereInput {
+  if (has(u, "MANAGER", "MARKETING")) return {};
+  return leadEditWhere(u);
+}
+
+/** Lead được sửa/ghi tương tác (Marketing không sửa). */
+export function leadEditWhere(u: SessionUser): Prisma.LeadWhereInput {
+  if (has(u, "MANAGER")) return {};
+  if (has(u, "SALES_LEAD") && u.teamId) return { teamId: u.teamId };
+  return { OR: [{ ownerId: u.id }, ...(u.teamId ? [{ teamId: u.teamId, ownerId: null }] : [])] };
+}
+
+/** Lead được chuyển phụ trách: Quản lý mọi lead, Trưởng nhóm lead của nhóm mình. */
+export function leadAssignWhere(u: SessionUser): Prisma.LeadWhereInput {
+  if (has(u, "MANAGER")) return {};
+  return u.teamId ? { teamId: u.teamId } : { id: "__none__" };
+}
+
+/** Thành viên người dùng được giao lead/việc cho: Quản lý mọi người trong workspace, Trưởng nhóm người trong nhóm, còn lại chỉ mình. */
+export function assigneeWhere(u: SessionUser): Prisma.MembershipWhereInput {
+  const base = { workspaceId: u.workspaceId, active: true };
+  if (has(u, "MANAGER")) return base;
+  if (has(u, "SALES_LEAD") && u.teamId) return { ...base, teamId: u.teamId };
+  return { ...base, userId: u.id };
+}
+
+/** Nhiệm vụ được xem/sửa. */
+export function taskWhere(u: SessionUser): Prisma.TaskWhereInput {
+  if (has(u, "MANAGER")) return {};
+  if (has(u, "SALES_LEAD") && u.teamId)
+    return { OR: [{ assigneeId: u.id }, { assignee: { memberships: { some: { workspaceId: u.workspaceId, teamId: u.teamId } } } }] };
+  return { assigneeId: u.id };
+}
+
+/**
+ * Khách được xem. Chỉ người CHỈ có vai Sales bị hẹp (các vai khác có customer.view đều xem cả workspace — ma trận mục 2).
+ * ponytail: lọc qua quan hệ lead/task mỗi truy vấn; nhiều khách thì lưu bảng phân công khách riêng.
+ */
+export function customerScopeWhere(u: SessionUser): Prisma.CustomerWhereInput {
+  if (has(u, "MANAGER", "SALES_LEAD", "MARKETING", "FULFILLMENT", "FINANCE_VIEW", "PURCHASING_VIEW")) return {};
+  return { OR: [{ leads: { some: leadEditWhere(u) } }, { tasks: { some: { assigneeId: u.id } } }] };
+}
+
+/** Đơn được xem: Sales chỉ đơn của khách trong phạm vi. */
+export function orderScopeWhere(u: SessionUser): Prisma.OrderWhereInput {
+  const c = customerScopeWhere(u);
+  return Object.keys(c).length ? { customer: c } : {};
+}

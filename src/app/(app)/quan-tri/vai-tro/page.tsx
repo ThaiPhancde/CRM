@@ -18,6 +18,10 @@ const PERM_LABEL: Record<Permission, string> = {
   "customer.pii": "Xem SĐT/email đầy đủ",
   "customer.edit": "Sửa hồ sơ khách, ghi lựa chọn liên hệ",
   "customer.merge": "Gộp/tách hồ sơ khách",
+  "lead.view": "Xem nhu cầu mua (theo phạm vi)",
+  "lead.edit": "Tạo/sửa nhu cầu mua, ghi tương tác",
+  "lead.assign": "Chuyển người phụ trách nhu cầu mua",
+  "task.manage": "Tạo/hoàn thành nhiệm vụ",
 };
 
 export default async function RolesPage() {

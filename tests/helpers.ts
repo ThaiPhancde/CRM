@@ -14,7 +14,7 @@ export async function makeWorkspace(tag: string) {
   return rootDb.workspace.create({ data: { code: `T-${tag}-${RUN}`, name: `Test ${tag} ${RUN}` } });
 }
 
-export async function makeUser(tag: string, opts: { workspaceId?: string; roles?: Role[]; isCompanyAdmin?: boolean; active?: boolean } = {}) {
+export async function makeUser(tag: string, opts: { workspaceId?: string; roles?: Role[]; teamId?: string; isCompanyAdmin?: boolean; active?: boolean } = {}) {
   const { rootDb } = await import("@/lib/db");
   return rootDb.user.create({
     data: {
@@ -22,7 +22,7 @@ export async function makeUser(tag: string, opts: { workspaceId?: string; roles?
       name: `User ${tag}`,
       isCompanyAdmin: opts.isCompanyAdmin ?? false,
       active: opts.active ?? true,
-      memberships: opts.workspaceId ? { create: { workspaceId: opts.workspaceId, roles: opts.roles ?? [] } } : undefined,
+      memberships: opts.workspaceId ? { create: { workspaceId: opts.workspaceId, roles: opts.roles ?? [], teamId: opts.teamId } } : undefined,
     },
   });
 }
