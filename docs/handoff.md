@@ -2,6 +2,14 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 9) — nghiệm thu Phase 3–5
+
+**Đã làm:** theo yêu cầu người dùng, nghiệm thu Phase 3–5 theo tiêu chí thiết kế mục 10 — tất cả đạt. Biên bản: `docs/acceptance/phase-3-5.md`. Lần đầu bấm thử gộp → tách khách trên trình duyệt (trước chỉ có test), kiểm che PII/tiền qua đường xuất CSV với vai Marketing, chạy worker thật trên DB demo (tự đóng 5 lead im lặng — dữ liệu demo đã đổi).
+
+**Chờ người dùng:** ký nghiệm thu chính thức cùng giám đốc (D-30); xác nhận Q-22, Q-23, D-48, D-49.
+
+**Bước tiếp theo:** Phase 6.
+
 ## Checkpoint 29/10/2026 (lần 8) — Phase 5 xong, chờ nghiệm thu
 
 **Đã làm:** ticket + SLA, tri thức có phiên bản, ticket trong hàng đợi, nhắc SLA. Chi tiết: `implementation-status.md` Phase 5.

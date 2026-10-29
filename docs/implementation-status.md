@@ -9,9 +9,9 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 0 Audit + đặc tả | **Xong bản nháp, chờ duyệt** | 28/10/2026 | Bộ tài liệu vai trò + thiết kế + prompt phase; chưa có code |
 | 1 Nền tảng, quyền, UI shell | **Xong, chờ nghiệm thu** | 28/10/2026 | 22 test xanh; thử trình duyệt 2 vai; chưa commit/worktree |
 | 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
-| 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
-| 4 Nhu cầu mua + sales | **Xong, chờ nghiệm thu** | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
-| 5 Dịch vụ + tri thức | **Xong, chờ nghiệm thu** | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
+| 3 Customer 360 | **Đã nghiệm thu** (29/10, `docs/acceptance/phase-3-5.md`) | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
+| 4 Nhu cầu mua + sales | **Đã nghiệm thu** (29/10) | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
+| 5 Dịch vụ + tri thức | **Đã nghiệm thu** (29/10) | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
 | 6 Chỉ số + điểm + Warehouse | Chưa | | |
 | 7 Journey + marketing | Chưa | | |
 | 8 Trung tâm AI | Chưa | | |

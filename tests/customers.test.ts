@@ -115,7 +115,7 @@ describe("Phase 3 — hợp nhất khách (D-08)", () => {
     expect((await s.c.customerIdentity.groupBy({ by: ["customerId"], _count: true })).length).toBe(2);
   });
 
-  it("REV-03 12 tháng = giá trị dòng đã giao (không tính phí ship) quy USD theo tỷ giá chốt", async () => {
+  it("REV-03 12 tháng = giá trị dòng đã giao (không tính phí ship) quy VND theo tỷ giá chốt", async () => {
     const s = await setup("value");
     fixture(s.shS.store.code, [sh({ id: "1", cust: "gid://shopify/Customer/1", phone: "+49 151 3333 3333", delivered: true, updated: 120 })]);
     await s.sync(s.shS);
