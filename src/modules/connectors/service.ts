@@ -79,7 +79,7 @@ export async function runSync(workspaceId: string, connectionId: string, mode: "
   if (lock.count === 0) throw new HttpError(409, "Kết nối đang đồng bộ, thử lại sau ít phút");
   const conn = await client.connection.findFirstOrThrow({ where: { id: connectionId }, include: { store: true } });
   const run = await client.syncRun.create({ data: { connectionId, mode } as Prisma.SyncRunUncheckedCreateInput });
-  const counts: Record<Outcome, number> = { APPLIED: 0, LINKED: 0, STALE: 0, DUPLICATE: 0, ERROR: 0 };
+  const counts: Record<Outcome, number> = { APPLIED: 0, LINKED: 0, STALE: 0, NOT_OWNER: 0, DUPLICATE: 0, ERROR: 0 };
   let reviews = 0;
   try {
     const platform = getPlatform(conn.platform);
@@ -101,12 +101,12 @@ export async function runSync(workspaceId: string, connectionId: string, mode: "
         create: { connectionId, recordType: "order", cursorAt: cursor } as Prisma.SyncCheckpointUncheckedCreateInput,
       });
     }
-    await client.syncRun.update({ where: { id: run.id }, data: { status: "OK", finishedAt: new Date(), applied: counts.APPLIED, linked: counts.LINKED, stale: counts.STALE, duplicate: counts.DUPLICATE, errors: counts.ERROR, reviews } });
+    await client.syncRun.update({ where: { id: run.id }, data: { status: "OK", finishedAt: new Date(), applied: counts.APPLIED, linked: counts.LINKED, stale: counts.STALE, notOwner: counts.NOT_OWNER, duplicate: counts.DUPLICATE, errors: counts.ERROR, reviews } });
     await client.connection.update({ where: { id: connectionId }, data: { lastSyncAt: now, lastError: counts.ERROR ? `${counts.ERROR} bản ghi lỗi ở lượt gần nhất` : null, status: conn.status === "ERROR" ? "ACTIVE" : conn.status, syncLockedUntil: null } });
     return { runId: run.id, counts, reviews };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    await client.syncRun.update({ where: { id: run.id }, data: { status: "FAILED", finishedAt: new Date(), error: msg.slice(0, 500), applied: counts.APPLIED, linked: counts.LINKED, stale: counts.STALE, duplicate: counts.DUPLICATE, errors: counts.ERROR, reviews } });
+    await client.syncRun.update({ where: { id: run.id }, data: { status: "FAILED", finishedAt: new Date(), error: msg.slice(0, 500), applied: counts.APPLIED, linked: counts.LINKED, stale: counts.STALE, notOwner: counts.NOT_OWNER, duplicate: counts.DUPLICATE, errors: counts.ERROR, reviews } });
     await client.connection.update({ where: { id: connectionId }, data: { lastError: msg.slice(0, 500), status: "ERROR", syncLockedUntil: null } });
     throw e;
   }
@@ -131,7 +131,7 @@ export async function retryErrorEvents(client: Db, connectionId: string) {
   const platform = getPlatform(conn.platform);
   const settings = await loadSettings(client);
   const failed = await client.sourceEvent.findMany({ where: { connectionId, outcome: "ERROR" }, orderBy: { createdAt: "asc" } });
-  const counts: Record<Outcome, number> = { APPLIED: 0, LINKED: 0, STALE: 0, DUPLICATE: 0, ERROR: 0 };
+  const counts: Record<Outcome, number> = { APPLIED: 0, LINKED: 0, STALE: 0, NOT_OWNER: 0, DUPLICATE: 0, ERROR: 0 };
   for (const ev of failed) {
     await client.sourceEvent.delete({ where: { id: ev.id } });
     const r = await ingest(client, { conn, platform, settings }, ev.payload);

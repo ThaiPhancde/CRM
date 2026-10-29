@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
 import { piiFor } from "@/lib/pii";
+import { dateTimeCsv } from "@/lib/format";
+import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
 import { requirePerm, type SessionUser } from "@/lib/session";
 
 export const PAGE_SIZE = 50;
@@ -123,7 +125,7 @@ export async function getOrder(user: SessionUser, id: string) {
   };
 }
 
-const CSV_HEAD = ["Mã đơn", "Ngày đặt", "Shop", "Nền tảng", "Thị trường", "Khách", "SĐT", "Trạng thái", "Thanh toán", "Giao hàng", "Tiền tệ", "Giá trị (nguyên tệ)", "Tỷ giá", "Giá trị VND (REV-01)", "Số nguồn"];
+const CSV_HEAD = ["Mã đơn", "Ngày đặt (giờ VN)", "Shop", "Nền tảng", "Thị trường", "Khách", "SĐT", "Trạng thái", "Thanh toán", "Giao hàng", "Tiền tệ", "Giá trị (nguyên tệ)", "Tỷ giá", "Giá trị VND (REV-01)", "Số nguồn"];
 
 /** CSV UTF-8 có BOM (Excel mở đúng tiếng Việt). ponytail: tối đa 10.000 dòng; lớn hơn thì xuất từ Warehouse (Phase 9). */
 export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
@@ -139,8 +141,8 @@ export async function exportOrdersCsv(user: SessionUser, f: OrderFilter) {
     return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = rows.map((o) => [
-    o.orderNumber, o.bookedAt.toISOString(), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, pii.phone(o.customerPhone),
-    o.status, o.paymentStatus, o.fulfillmentStatus, o.currency,
+    o.orderNumber, dateTimeCsv(o.bookedAt), o.store.name, o.store.platform, o.market?.code ?? o.shipCountry, o.customerName, pii.phone(o.customerPhone),
+    pickBadge(ORDER_STATUS, o.status).label, pickBadge(PAYMENT_STATUS, o.paymentStatus).label, pickBadge(FULFILLMENT_STATUS, o.fulfillmentStatus).label, o.currency,
     showMoney ? o.netAmount.toString() : "", showMoney ? o.fxRate.toString() : "", showMoney ? o.netBase.toString() : "", o._count.links,
   ].map(esc).join(","));
   return "﻿" + [CSV_HEAD.join(","), ...lines].join("\r\n");

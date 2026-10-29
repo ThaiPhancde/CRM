@@ -33,6 +33,7 @@ export const EVENT_OUTCOME: Map = {
   APPLIED: { label: "Đã áp dụng", tone: "success" },
   LINKED: { label: "Đã liên kết", tone: "brand" },
   STALE: { label: "Bản cũ, bỏ qua", tone: "neutral" },
+  NOT_OWNER: { label: "Không phải nguồn chủ", tone: "neutral" },
   DUPLICATE: { label: "Trùng, bỏ qua", tone: "neutral" },
   ERROR: { label: "Lỗi", tone: "danger" },
 };

@@ -17,7 +17,7 @@ type Tx = Parameters<Parameters<Db["$transaction"]>[0]>[0];
 export type Group = "order" | "payment" | "fulfillment";
 export type LinkRule = { platformA: string; fieldA: "orderNumber" | "refs"; platformB: string; fieldB: "orderNumber" | "refs" };
 export type IngestSettings = { linkRules: LinkRule[]; sourceOfTruth: Partial<Record<Group, string>> };
-export type Outcome = "APPLIED" | "LINKED" | "STALE" | "DUPLICATE" | "ERROR";
+export type Outcome = "APPLIED" | "LINKED" | "STALE" | "NOT_OWNER" | "DUPLICATE" | "ERROR";
 export type IngestResult = { outcome: Outcome; orderId?: string; review?: boolean; error?: string };
 
 export async function loadSettings(client: Db): Promise<IngestSettings> {
@@ -87,12 +87,14 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
   if (link) {
     if (n.sourceUpdatedAt <= link.sourceUpdatedAt) return { outcome: "STALE", orderId: link.orderId };
     const owned = await ownedGroups(tx, ctx.settings, link);
-    await writeOrder(tx, link.orderId, n, owned);
-    await resolveCustomer(tx, customerInput(ctx.conn, n), link.orderId, owned.has("order"));
+    // Luôn giữ mốc + trạng thái gốc của liên kết (truy vết, chống STALE); chỉ ghi vào đơn khi làm chủ ít nhất một nhóm trường.
     await tx.sourceOrderLink.update({
       where: { id: link.id },
       data: { sourceUpdatedAt: n.sourceUpdatedAt, sourceStatusRaw: n.sourceStatusRaw, refs: n.refs.map(normRef), orderNumberNorm: normRef(n.orderNumber) },
     });
+    if (!owned.size) return { outcome: "NOT_OWNER", orderId: link.orderId };
+    await writeOrder(tx, link.orderId, n, owned);
+    await resolveCustomer(tx, customerInput(ctx.conn, n), link.orderId, owned.has("order"));
     return { outcome: "APPLIED", orderId: link.orderId };
   }
 

@@ -23,7 +23,9 @@ const btn = (variant: Variant, size: "sm" | "md") =>
 export function Button({ variant = "secondary", size = "md", className, ...p }: ComponentProps<"button"> & { variant?: Variant; size?: "sm" | "md" }) {
   return <button type="button" className={cx(btn(variant, size), className)} {...p} />;
 }
-export function ButtonLink({ variant = "secondary", size = "md", className, ...p }: ComponentProps<typeof Link> & { variant?: Variant; size?: "sm" | "md" }) {
+export function ButtonLink({ variant = "secondary", size = "md", className, download, ...p }: ComponentProps<typeof Link> & { variant?: Variant; size?: "sm" | "md"; download?: boolean }) {
+  // Tải file: dùng <a> thường; <Link> của Next tải qua client-side fetch nên trình duyệt đặt tên file bằng mã ngẫu nhiên, mất đuôi .csv.
+  if (download) return <a className={cx(btn(variant, size), className)} href={String(p.href)} download>{p.children}</a>;
   return <Link className={cx(btn(variant, size), className)} {...p} />;
 }
 

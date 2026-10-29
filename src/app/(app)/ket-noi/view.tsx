@@ -7,7 +7,7 @@ import { CONNECTION_STATUS, SYNC_STATUS, pickBadge } from "@/lib/status-badge";
 import { ago, dateTime, num } from "@/lib/format";
 import { createConnectionAction, retryAction, syncAction, toggleAction } from "./actions";
 
-type Run = { id: string; mode: string; status: string; startedAt: string; applied: number; linked: number; stale: number; duplicate: number; errors: number; reviews: number; error: string | null };
+type Run = { id: string; mode: string; status: string; startedAt: string; applied: number; linked: number; stale: number; notOwner: number; duplicate: number; errors: number; reviews: number; error: string | null };
 type Conn = {
   id: string; store: string; brand: string; markets: string[]; platform: string; platformLabel: string; verification: string | null; mode: string;
   status: string; pollIntervalMin: number; lastSyncAt: string | null; lastError: string | null; links: number; errorEvents: number; runs: Run[];
@@ -75,7 +75,7 @@ export function ConnectionsView({ connections, stores, canManage }: { connection
                   ) : (
                     <table className="w-full text-xs">
                       <caption className="sr-only">Lượt đồng bộ của {c.store}</caption>
-                      <thead className="text-left text-fg-subtle"><tr>{["Lúc", "Loại", "Kết quả", "Cập nhật", "Liên kết", "Cũ", "Trùng", "Lỗi"].map((h) => <th key={h} scope="col" className="px-4 py-1.5 font-medium">{h}</th>)}</tr></thead>
+                      <thead className="text-left text-fg-subtle"><tr>{["Lúc", "Loại", "Kết quả", "Cập nhật", "Liên kết", "Cũ", "Không chủ", "Trùng", "Lỗi"].map((h) => <th key={h} scope="col" className="px-4 py-1.5 font-medium">{h}</th>)}</tr></thead>
                       <tbody>
                         {c.runs.map((r) => {
                           const b = pickBadge(SYNC_STATUS, r.status);
@@ -87,6 +87,7 @@ export function ConnectionsView({ connections, stores, canManage }: { connection
                               <td className="tabular px-4 py-1.5">{num(r.applied)}</td>
                               <td className="tabular px-4 py-1.5">{num(r.linked)}{r.reviews ? <span className="text-warning"> (+{r.reviews} nghi trùng)</span> : null}</td>
                               <td className="tabular px-4 py-1.5 text-fg-muted">{num(r.stale)}</td>
+                              <td className="tabular px-4 py-1.5 text-fg-muted" title="Bản mới hơn từ nguồn không làm chủ nhóm trường nào của đơn (D-32)">{num(r.notOwner)}</td>
                               <td className="tabular px-4 py-1.5 text-fg-muted">{num(r.duplicate)}</td>
                               <td className={`tabular px-4 py-1.5 ${r.errors ? "text-danger" : "text-fg-muted"}`}>{num(r.errors)}</td>
                             </tr>

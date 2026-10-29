@@ -29,7 +29,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         title="Đơn hàng"
         description="Mỗi đơn kinh doanh có thể gồm nhiều bản ghi nguồn (ví dụ tạo ở Shopify, xử lý ở Pancake) — chỉ tính một lần."
         crumbs={[{ label: "Bán hàng" }, { label: "Đơn hàng" }]}
-        actions={<ButtonLink href={`/don-hang/xuat${qs({ page: undefined })}`} prefetch={false}>Xuất CSV</ButtonLink>}
+        actions={<ButtonLink href={`/don-hang/xuat${qs({ page: undefined })}`} download>Xuất CSV</ButtonLink>}
       />
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Số đơn (theo bộ lọc)" value={num(data.total)} />

@@ -217,6 +217,8 @@ enum EventOutcome {
   APPLIED
   LINKED
   STALE
+  /// Nguồn mới hơn nhưng không làm chủ nhóm trường nào của đơn (D-32) — giữ mốc, không ghi đè.
+  NOT_OWNER
   DUPLICATE
   ERROR
 }
@@ -257,6 +259,7 @@ model SyncRun {
   applied      Int           @default(0)
   linked       Int           @default(0)
   stale        Int           @default(0)
+  notOwner     Int           @default(0)
   duplicate    Int           @default(0)
   errors       Int           @default(0)
   reviews      Int           @default(0)

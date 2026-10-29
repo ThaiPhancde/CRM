@@ -25,7 +25,7 @@ export default async function ConnectionsPage() {
         lastError: c.lastError,
         links: c._count.links,
         errorEvents: c.errorEvents,
-        runs: c.runs.map((r) => ({ id: r.id, mode: r.mode, status: r.status, startedAt: r.startedAt.toISOString(), applied: r.applied, linked: r.linked, stale: r.stale, duplicate: r.duplicate, errors: r.errors, reviews: r.reviews, error: r.error })),
+        runs: c.runs.map((r) => ({ id: r.id, mode: r.mode, status: r.status, startedAt: r.startedAt.toISOString(), applied: r.applied, linked: r.linked, stale: r.stale, notOwner: r.notOwner, duplicate: r.duplicate, errors: r.errors, reviews: r.reviews, error: r.error })),
       }))}
     />
   );

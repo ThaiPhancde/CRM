@@ -16,7 +16,7 @@ export async function syncAction(_: ActionResult | null, fd: FormData) {
   return runAction(null, async (u) => {
     const r = await syncNow(u, id, mode);
     const c = r.counts;
-    return `Xong: ${num(c.APPLIED)} cập nhật, ${num(c.LINKED)} liên kết, ${num(c.STALE)} bản cũ bỏ qua, ${num(c.DUPLICATE)} trùng bỏ qua, ${num(c.ERROR)} lỗi${r.reviews ? `, ${r.reviews} nghi trùng chờ xác minh` : ""}.`;
+    return `Xong: ${num(c.APPLIED)} cập nhật, ${num(c.LINKED)} liên kết, ${num(c.STALE)} bản cũ bỏ qua, ${num(c.NOT_OWNER)} không phải nguồn chủ, ${num(c.DUPLICATE)} trùng bỏ qua, ${num(c.ERROR)} lỗi${r.reviews ? `, ${r.reviews} nghi trùng chờ xác minh` : ""}.`;
   }, PATHS, "Đã đồng bộ.");
 }
 

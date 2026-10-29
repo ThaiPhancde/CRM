@@ -11,9 +11,16 @@ export function money(v: string | number | null | undefined, currency: string) {
 }
 /** Giá trị đã quy ra tiền quy đổi chung (VND, D-44). */
 export const base = (v: string | number | null | undefined) => money(v, BASE_CURRENCY);
+// Giờ Việt Nam cố định, không phụ thuộc múi giờ máy chủ/trình duyệt.
+const TZ = "Asia/Ho_Chi_Minh";
 export const dateTime = (d: Date | string | null | undefined) =>
-  d ? new Date(d).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
-export const date = (d: Date | string | null | undefined) => (d ? new Date(d).toLocaleDateString("vi-VN") : "—");
+  d ? new Date(d).toLocaleString("vi-VN", { timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+export const date = (d: Date | string | null | undefined) => (d ? new Date(d).toLocaleDateString("vi-VN", { timeZone: TZ }) : "—");
+/** "27/10/2026 23:11" (giờ VN) — thứ tự ngày trước giờ để Excel nhận là ngày giờ. */
+export const dateTimeCsv = (d: Date) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d).map((x) => [x.type, x.value]));
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
+};
 export const num = (n: number) => new Intl.NumberFormat("vi-VN").format(n);
 /** "3 phút trước" — cho thời điểm đồng bộ gần nhất. */
 export function ago(d: Date | string | null | undefined) {

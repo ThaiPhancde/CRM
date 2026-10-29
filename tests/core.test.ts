@@ -6,7 +6,7 @@ import { loadUser, requirePerm, signSession, verifySession } from "@/lib/session
 import { once } from "@/lib/idempotency";
 import { audit } from "@/lib/audit";
 import { HttpError } from "@/lib/errors";
-import { base, money } from "@/lib/format";
+import { base, dateTimeCsv, money } from "@/lib/format";
 
 describe("cô lập workspace (D-03)", () => {
   it("truy vấn bảng thuộc workspace mà thiếu ngữ cảnh bị từ chối", async () => {
@@ -148,5 +148,10 @@ describe("định dạng tiền (D-44)", () => {
     expect(base("1")).toContain("₫");
     expect(digits(money("3.25", "KWD"))).toBe("3250");
     expect(digits(money("102.6", "USD"))).toBe("10260");
+  });
+
+  it("ngày xuất CSV theo giờ Việt Nam (UTC+7), qua nửa đêm đổi ngày", () => {
+    expect(dateTimeCsv(new Date("2026-10-27T16:11:43.956Z"))).toBe("27/10/2026 23:11");
+    expect(dateTimeCsv(new Date("2026-10-27T17:05:00Z"))).toBe("28/10/2026 00:05");
   });
 });

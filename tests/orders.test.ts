@@ -173,6 +173,13 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     await def.sync(def.sh, 3);
     await def.sync(def.pk, 410);
     expect((await def.c.order.findFirstOrThrow()).fulfillmentStatus).toBe("UNFULFILLED");
+    // Pancake gửi bản mới hơn nhưng không làm chủ nhóm nào → NOT_OWNER, đơn giữ nguyên, mốc liên kết vẫn tiến.
+    fixture(def.pk.store.code, [{ visible: 500, record: pancakeOrder({ id: "PK-6", code: "PK-6", updated: 500, status: 3, note: "Shopify #6001", items: [{ sku: "ORBI-VASE01-SG", quantity: 2, price: "99.00", delivered_quantity: 2 }] }) }]);
+    const later = await def.sync(def.pk, 510);
+    expect(later.counts.NOT_OWNER).toBe(1);
+    const kept = await def.c.order.findFirstOrThrow({ include: { links: { where: { platform: "pancake" } } } });
+    expect(kept.netAmount.toString()).toBe("95");
+    expect(kept.links[0].sourceUpdatedAt.toISOString()).toBe(at(500));
 
     const own = await setup("sot-own", { sourceOfTruth: { fulfillment: "pancake" } });
     body(own);
