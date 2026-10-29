@@ -1,0 +1,17 @@
+[
+  {"id": "tickets", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/tickets.md",
+   "allowed_paths": ["src/app/(app)/cham-soc/page.tsx", "src/app/(app)/cham-soc/create-ticket.tsx"],
+   "check": ["python", "-I", "ai-jobs/p5-service/checker.py", "tickets", "."], "timeout_s": 1800},
+  {"id": "ticket-detail", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/ticket-detail.md",
+   "allowed_paths": ["src/app/(app)/cham-soc/[id]"],
+   "check": ["python", "-I", "ai-jobs/p5-service/checker.py", "ticket-detail", "."], "timeout_s": 1800},
+  {"id": "kb-list", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/kb-list.md",
+   "allowed_paths": ["src/app/(app)/tri-thuc/page.tsx"],
+   "check": ["python", "-I", "ai-jobs/p5-service/checker.py", "kb-list", "."], "timeout_s": 1200},
+  {"id": "kb-editor", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/kb-editor.md",
+   "allowed_paths": ["src/app/(app)/tri-thuc/[id]", "src/app/(app)/tri-thuc/moi"],
+   "check": ["python", "-I", "ai-jobs/p5-service/checker.py", "kb-editor", "."], "timeout_s": 1800},
+  {"id": "content", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/content.md",
+   "allowed_paths": ["fixtures/knowledge.json", "fixtures/tickets.json"],
+   "check": ["python", "-I", "ai-jobs/p5-service/checker.py", "content", "."], "timeout_s": 1800}
+]
