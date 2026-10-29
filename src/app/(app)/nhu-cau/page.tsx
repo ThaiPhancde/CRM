@@ -1,7 +1,7 @@
 // Trang danh sách & bảng Kanban nhu cầu mua (Leads) — kiểm quyền lead.view ở server, giữ bộ lọc trên URL.
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge, ButtonLink, Card, cx, EmptyState, PageHeader, StatCard } from "@/components/ui";
+import { Badge, ButtonLink, Card, cx, EmptyState, PageHeader, StatCard, type Tone } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
 import { bindTenant } from "@/lib/db";
 import { dateTime, money, num } from "@/lib/format";
@@ -25,6 +25,20 @@ const LANGUAGE_SHORT: Record<string, string> = {
   en: "English",
   ar: "العربية",
   de: "Deutsch",
+};
+
+const BAND_LABEL: Record<string, string> = {
+  CAO: "Cao",
+  VUA: "Vừa",
+  THAP: "Thấp",
+  CHUA_DU_DU_LIEU: "Chưa đủ dữ liệu",
+};
+
+const BAND_TONE: Record<string, Tone> = {
+  CAO: "success",
+  VUA: "warning",
+  THAP: "neutral",
+  CHUA_DU_DU_LIEU: "neutral",
 };
 
 export default async function LeadsPage({
@@ -284,6 +298,7 @@ export default async function LeadsPage({
                       "Nguồn",
                       "Brand · Thị trường",
                       "Giai đoạn",
+                      "Điểm",
                       "Phụ trách",
                       "Hạn phản hồi",
                       "Tạo lúc",
@@ -341,6 +356,21 @@ export default async function LeadsPage({
 
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <Badge tone={STAGE_TONE[l.stage]}>{STAGE_LABEL[l.stage]}</Badge>
+                      </td>
+
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        {!l.score ? (
+                          <span className="text-fg-subtle">—</span>
+                        ) : l.score.value === null ? (
+                          <Badge tone="neutral">{BAND_LABEL[l.score.band] ?? "Chưa đủ dữ liệu"}</Badge>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="tabular font-semibold text-fg">{num(l.score.value)}</span>
+                            <Badge tone={BAND_TONE[l.score.band] ?? "neutral"}>
+                              {BAND_LABEL[l.score.band] ?? l.score.band}
+                            </Badge>
+                          </div>
+                        )}
                       </td>
 
                       <td className="px-4 py-2.5 whitespace-nowrap">

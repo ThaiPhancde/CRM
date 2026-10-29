@@ -15,6 +15,13 @@ export type LeadBoardProps = Awaited<ReturnType<typeof leadBoard>>;
 
 const NEED_REASON: readonly Stage[] = ["TU_CHOI", "MAT_LIEN_LAC"];
 
+const BAND_TONE: Record<string, Tone> = {
+  CAO: "success",
+  VUA: "warning",
+  THAP: "neutral",
+  CHUA_DU_DU_LIEU: "neutral",
+};
+
 type PendingLoss = {
   id: string;
   contactName: string;
@@ -147,7 +154,14 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
                           >
                             {lead.contactName}
                           </Link>
-                          {lead.overdue && <Badge tone="danger">Quá hạn</Badge>}
+                          <div className="flex shrink-0 items-center gap-1">
+                            {lead.score?.value != null && (
+                              <Badge tone={BAND_TONE[lead.score.band] ?? "neutral"}>
+                                ★ {lead.score.value}
+                              </Badge>
+                            )}
+                            {lead.overdue && <Badge tone="danger">Quá hạn</Badge>}
+                          </div>
                         </div>
 
                         {(lead.phone || lead.email) && (

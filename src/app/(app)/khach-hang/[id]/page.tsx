@@ -3,12 +3,15 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Badge, ButtonLink, Card, cx, EmptyState, PageHeader, SectionTitle, StatCard, type Tone } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
+import { bindTenant } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { date, dateTime, money, num, base } from "@/lib/format";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
 import { getCustomer360, type TimelineItem } from "@/modules/customers/service";
 import { STAGE_LABEL } from "@/modules/sales/leads";
+import { getCustomerScores } from "@/modules/scoring/service";
 import { PreferenceForm } from "./preference-form";
+import { ScoreCard } from "./score-card";
 import { UnmergeButton } from "./unmerge-button";
 
 const ACTIVITY_LABEL: Record<string, string> = { CALL: "Cuộc gọi", MESSAGE: "Tin nhắn", MEETING: "Gặp mặt", NOTE: "Ghi chú" };
@@ -41,6 +44,21 @@ const ADDRESS_KIND_LABEL: Record<string, string> = {
   BILLING: "Thanh toán",
 };
 
+const BAND_LABEL: Record<string, string> = {
+  CAO: "Cao",
+  VUA: "Vừa",
+  THAP: "Thấp",
+  CHUA_DU_DU_LIEU: "Chưa đủ dữ liệu",
+  CHAMPIONS: "Khách tốt nhất",
+  TRUNG_THANH: "Trung thành",
+  MOI: "Mới",
+  CO_NGUY_CO: "Có nguy cơ rời bỏ",
+  NGU_DONG: "Ngủ đông",
+  CAN_CHAM_SOC: "Cần chăm sóc",
+};
+
+const CUSTOMER_SCORE_TYPES = ["RFM", "TXN_RISK", "SUPPORT_NEED"] as const;
+
 export default async function CustomerProfilePage({
   params,
   searchParams,
@@ -49,6 +67,7 @@ export default async function CustomerProfilePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await pageUser("customer.view");
+  bindTenant(user);
   const [{ id }, sp] = await Promise.all([params, searchParams]);
 
   let res: Awaited<ReturnType<typeof getCustomer360>>;
@@ -62,6 +81,11 @@ export default async function CustomerProfilePage({
   if ("redirectTo" in res) {
     redirect("/khach-hang/" + res.redirectTo);
   }
+
+  const scoreData = await getCustomerScores(user, id);
+  const rfmScore = scoreData.scores.find((s) => s.type === "RFM") ?? null;
+  const rfmHasValue = rfmScore != null && rfmScore.value !== null && rfmScore.band !== "CHUA_DU_DU_LIEU";
+  const { metric } = scoreData;
 
   const {
     customer: c,
@@ -141,8 +165,19 @@ export default async function CustomerProfilePage({
         />
         <StatCard
           label="Điểm khách hàng"
-          value={summary.score ?? <span className="text-xl font-semibold">Chưa đủ dữ liệu</span>}
-          hint="Có ở Phase 6"
+          metric="CUS-01"
+          value={
+            <span className="text-xl font-semibold">
+              {rfmHasValue ? (BAND_LABEL[rfmScore.band] ?? rfmScore.band) : "Chưa đủ dữ liệu"}
+            </span>
+          }
+          hint={
+            rfmHasValue
+              ? `RFM ${rfmScore.value} · v${rfmScore.version}`
+              : rfmScore
+                ? `Phiên bản v${rfmScore.version} · chưa đủ dữ liệu`
+                : "Chưa đủ dữ liệu"
+          }
         />
       </div>
 
@@ -172,6 +207,123 @@ export default async function CustomerProfilePage({
       {tab === "tong-quan" && (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="space-y-4 xl:col-span-2">
+            <section aria-label="Điểm & chỉ số" className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-base font-semibold text-fg">Điểm &amp; chỉ số</h2>
+                <span className="text-xs text-fg-muted">
+                  Điểm là giả thuyết v1, không phải xác suất mua
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                {CUSTOMER_SCORE_TYPES.map((t) => (
+                  <ScoreCard
+                    key={t}
+                    type={t}
+                    score={scoreData.scores.find((s) => s.type === t) ?? null}
+                  />
+                ))}
+              </div>
+
+              <Card>
+                <SectionTitle>
+                  {metric
+                    ? `Chỉ số 12 tháng (R12M, tính lúc ${dateTime(metric.asOf)})`
+                    : "Chỉ số 12 tháng (R12M)"}
+                </SectionTitle>
+                {!metric ? (
+                  <p className="px-4 py-4 text-sm text-fg-muted">
+                    Chưa dựng chỉ số — chạy job hằng ngày hoặc Quản lý bấm Tính lại ngay ở Quản trị › Điểm khách hàng
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                      <caption className="sr-only">Chỉ số 12 tháng của khách hàng</caption>
+                      <thead className="bg-bg-subtle">
+                        <tr className="text-left text-xs font-medium text-fg-muted">
+                          <th scope="col" className="h-9 border-b border-border px-4">Chỉ số</th>
+                          <th scope="col" className="h-9 border-b border-border px-4 text-right">Giá trị</th>
+                          <th scope="col" className="h-9 border-b border-border px-4">Chỉ số</th>
+                          <th scope="col" className="h-9 border-b border-border px-4 text-right">Giá trị</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        <tr className="h-10">
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">REV-01</span>
+                            Giá trị đặt
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.rev01 != null ? base(metric.rev01) : "—"}
+                          </td>
+                          <td className="px-4 py-2 text-fg-muted">
+                            Đơn / đơn giao / khách từ chối
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {num(metric.orders)} / {num(metric.deliveredOrders)} / {num(metric.failedByCustomer)}
+                          </td>
+                        </tr>
+                        <tr className="h-10">
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">REV-02</span>
+                            Xác nhận
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.rev02 != null ? base(metric.rev02) : "—"}
+                          </td>
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">CUS-02</span>
+                            Chu kỳ mua TB
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.avgCycleDays != null ? `${metric.avgCycleDays.toFixed(1)} ngày` : "—"}
+                          </td>
+                        </tr>
+                        <tr className="h-10">
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">REV-03</span>
+                            Giao thành công
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.rev03 != null ? base(metric.rev03) : "—"}
+                          </td>
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">CUS-03</span>
+                            Mua lại trong 60 ngày
+                          </td>
+                          <td className="px-4 py-2 text-right font-medium text-fg">
+                            {metric.repurchase60 ? "Có" : "Không"}
+                          </td>
+                        </tr>
+                        <tr className="h-10">
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">REV-04</span>
+                            Thực thu
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.rev04 != null ? base(metric.rev04) : "—"}
+                          </td>
+                          <td className="px-4 py-2 text-fg-muted">
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">CUS-04</span>
+                            Lợi nhuận gộp
+                          </td>
+                          <td className="tabular px-4 py-2 text-right font-medium text-fg">
+                            {metric.grossProfit != null ? (
+                              base(metric.grossProfit)
+                            ) : (
+                              <span className="text-fg-subtle">
+                                —{scoreData.showMoney ? " (thiếu giá vốn)" : ""}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </section>
+
             <Card>
               <SectionTitle>Dòng thời gian hợp nhất</SectionTitle>
               {timeline.length === 0 ? (

@@ -1,13 +1,35 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { pageUser } from "@/lib/current-user";
+import { bindTenant } from "@/lib/db";
 import { getCatalog } from "@/modules/admin/service";
 import { listCustomers, parseCustomerFilter, type CustomerFilter } from "@/modules/customers/service";
 import { date, num, base } from "@/lib/format";
-import { Badge, ButtonLink, Card, EmptyState, PageHeader, StatCard } from "@/components/ui";
+import { Badge, ButtonLink, Card, EmptyState, PageHeader, StatCard, type Tone } from "@/components/ui";
+
+const RFM_LABEL: Record<string, string> = {
+  CHAMPIONS: "Khách tốt nhất",
+  TRUNG_THANH: "Trung thành",
+  MOI: "Mới",
+  CO_NGUY_CO: "Có nguy cơ rời bỏ",
+  NGU_DONG: "Ngủ đông",
+  CAN_CHAM_SOC: "Cần chăm sóc",
+  CHUA_DU_DU_LIEU: "Chưa đủ dữ liệu",
+};
+
+const RFM_TONE: Record<string, Tone> = {
+  CHAMPIONS: "success",
+  TRUNG_THANH: "success",
+  MOI: "info",
+  CO_NGUY_CO: "warning",
+  NGU_DONG: "neutral",
+  CAN_CHAM_SOC: "info",
+  CHUA_DU_DU_LIEU: "neutral",
+};
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await pageUser("customer.view");
+  bindTenant(user);
   const f = parseCustomerFilter(await searchParams);
   const [data, catalog] = await Promise.all([
     listCustomers(user, f),
@@ -37,6 +59,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     ["name", "Tên khách (A–Z)"],
   ];
   const currentSort = f.sort === "value" && !data.showMoney ? "recent" : f.sort;
+  const rfmCount = data.rows.filter((r) => r.rfm && r.rfm.band !== "CHUA_DU_DU_LIEU" && r.rfm.value != null).length;
 
   return (
     <>
@@ -54,9 +77,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           hint={data.total > 0 ? `${num(data.repeatCount)} khách có từ 2 đơn trở lên` : "Khách có từ 2 đơn hàng trở lên"}
         />
         <StatCard
-          label="Điểm khách hàng"
-          value={<span className="text-xl font-medium text-fg-muted">Chưa đủ dữ liệu</span>}
-          hint="Tính năng chấm điểm khách hàng mở từ Phase 6"
+          label="Đã phân hạng RFM (trên trang)"
+          metric="CUS-01"
+          value={rfmCount > 0 ? num(rfmCount) : <span className="text-xl font-medium text-fg-muted">Chưa đủ dữ liệu</span>}
+          hint="Phân hạng theo ngũ phân vị trong team"
         />
       </div>
 
@@ -166,6 +190,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                 <tr className="text-left text-xs font-medium text-fg-muted">
                   {[
                     "Khách",
+                    "Hạng RFM",
                     "Email",
                     "Thị trường",
                     "Số đơn",
@@ -174,11 +199,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                     "Giá trị 12 tháng (REV-03)",
                     "Nguồn",
                     "Thẻ",
-                  ].map((h, i) => (
+                  ].map((h) => (
                     <th
                       key={h}
                       scope="col"
-                      className={`h-10 border-b border-border px-4 whitespace-nowrap ${i === 3 || i === 6 ? "text-right" : ""}`}
+                      className={`h-10 border-b border-border px-4 whitespace-nowrap ${h === "Số đơn" || h === "Giá trị 12 tháng (REV-03)" ? "text-right" : ""}`}
                     >
                       {h}
                     </th>
@@ -193,6 +218,15 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                         {c.name}
                       </Link>
                       <p className="tabular text-xs text-fg-subtle">{c.phone ?? "—"}</p>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      {c.rfm && c.rfm.band !== "CHUA_DU_DU_LIEU" && c.rfm.value != null ? (
+                        <Badge tone={RFM_TONE[c.rfm.band] ?? "neutral"}>
+                          {RFM_LABEL[c.rfm.band] ?? c.rfm.band}
+                        </Badge>
+                      ) : (
+                        <span className="text-fg-subtle">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-fg-muted">{c.email ?? "—"}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-fg">{c.market ?? "—"}</td>

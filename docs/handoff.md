@@ -2,6 +2,24 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 10) — Phase 6 xong, chờ nghiệm thu
+
+**Đã làm:** chỉ số khách R12M qua lớp Warehouse (Postgres chạy thật, BigQuery khung, SQL sinh chung), điểm v1 có phiên bản (ưu tiên lead, RFM, rủi ro giao dịch, nhu cầu hỗ trợ), hiển thị ở 360/khách/lead, trang cấu hình trọng số + từ điển chỉ số. Tỷ lệ 50/50 (D-51). Chi tiết: `implementation-status.md` Phase 6.
+
+**Quyết định mới:** D-51 (50/50), D-52 (định nghĩa chỉ số + công thức điểm).
+
+**Chạy thêm:** `npx prisma migrate deploy` → `npm run db:seed` (nạp 24 mã chỉ số) → `npm run worker -- --once` (dựng chỉ số + chấm điểm), hoặc Quản lý vào Quản trị › Điểm khách hàng › Tính lại ngay.
+
+**Quy ước mới:**
+- SQL phân tích viết bằng `dialect()` trong `src/adapters/warehouse/sql.ts` — không viết SQL riêng Postgres cho chỉ số.
+- Tham số thời gian trong SQL thô phải ép UTC (DB chạy múi giờ máy).
+- Bằng chứng điểm dùng nhãn tiếng Việt và số đã định dạng.
+- Work order cho Gemini liệt kê đúng enum/nhãn; checker cấm tên tự bịa.
+
+**Chờ người dùng:** nghiệm thu Phase 6; Q-20; xác nhận số mặc định D-48/D-49/D-50.
+
+**Bước tiếp theo:** Phase 7 — điều phối chăm sóc + marketing (Segment, Journey, ContactCap, Campaign, Touchpoint, Outbox SIMULATED). Phân khúc dùng được ngay hạng RFM/điểm của Phase 6.
+
 ## Checkpoint 29/10/2026 (lần 9) — nghiệm thu Phase 3–5
 
 **Đã làm:** theo yêu cầu người dùng, nghiệm thu Phase 3–5 theo tiêu chí thiết kế mục 10 — tất cả đạt. Biên bản: `docs/acceptance/phase-3-5.md`. Lần đầu bấm thử gộp → tách khách trên trình duyệt (trước chỉ có test), kiểm che PII/tiền qua đường xuất CSV với vai Marketing, chạy worker thật trên DB demo (tự đóng 5 lead im lặng — dữ liệu demo đã đổi).

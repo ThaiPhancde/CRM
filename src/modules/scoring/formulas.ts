@@ -2,6 +2,8 @@
 // Mọi điểm trả: value (null = chưa đủ dữ liệu), band, reasons (thành phần → điểm → bằng chứng), missingData, suggestedAction.
 // Không dùng tên/quốc gia làm tín hiệu chất lượng (HLD §7.3); lỗi hãng vận chuyển không tính vào rủi ro khách.
 
+import { STAGE_LABEL } from "@/modules/sales/labels";
+
 export type Reason = { part: string; points: number; max: number; evidence: string };
 export type ScoreResult = { value: number | null; band: string; reasons: Reason[]; missingData: string[]; suggestedAction: string | null };
 
@@ -59,7 +61,7 @@ export function scoreLead(x: LeadInput, w: Weights, now: Date): ScoreResult {
   const reasons: Reason[] = [
     { part: "Nhu cầu phù hợp", points: pts(fitRatio, w.fit), max: w.fit, evidence: [x.interest ? `quan tâm: ${x.interest}` : "chưa rõ sản phẩm", x.hasBudget ? "có ngân sách" : "chưa có ngân sách", x.hasBrandMarket ? "đúng brand/thị trường" : "chưa rõ brand/thị trường"].join("; ") },
     { part: "Tín hiệu mua rõ", points: pts(intentRatio, w.intent), max: w.intent, evidence: hits.length ? hits.map((h) => INTENT_LABEL[h]).join(", ") : x.stage === "CHO_QUYET_DINH" ? "đang chờ quyết định" : "chưa thấy tín hiệu mua" },
-    { part: "Tương tác gần, có tiến triển", points: pts(recency + progress, w.engagement), max: w.engagement, evidence: `${last ? `khách nhắn ${hours < 1 ? "dưới 1 giờ" : `${Math.floor(hours)} giờ`} trước` : "khách chưa nhắn"}; giai đoạn ${x.stage}` },
+    { part: "Tương tác gần, có tiến triển", points: pts(recency + progress, w.engagement), max: w.engagement, evidence: `${last ? `khách nhắn ${hours < 1 ? "dưới 1 giờ" : `${Math.floor(hours)} giờ`} trước` : "khách chưa nhắn"}; giai đoạn ${STAGE_LABEL[x.stage]}` },
     { part: "Sẵn sàng đặt", points: pts(readyRatio, w.readiness), max: w.readiness, evidence: [x.stage === "CHO_QUYET_DINH" ? "chờ quyết định" : null, x.hasBudget ? "có ngân sách" : null, x.hasNextAction ? "đã hẹn liên hệ lại" : null].filter(Boolean).join(", ") || "chưa sẵn sàng" },
   ];
   const value = reasons.reduce((s, r) => s + r.points, 0);
@@ -88,7 +90,7 @@ const RFM_ACTION: Record<string, string> = {
   CAN_CHAM_SOC: "Theo dõi, gửi nội dung phù hợp",
 };
 
-/** `rev03` null = người xem không có quyền tiền (bằng chứng M bị che, điểm vẫn tính ở server). */
+/** `rev03`: chuỗi hiển thị đã định dạng (vd "63.724.900"); null = không có quyền tiền (bằng chứng M bị che, điểm vẫn tính ở server). */
 export function scoreRfm(x: RfmInput): ScoreResult {
   if (x.r == null || x.f == null || x.m == null || !x.deliveredOrders) {
     return { value: null, band: INSUFFICIENT, reasons: [], missingData: ["chưa có đơn giao thành công trong 12 tháng"], suggestedAction: null };

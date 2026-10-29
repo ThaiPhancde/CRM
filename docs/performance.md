@@ -75,6 +75,8 @@ Dữ liệu đo: 602.000 đơn, 200.500 khách, 180.010 lead, 1.440.000 tương 
 
 **Phase 5 (thêm 50.000 ticket, 150.000 sự kiện, 300 bài × 2 phiên bản — `docs/perf/phase5.json`): 0/35 vượt mục tiêu.** Danh sách ticket 55 ms, đang mở + quá hạn 6 ms, tìm theo tiêu đề 123 ms, chi tiết 5 ms, danh sách tri thức 2 ms, hàng đợi Sales (có ticket) 23 ms, worker nhắc SLA 25 ms/lượt. Index đặt ngay trong migration của phase theo quy tắc 11 nên không phải sửa sau.
 
+**Phase 6 (`docs/perf/phase6.json`): 0/41 vượt mục tiêu sau khi sửa.** Lần đo đầu vượt 2: job hằng ngày (chỉ số R12M + 600k dòng điểm cho 200k khách) **148 s** (mục tiêu < 120 s) — SQL chỉ số 30 s, xóa/ghi CustomerMetric 13 s, ghi điểm tuần tự ~100 s; sửa: `SET LOCAL work_mem = '128MB'` trong giao dịch dựng chỉ số + ghi điểm 4 khúc song song → **80 s**. Danh sách đơn theo phạm vi Sales chậm lại **579 ms** do phạm vi khách thêm nhánh ticket (3 EXISTS lồng) → hợp 3 truy vấn có index → **321 ms**. Điểm/chỉ số một khách 4 ms, danh sách khách kèm hạng RFM 120 ms, danh sách lead kèm điểm 166 ms, chấm lead mở 0,7 s/lượt.
+
 ## 4. Nguyên nhân và cách sửa
 
 | Nguyên nhân | Ảnh hưởng | Sửa |

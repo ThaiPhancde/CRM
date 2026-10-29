@@ -20,8 +20,15 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 13 | 2026-10-29 | p5-service `kb-list`: /tri-thuc | 1 | gemini-4-argon-high, write | 138 s | checker 0, tsc 0 | 0 | 0 sửa | ~250 dòng |
 | 14 | 2026-10-29 | p5-service `kb-editor`: đọc/soạn/phiên bản/xuất bản | 1 | gemini-4-argon-high, write | 307 s | checker 0, tsc 0 | 0 | 0 sửa | ~800 dòng |
 | 15 | 2026-10-29 | p5-service `content`: 20 bài tri thức + 30 ticket vi/en/ar/de | 1 | gemini-4-argon-high, write | 349 s | checker 0 (số lượng, phân bố, ngôn ngữ, không HTML) | 0 | 0 sửa | 62 KB |
+| 16 | 2026-10-29 | p6-scoring `metrics-content`: 24 mã từ điển chỉ số | 1 | gemini-4-argon-high, write | 182 s | checker 0 (đúng tập mã, VND cho chỉ số tiền) | 0 | 0 sửa | JSON |
+| 17 | 2026-10-29 | p6-scoring `formula-tests`: 68 ca bảng hàm điểm | 1 | gemini-4-argon-high, write | 270 s | checker 0; vitest 68/68 | 0 | 0 sửa (Claude tự tính lại từng ca: đúng) | 508 dòng |
+| 18 | 2026-10-29 | p6-scoring `customer-scores`: thẻ điểm 360 + bảng R12M + cột hạng RFM | 1 | gemini-4-argon-high, write | 474 s | checker 0, tsc 0 | 0 | 0 sửa | ~430 dòng |
+| 19 | 2026-10-29 | p6-scoring `lead-scores`: điểm ở danh sách/Kanban/chi tiết lead | 1 | gemini-4-argon-high, write | 317 s | checker 0, tsc 0 | 0 | 0 sửa | ~200 dòng |
+| 20 | 2026-10-29 | p6-scoring `score-admin`: /quan-tri/diem + /quan-tri/chi-so | 1 | gemini-4-argon-high, write | 209 s | checker 0, tsc 0 | 0 | 0 sửa | ~350 dòng |
 
 ## Notes
+
+5. Batch p6-scoring (5 job, 474 s; tỷ lệ 50/50 — D-51): cả 5 qua checker + tsc lần đầu, **0 lỗi review phía Gemini** — lần đầu từ p3. Khác biệt so với p5: work order liệt kê đúng enum/nhãn/tông màu và checker cấm tên hạng tự bịa. Bảng test hàm thuần là việc mới giao Gemini: Claude kiểm bằng cách tự tính lại từng kỳ vọng từ công thức (không chỉ chạy test) — đúng toàn bộ. Lỗi review lần này nằm ở phía Claude (bằng chứng điểm còn mã thô, số tiền chưa định dạng) — lộ ra khi Gemini hiển thị.
 
 4. Batch p5-service (5 job song song, 349 s): cả 5 qua checker + tsc lần đầu, 0 ghi sai chỗ. Hai luật ranh giới client/server thêm sau p4 không bắt được lỗi nào lần này (Gemini đã theo đúng hướng dẫn mục 2). Lỗi mới: tự bịa giá trị enum khi work order không liệt kê (sự kiện vận đơn) — bài học: work order phải liệt kê đúng giá trị enum hoặc trỏ tới bảng nhãn dùng chung.
 

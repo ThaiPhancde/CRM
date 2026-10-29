@@ -62,6 +62,8 @@ REV-02 (xác nhận) không phải mốc COD; mốc "đã thu" chỉ có ở CAS
 | TXN_RISK | CUS-05, thông tin thiếu, địa chỉ chưa chuẩn | 60/20/20 | Thấp/Vừa/Cao; < 2 đơn → "chưa đủ dữ liệu" |
 | SUPPORT_NEED | ticket mở, mức, thời gian chờ | 40/40/20 | Thấp/Vừa/Cao |
 
+Cách tính chi tiết đã cài (Phase 6, D-52): `src/adapters/warehouse/sql.ts` (chỉ số R12M, một định nghĩa cho Postgres và BigQuery), `src/modules/scoring/formulas.ts` (điểm). REV-04 hiện chưa gồm COD đã đối soát (Settlement ở Phase 10). Lợi nhuận gộp để trống khi thiếu giá vốn.
+
 Mọi trọng số ở bảng trên là **giả thuyết v1** (D-33, HLD §7.2), chưa được kiểm chứng; UI ghi rõ phiên bản và không trình bày như chuẩn.
 
 Mỗi `Score` ghi `reasons[]` (thành phần → điểm → bằng chứng), `missingData[]`, `suggestedAction` theo HLD §7.4.

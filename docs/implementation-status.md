@@ -12,13 +12,65 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 3 Customer 360 | **Đã nghiệm thu** (29/10, `docs/acceptance/phase-3-5.md`) | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
 | 4 Nhu cầu mua + sales | **Đã nghiệm thu** (29/10) | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
 | 5 Dịch vụ + tri thức | **Đã nghiệm thu** (29/10) | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
-| 6 Chỉ số + điểm + Warehouse | Chưa | | |
+| 6 Chỉ số + điểm + Warehouse | **Xong, chờ nghiệm thu** | 29/10/2026 | 230 test xanh; một khách tính tay khớp REV-01..04 + RFM; đo tải 0/41 vượt; Gemini 50% |
 | 7 Journey + marketing | Chưa | | |
 | 8 Trung tâm AI | Chưa | | |
 | 9 Báo cáo + dashboard | Chưa | | |
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Phase 6 — đã làm (29/10/2026) — tỷ lệ Claude/Gemini 50/50 (D-51)
+
+**Claude (lõi).**
+- **Schema** (migration `phase6_metrics_scores`): `MetricDefinition`, `CustomerMetric`, `ScoreVersion`, `Score`, index đầy đủ.
+- **Warehouse** `src/adapters/warehouse/`:
+  - SQL chỉ số R12M viết một lần, sinh cho Postgres và BigQuery (`dialect`: bảng/cột, tham số `@x`, phép tính ngày, ép thời gian về UTC).
+  - Postgres chạy thật bằng `INSERT … SELECT` trong giao dịch (`work_mem` 128MB); BigQuery là khung trả 501 có hướng dẫn (Phase 12).
+- **Chấm điểm** `src/modules/scoring/`:
+  - `formulas.ts` (hàm thuần): ưu tiên lead, RFM, rủi ro giao dịch, nhu cầu hỗ trợ (D-52).
+  - `engine.ts`: dựng chỉ số + chấm khách theo khúc 5.000 ghi song song; lead mở chấm lại khi có tương tác mới.
+  - `service.ts`: điểm theo quyền/phạm vi, che tiền; phiên bản trọng số (tổng 100, điểm cũ giữ, audit); "Tính lại ngay"; từ điển chỉ số.
+- Quyền `score.config`; action `quan-tri/diem/actions.ts`; menu Điểm khách hàng + Từ điển chỉ số; điểm trong danh sách lead/Kanban/khách.
+- Worker chạy `scoringJobs`: chỉ số + điểm khách hằng ngày (hoặc khi có phiên bản mới), lead mỗi lượt. Seed nạp `fixtures/metrics.json`.
+- **Sửa khi đo:**
+  - Lệch múi giờ 7 tiếng ở SQL thô (DB chạy múi giờ máy) → ép UTC.
+  - Job hằng ngày 148 → 80 s.
+  - Phạm vi đơn của Sales 579 → 321 ms (hợp 3 truy vấn có index).
+  - Bằng chứng điểm còn mã thô (`CHO_QUYET_DINH`, số tiền chưa định dạng).
+
+**Gemini (batch `p6-scoring`, 5 job song song, 474 s, cả 5 qua checker lần đầu, 0 ghi sai chỗ).**
+- `fixtures/metrics.json`: 24 mã chỉ số, đúng tập mã trong `docs/metrics.md`.
+- `tests/formulas.test.ts`: 68 ca bảng. **Claude tự tính lại từng ca:** rủi ro giao dịch, hỗ trợ, ưu tiên lead (kể cả trọng số tùy chỉnh) — đều đúng công thức.
+- Thẻ điểm hồ sơ 360 + bảng chỉ số R12M có mã REV/CUS; cột "Hạng RFM" ở danh sách khách.
+- Điểm lead: cột danh sách, huy hiệu trên thẻ Kanban, khối chi tiết.
+- Trang `/quan-tri/diem` (phiên bản, form trọng số kiểm tổng 100 trực tiếp, Tính lại ngay) và `/quan-tri/chi-so`.
+- Checker cấm tên hạng tự bịa: 0 vi phạm. Work order lần này liệt kê đúng giá trị enum/nhãn — không còn lỗi tự đặt tên như p5.
+
+**Test (29/10):** `npx vitest run` → 9 file, **230 passed, 1 skipped**. Ca bỏ qua có chủ đích: chạy thử thật BigQuery chỉ chạy khi có khóa. Test Phase 6:
+- **Một khách tính tay khớp** REV-01 740 / REV-02 740 / REV-03 480 / REV-04 580, hoàn 20, độ gần 35 ngày, chu kỳ 181,5 ngày, mua lại 60 ngày = không, từ chối do khách 1, lợi nhuận null (thiếu giá vốn), RFM 4-5-4.
+- SQL BigQuery không còn cú pháp riêng Postgres; adapter BigQuery trả 501.
+- Chưa đủ dữ liệu = null, không mặc định rủi ro.
+- Đổi trọng số tạo v2, điểm v1 giữ; tổng ≠ 100 bị chặn; Marketing 403.
+- Thiếu quyền tiền thì chỉ số tiền null, bằng chứng M bị che; khách ngoài phạm vi 404.
+- Lead: tín hiệu mua 4 nhóm; chỉ chấm lại khi có tương tác mới.
+- 68 ca bảng hàm thuần.
+
+`tsc` sạch; `next build` thành công. **Đo tải 200k khách: 0/41 vượt mục tiêu** (`docs/perf/phase6.json`; job hằng ngày 80 s, điểm một khách 4 ms).
+
+**Trình duyệt (Quản lý, 1600):**
+- Danh sách khách có hạng "Khách tốt nhất".
+- Hồ sơ 360: RFM 555, rủi ro 0, hỗ trợ 0 kèm lý do/phiên bản/gợi ý, bảng R12M.
+- Danh sách lead có cột Điểm; chi tiết lead 87/100 kèm lý do.
+- `/quan-tri/diem` "Tính lại ngay" → "Đã dựng chỉ số và chấm điểm 311 khách (0,3 giây)".
+
+**Còn thiếu / để sau:**
+- REV-04 chưa gồm COD đã đối soát (Settlement — Phase 10).
+- Chạy thật BigQuery (Phase 12).
+- Ý định mua dùng từ khóa — Phase 8 thay bằng LLM có bằng chứng.
+- Q-20 (REV-03 hay REV-04 là giao dịch hợp lệ) còn mở.
+
+**Tỷ lệ:** theo loại việc ~50/50 (Claude: Warehouse/SQL/công thức/engine/phiên bản/quyền/test tính tay/đo tải; Gemini: nội dung chỉ số, bảng test, toàn bộ giao diện điểm). Theo dòng: Claude ~1.050, Gemini ~1.500 + nội dung 24 mã.
 
 ## Phase 5 — đã làm (29/10/2026)
 

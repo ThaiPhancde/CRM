@@ -55,7 +55,7 @@ export async function refreshAndScoreCustomers(client: Db, workspaceId: string, 
     const rows = ms.flatMap((m) => {
       const c = custs.get(m.customerId);
       return [
-        row("RFM", v.RFM.id, { customerId: m.customerId }, scoreRfm({ r: m.rScore, f: m.fScore, m: m.mScore, recencyDays: m.recencyDays, deliveredOrders: m.deliveredOrders, rev03: m.rev03.toFixed(0) }), now),
+        row("RFM", v.RFM.id, { customerId: m.customerId }, scoreRfm({ r: m.rScore, f: m.fScore, m: m.mScore, recencyDays: m.recencyDays, deliveredOrders: m.deliveredOrders, rev03: Number(m.rev03).toLocaleString("vi-VN", { maximumFractionDigits: 0 }) }), now),
         row("TXN_RISK", v.TXN_RISK.id, { customerId: m.customerId }, scoreTxnRisk({ confirmedOrders: m.confirmedOrders, failedByCustomer: m.failedByCustomer, hasPhone: !!c?.primaryPhoneE164, hasEmail: !!c?.primaryEmail, hasAddress: (c?._count.addresses ?? 0) > 0 }, v.TXN_RISK.weights), now),
         row("SUPPORT_NEED", v.SUPPORT_NEED.id, { customerId: m.customerId }, scoreSupport({ openTickets: m.openTickets, maxOpenPriority: m.maxOpenPriority, oldestOpenAt: m.oldestOpenTicketAt }, v.SUPPORT_NEED.weights, now), now),
       ];

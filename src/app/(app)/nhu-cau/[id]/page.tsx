@@ -7,8 +7,10 @@ import { bindTenant } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { date, dateTime, money, num } from "@/lib/format";
 import { assignableUsers, getLead, STAGE_LABEL, type LeadDetail } from "@/modules/sales/leads";
+import { getLeadScore } from "@/modules/scoring/service";
 import { ActivityForm } from "./activity-form";
 import { ClaimButton } from "./claim-button";
+import { LeadScoreCard } from "./lead-score";
 import { ReassignDrawer } from "./reassign";
 import { StageForm } from "./stage-form";
 import { TaskForm } from "./task-form";
@@ -94,6 +96,8 @@ export default async function LeadDetailPage({
     if (e instanceof HttpError && e.status === 404) notFound();
     throw e;
   }
+
+  const score = await getLeadScore(user, id);
 
   const users =
     lead.canAssign || lead.canEdit
@@ -265,8 +269,10 @@ export default async function LeadDetailPage({
           </Card>
         </div>
 
-        {/* Cột phải 1/3: Thông tin liên hệ, Giai đoạn, Việc, Kịch bản tư vấn, Lịch sử phụ trách */}
+        {/* Cột phải 1/3: Điểm ưu tiên sales, Thông tin liên hệ, Giai đoạn, Việc, Kịch bản tư vấn, Lịch sử phụ trách */}
         <div className="space-y-4">
+          <LeadScoreCard score={score} />
+
           <Card>
             <SectionTitle>Thông tin liên hệ</SectionTitle>
             <dl className="space-y-2.5 px-4 py-3 text-sm">

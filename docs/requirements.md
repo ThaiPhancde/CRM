@@ -64,13 +64,13 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-40 | Từ điển chỉ số: REV-01…04, OPS, CASH, CUS; mọi báo cáo ghi mã | D-10; `levelup-company-os/06` | MĐ | 6 | ✓ |
+| R-40 | Từ điển chỉ số: REV-01…04, OPS, CASH, CUS; mọi báo cáo ghi mã | D-10; `levelup-company-os/06` | MĐ — **đã có Phase 6** (bảng MetricDefinition + trang Từ điển chỉ số) | 6 | ✓ |
 | R-41 | Bộ chỉ số nhiều chiều (phù hợp, ý định, tương tác, giá trị, mua lại, rủi ro, hỗ trợ, tin cậy) | HLD §7.1 | XĐ | 6 | ✓ |
-| R-42 | Điểm ưu tiên sales 25/35/25/15; lưu lý do, phiên bản, thiếu dữ liệu, hành động | HLD §7.2; D-11; D-33 | XĐ | 6 | ✓ |
-| R-43 | RFM; COD phân tích riêng giao thành công/đã thu/đã đối soát | HLD §7.3 | XĐ | 6 | ✓ |
+| R-42 | Điểm ưu tiên sales 25/35/25/15; lưu lý do, phiên bản, thiếu dữ liệu, hành động | HLD §7.2; D-11; D-33; D-52 | XĐ — **đã có Phase 6** | 6 | ✓ |
+| R-43 | RFM; COD phân tích riêng giao thành công/đã thu/đã đối soát | HLD §7.3; D-52 | XĐ — RFM có; COD đã thu/đối soát chờ Phase 10 | 6 | ◐ |
 | R-44 | Phân biệt giá trị đã tạo với dự báo; dự báo kiểm thử theo thời gian | HLD §7.3 | XĐ | 6 (khung), 12 | ◐ |
 | R-45 | Insight → hành động (giao sales, task, ưu tiên ticket, cảnh báo nguồn/sản phẩm) | HLD §7.4 | XĐ | 6, 7 | ✓ |
-| R-46 | Warehouse interface; Postgres demo, BigQuery thật; không trên đường bắt buộc hằng ngày | HLD §2, §9; D-05 | XĐ | 6 | ◐ |
+| R-46 | Warehouse interface; Postgres demo, BigQuery thật; không trên đường bắt buộc hằng ngày | HLD §2, §9; D-05 | XĐ — **đã có Phase 6** (Postgres chạy thật; BigQuery khung 501, SQL sinh chung) | 6 | ◐ |
 
 ### Điều phối chăm sóc và marketing
 
