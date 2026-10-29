@@ -71,6 +71,16 @@ async function main() {
   await time("Hàng đợi của tôi (Trưởng nhóm)", "page", () => queue.myQueue(lead));
   await time("Thông báo (Sales)", "detail", () => queue.listNotifications(sales));
   await time("Việc: danh sách (Trưởng nhóm)", "page", () => tasks.listTasks(lead, tasks.parseTaskFilter({})));
+  const tickets = await import("../../src/modules/service/tickets");
+  const kb = await import("../../src/modules/service/knowledge");
+  const aTicket = (await c.ticket.findFirst({ where: { status: "DANG_XU_LY" }, orderBy: { createdAt: "desc" }, select: { id: true } }))?.id;
+  await time("Ticket: danh sách (Quản lý)", "page", () => tickets.listTickets(mgr, tickets.parseTicketFilter({})));
+  await time("Ticket: đang mở + quá hạn", "page", () => tickets.listTickets(mgr, tickets.parseTicketFilter({ status: "open", overdue: "1" })));
+  await time("Ticket: tìm theo tiêu đề", "page", () => tickets.listTickets(mgr, tickets.parseTicketFilter({ q: "tải 4321" })));
+  await time("Ticket: danh sách (Sales)", "page", () => tickets.listTickets(sales, tickets.parseTicketFilter({})));
+  if (aTicket) await time("Ticket: chi tiết", "detail", () => tickets.getTicket(mgr, aTicket));
+  await time("Tri thức: danh sách", "page", () => kb.listArticles(sales, kb.parseKbFilter({})));
+  await time("Worker: nhắc SLA ticket (1 lượt)", "job", () => tickets.remindTicketSla(c), 1);
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

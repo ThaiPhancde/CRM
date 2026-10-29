@@ -9,6 +9,7 @@ import { runSync } from "../src/modules/connectors/service";
 import { resolveAllCustomers } from "../src/modules/customers/resolve";
 import { workspaceDb } from "../src/lib/db";
 import { seedSales } from "../scripts/seed-sales";
+import { seedService } from "../scripts/seed-service";
 
 const db = new PrismaClient();
 type Catalog = { products: { code: string; brand: string; category: string; name_vi: string; name_en: string; name_ar?: string; variants: { sku: string; attributes: Record<string, string>; cost_usd: string }[] }[] };
@@ -63,6 +64,8 @@ async function main() {
   ]);
   // Phase 4: kịch bản + nhu cầu mua kèm hội thoại (sau khi có khách để gắn).
   console.log("nhu cầu mua:", await seedSales());
+  // Phase 5: bài tri thức + ticket kèm hội thoại.
+  console.log("chăm sóc:", await seedService());
   console.log(`xong: đơn=${orders} liên kết nguồn=${links} đơn chờ xác minh=${reviews} khách=${customers} khách chờ xác minh=${customerReviews}`);
 }
 

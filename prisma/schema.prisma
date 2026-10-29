@@ -1050,6 +1050,8 @@ model Ticket {
 
 enum TicketEventType {
   CREATED
+  /// Khách nhắn thêm sau khi tạo ticket (kênh hội thoại).
+  CUSTOMER
   NOTE
   REPLY
   STATUS

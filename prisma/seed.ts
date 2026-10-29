@@ -98,6 +98,8 @@ async function main() {
         update: {},
         create: { workspaceId: ws.id, code: b.code, name: b.name },
       });
+      // Chính sách SLA mẫu: Lumi Home cam kết nhanh hơn mặc định ở mức Cao (D-50).
+      if (b.code === "LUMI") await db.slaPolicy.upsert({ where: { workspaceId_brandId_priority: { workspaceId: ws.id, brandId: brand.id, priority: "CAO" } }, update: {}, create: { workspaceId: ws.id, brandId: brand.id, priority: "CAO", firstResponseHours: 1, resolveHours: 6 } });
       for (const s of b.stores) {
         await db.store.upsert({
           where: { workspaceId_code: { workspaceId: ws.id, code: s.code } },

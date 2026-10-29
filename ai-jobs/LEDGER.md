@@ -15,8 +15,15 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 8 | 2026-10-29 | p4-sales `queue`: /hang-doi | 1 | gemini-4-argon-high, write | 149 s | checker 0, tsc 0 | 0 | 0 sửa | 213 dòng |
 | 9 | 2026-10-29 | p4-sales `tasks`: /nhiem-vu | 1 | gemini-4-argon-high, write | 231 s | checker 0, tsc 0 | 0 | 1: hằng số từ file client | 488 dòng |
 | 10 | 2026-10-29 | p4-sales `content`: 60 lead + hội thoại vi/en/ar/de, 16 kịch bản | 1 | gemini-4-argon-high, write | 421 s | checker 0 (số lượng, phân bố giai đoạn, mã quốc gia, ngôn ngữ) | 0 | 0 sửa | 68 KB |
+| 11 | 2026-10-29 | p5-service `tickets`: /cham-soc danh sách + Drawer tạo | 1 | gemini-4-argon-high, write | 270 s | checker 0, tsc 0 | 0 | 0 sửa | ~600 dòng |
+| 12 | 2026-10-29 | p5-service `ticket-detail`: /cham-soc/[id] | 1 | gemini-4-argon-high, write | 263 s | checker 0, tsc 0 | 0 | 2: tự đặt tên enum sự kiện vận đơn (nhãn thô); tin khách mở ticket ghi "Hệ thống" | ~900 dòng |
+| 13 | 2026-10-29 | p5-service `kb-list`: /tri-thuc | 1 | gemini-4-argon-high, write | 138 s | checker 0, tsc 0 | 0 | 0 sửa | ~250 dòng |
+| 14 | 2026-10-29 | p5-service `kb-editor`: đọc/soạn/phiên bản/xuất bản | 1 | gemini-4-argon-high, write | 307 s | checker 0, tsc 0 | 0 | 0 sửa | ~800 dòng |
+| 15 | 2026-10-29 | p5-service `content`: 20 bài tri thức + 30 ticket vi/en/ar/de | 1 | gemini-4-argon-high, write | 349 s | checker 0 (số lượng, phân bố, ngôn ngữ, không HTML) | 0 | 0 sửa | 62 KB |
 
 ## Notes
+
+4. Batch p5-service (5 job song song, 349 s): cả 5 qua checker + tsc lần đầu, 0 ghi sai chỗ. Hai luật ranh giới client/server thêm sau p4 không bắt được lỗi nào lần này (Gemini đã theo đúng hướng dẫn mục 2). Lỗi mới: tự bịa giá trị enum khi work order không liệt kê (sự kiện vận đơn) — bài học: work order phải liệt kê đúng giá trị enum hoặc trỏ tới bảng nhãn dùng chung.
 
 3. Batch p4-sales (5 job song song, 421 s, max-parallel 5): cả 5 qua checker + tsc lần đầu, 0 ghi sai chỗ. Review của Claude bắt 4 lỗi mà checker/tsc không thấy: client import `@/modules/sales/leads` kéo DB vào bundle (500 khi mở trang), trang server nhận `SOURCE_LABEL`/`STAGE_TONE`/`TASK_TYPE_LABEL` từ file `"use client"` (ra undefined, nhãn thô, mất màu), `useState(() => crypto.randomUUID())` lệch hydration, nhãn "Khách" cho dòng hệ thống. Đã thêm 2 luật ranh giới client/server vào checker (thử trên bản gốc: bắt 5 lỗi). Nội dung 60 lead ar/en/de/vi: tên hư cấu, không nhãn hiệu thật.
 

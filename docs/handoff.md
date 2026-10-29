@@ -2,6 +2,20 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 8) — Phase 5 xong, chờ nghiệm thu
+
+**Đã làm:** ticket + SLA, tri thức có phiên bản, ticket trong hàng đợi, nhắc SLA. Chi tiết: `implementation-status.md` Phase 5.
+
+**Quyết định mới:** D-50 (SLA, phạm vi ticket, khách có ticket vào phạm vi Sales, tri thức).
+
+**Chạy thêm:** `npx prisma migrate deploy` → `npm run db:seed` (SlaPolicy mẫu) → `npx tsx --env-file=.env scripts/seed-service.ts` (DB mới thì `db:seed-demo` gọi sẵn). Thử: Lê Trưởng Nhóm → Ticket; Vũ Vận Đơn → chỉ thấy ticket giao chậm/đổi trả; Đỗ Marketing → Tri thức (soạn, xuất bản).
+
+**Quy ước mới:** loại sự kiện/nhãn dùng chung lấy từ `src/lib/status-badge.ts` hoặc `modules/*/labels.ts` — không để Gemini tự đặt tên enum; work order nên liệt kê đúng giá trị enum.
+
+**Chờ người dùng:** nghiệm thu Phase 3–5; Q-22, Q-23 (số SLA), D-48 (khối lượng mục tiêu), D-49 (7/14 ngày).
+
+**Bước tiếp theo:** Phase 6 — chỉ số, chấm điểm, Warehouse (MetricDefinition, CustomerMetric, RFM, Score v1 có phiên bản/lý do; Warehouse interface + Postgres).
+
 ## Checkpoint 29/10/2026 (lần 7) — kiểm chịu tải + nâng cấp, sắp vào Phase 5
 
 **Đã làm:** đo tải trên 1 team/12 tháng (DB `crm_load`), sửa toàn bộ chỗ chậm (trước 8/27 → sau 0/28), luồng lead khối lượng lớn (chống trùng, tự đóng, tự Đã mua, hàng loạt, Kanban một người). Kế hoạch sửa: thiết kế mục 2 (D-48, D-49), mục 5 quy tắc 11, prompt nền, prompt Phase 4 và 9, checklist mục 12; AGENTS.md; architecture NFR. Chi tiết: `docs/performance.md`, `implementation-status.md`.

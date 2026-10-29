@@ -73,6 +73,8 @@ Dữ liệu đo: 602.000 đơn, 200.500 khách, 180.010 lead, 1.440.000 tương 
 
 **Trước: 8/27 thao tác vượt mục tiêu. Sau: 0/28.**
 
+**Phase 5 (thêm 50.000 ticket, 150.000 sự kiện, 300 bài × 2 phiên bản — `docs/perf/phase5.json`): 0/35 vượt mục tiêu.** Danh sách ticket 55 ms, đang mở + quá hạn 6 ms, tìm theo tiêu đề 123 ms, chi tiết 5 ms, danh sách tri thức 2 ms, hàng đợi Sales (có ticket) 23 ms, worker nhắc SLA 25 ms/lượt. Index đặt ngay trong migration của phase theo quy tắc 11 nên không phải sửa sau.
+
 ## 4. Nguyên nhân và cách sửa
 
 | Nguyên nhân | Ảnh hưởng | Sửa |

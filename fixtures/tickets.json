@@ -1,0 +1,812 @@
+[
+  {
+    "key": "T001",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "type": "LOI_HANG",
+    "priority": "KHAN",
+    "status": "MOI",
+    "subject": "Hộp thủy tinh LUMI-BOX01 bị nứt nắp khi vừa nhận tại Dubai",
+    "language": "ar",
+    "hoursAgo": 3,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "السلام عليكم، استلمت اليوم طلب حافظة الطعام الزجاجية LUMI برقم التتبع DEMO104211 ولكن وجدت غطاء العلبة الكبيرة مكسوراً داخل الكرتون. أرجو المساعدة العاجلة."
+      }
+    ]
+  },
+  {
+    "key": "T002",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "SA",
+    "type": "GIAO_CHAM",
+    "priority": "CAO",
+    "status": "MOI",
+    "subject": "Đơn kệ úp bát LUMI giao về Riyadh quá hẹn 2 ngày chưa phát",
+    "language": "ar",
+    "hoursAgo": 4,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "مرحباً، طلبي لرف تجفيف الأطباق برقم الشحنة DEMO208312 متوقف في مستودع الرياض منذ يومين ولم يتصل بي المندوب حتى الآن، متى يتم التوصيل؟"
+      }
+    ]
+  },
+  {
+    "key": "T003",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "LOI_HANG",
+    "priority": "KHAN",
+    "status": "MOI",
+    "subject": "Vòi nhấn chai tinh chất NOVA-SERM01 bị kẹt không lấy được dung dịch",
+    "language": "en",
+    "hoursAgo": 1,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hello! My parcel DEMO301145 just arrived in Austin, Texas, but the dropper cap on the Hyaluronic Moisture Boost Serum 50ml is cracked and leaking inside the box. Can you send a replacement?"
+      }
+    ]
+  },
+  {
+    "key": "T004",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "LOI_HANG",
+    "priority": "CAO",
+    "status": "MOI",
+    "subject": "Gương tròn treo tường ORBI-MIRR02 bị trầy viền gỗ khi giao tại Berlin",
+    "language": "de",
+    "hoursAgo": 2,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Guten Tag, meine Bestellung mit der Sendungsnummer DEMO409120 ist heute angekommen. Leider hat der Eichenrahmen des Wandspiegels eine tiefe Schramme an der Oberseite. Wie können wir das umtauschen?"
+      }
+    ]
+  },
+  {
+    "key": "T005",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "KHAC",
+    "priority": "TRUNG",
+    "status": "MOI",
+    "subject": "Khách Việt tại California hỏi thứ tự thoa serum và kem dưỡng đêm NOVA",
+    "language": "vi",
+    "hoursAgo": 5,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Chào shop, mình vừa nhận bộ tinh chất cấp nước và kem dưỡng Ceramide mã vận đơn DEMO502310. Cho mình hỏi nên thoa cách nhau bao nhiêu phút và cần thử trên cổ tay trước như thế nào ạ?"
+      }
+    ]
+  },
+  {
+    "key": "T006",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "KW",
+    "type": "DOI_TRA",
+    "priority": "THAP",
+    "status": "MOI",
+    "subject": "Khách tại Kuwait muốn đổi đèn bàn LUMI-LAMP02 từ màu trắng sang đen",
+    "language": "ar",
+    "hoursAgo": 7,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "أهلاً بكم، استلمت مصباح المكتب القابل للطي باللون الأبيض (شحنة DEMO601442) والعلبة لم تُفتح بعد، هل يمكنني استبداله باللون الأسود المطفي؟"
+      }
+    ]
+  },
+  {
+    "key": "T007",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "type": "GIAO_CHAM",
+    "priority": "KHAN",
+    "status": "DANG_XU_LY",
+    "subject": "Bưu tá báo sai địa chỉ đơn thùng gạo LUMI-BIN03 tại Abu Dhabi",
+    "language": "ar",
+    "hoursAgo": 5,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "السلام عليكم، وصلتني رسالة بأن شحنة حاوية الأرز DEMO112098 تعذر تسليمها بسبب العنوان، مع أنني متواجد في المنزل طوال اليوم ولم يتصل بي أحد!"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 20,
+        "text": "وعليكم السلام ورحمة الله، نعتذر جداً عن هذا الإزعاج. قمنا بالتواصل الفوري مع مشرف التوصيل في أبوظبي لتحديث موقعكم وإعادة جدولة التسليم في أقرب وقت."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 25,
+        "text": "Đã báo bộ phận vận đơn kiểm tra lại tuyến giao DEMO112098, yêu cầu bưu tá gọi trước 30 phút chiều nay."
+      }
+    ]
+  },
+  {
+    "key": "T008",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "BAO_HANH",
+    "priority": "CAO",
+    "status": "DANG_XU_LY",
+    "subject": "Máy rửa mặt NOVA-TOOL02 sạc không vào điện sau 2 tháng sử dụng",
+    "language": "en",
+    "hoursAgo": 6,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hi support team, I bought the Silicone Sonic Facial Cleansing Brush two months ago (tracking DEMO315800) and it stopped charging completely even after trying another USB port."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 35,
+        "text": "Hi there! We are sorry to hear your cleansing brush is not charging. Since it is well within our warranty period, we are preparing a free replacement unit for you right away."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 42,
+        "text": "Đã kiểm tra đơn gốc hợp lệ trong hạn bảo hành, đang chờ kho US cấp mã vận đơn kiện bù màu Mint."
+      }
+    ]
+  },
+  {
+    "key": "T009",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "LOI_HANG",
+    "priority": "KHAN",
+    "status": "DANG_XU_LY",
+    "subject": "Bàn làm việc ORBI-DESK03 thiếu bộ ốc vít lắp ráp chân bàn",
+    "language": "de",
+    "hoursAgo": 4,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hallo ORBI-Team, unser Schreibtisch aus Eschenholz (Sendung DEMO704511) wurde heute geliefert, aber im Karton fehlt der komplette Beutel mit den Schrauben und dem Inbusschlüssel."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 18,
+        "text": "Guten Tag! Bitte entschuldigen Sie das fehlende Montageset. Wir haben bereits den Expressversand eines neuen Beschlagbeutels für Ihre Bestellung veranlasst."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 24,
+        "text": "Kho Đức xác nhận gửi bộ phụ kiện ốc vít bàn ORBI-DESK03 trong chiều nay qua gói chuyển phát nhanh."
+      }
+    ]
+  },
+  {
+    "key": "T010",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "SA",
+    "type": "BAO_HANH",
+    "priority": "CAO",
+    "status": "DANG_XU_LY",
+    "subject": "Cân điện tử nhà bếp LUMI-SCALE01 hiển thị chập chờn tại Jeddah",
+    "language": "ar",
+    "hoursAgo": 14,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "مرحباً، اشتريت ميزان المطبخ الرقمي قبل شهرين برقم شحنة DEMO219044، واليوم أصبحت الشاشة تنطفئ فجأة رغم تغيير البطارية بأخرى جديدة."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 45,
+        "text": "أهلاً بك، شكراً لتوضيح المشكلة. جهازك مشمول بضمان LUMI Home لمدة 12 شهراً، وسنقوم بترتيب شحن جهاز بديل جديد إلى عنوانك في جدة."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 55,
+        "text": "Khách đã gửi video màn hình cân bị lỗi nguồn, đang tạo lệnh xuất bù mã LUMI-SCALE01-SL."
+      }
+    ]
+  },
+  {
+    "key": "T011",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "type": "DOI_TRA",
+    "priority": "TRUNG",
+    "status": "DANG_XU_LY",
+    "subject": "Đổi kích thước thanh đèn tủ bếp LUMI-LAMP03 từ 30cm lên 50cm",
+    "language": "vi",
+    "hoursAgo": 28,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Chào shop, mình ở Dubai mới nhận thanh đèn gắn tủ bếp bản 30cm (vận đơn DEMO125600) nhưng ướm thử hơi ngắn, mình muốn đổi sang bản 50cm và bù tiền chênh lệch được không?"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 40,
+        "text": "Chào bạn, LUMI hỗ trợ đổi sang bản 50cm trong vòng 30 ngày với sản phẩm còn nguyên hộp. Bưu tá sẽ giao đèn 50cm và thu hồi đèn 30cm kèm khoản chênh lệch 22 AED nhé."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 50,
+        "text": "Đã khóa tồn 1 cây LUMI-LAMP03-50CM tại kho AE, chờ vận đơn ghép chuyến thu đổi ngày mai."
+      }
+    ]
+  },
+  {
+    "key": "T012",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "FR",
+    "type": "GIAO_CHAM",
+    "priority": "CAO",
+    "status": "DANG_XU_LY",
+    "subject": "Đơn thảm đay ORBI-RUG01 đi Lyon bị kẹt tại trạm trung chuyển",
+    "language": "en",
+    "hoursAgo": 19,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hello ORBI support, my Flatweave Braided Jute Rug order with tracking DEMO812309 has not moved from the transit hub for four days. Could you check when it will reach Lyon?"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 50,
+        "text": "Hello! Thank you for letting us know. We have opened a priority trace with the carrier for parcel DEMO812309 and will update you as soon as the depot confirms the delivery slot."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 65,
+        "text": "Đã gửi yêu cầu tra soát kiện hàng cồng kềnh DEMO812309 tới đối tác vận chuyển tuyến Pháp."
+      }
+    ]
+  },
+  {
+    "key": "T013",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "KHAC",
+    "priority": "THAP",
+    "status": "DANG_XU_LY",
+    "subject": "Yêu cầu xuất lại hóa đơn điện tử cho đơn gương trang điểm NOVA-TOOL03",
+    "language": "en",
+    "hoursAgo": 32,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hi, could you please resend the itemized receipt for my Lighted Tabletop Vanity Mirror order (shipment DEMO339102)? I accidentally deleted the confirmation email."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 75,
+        "text": "Of course! We are generating a fresh PDF copy of your order invoice and sending it to your registered email address shortly."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 80,
+        "text": "Đang đối chiếu mã thuế bang trên đơn Shopify để gửi lại bản xác nhận thanh toán cho khách."
+      }
+    ]
+  },
+  {
+    "key": "T014",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "BAO_HANH",
+    "priority": "TRUNG",
+    "status": "DANG_XU_LY",
+    "subject": "Cánh đan mây tủ thấp ORBI-CABN03 bị chùng bản lề sau 4 tháng",
+    "language": "de",
+    "hoursAgo": 40,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Guten Tag, bei unserem Sideboard mit Rattantüren (Sendung DEMO723901) lässt sich die linke Tür nicht mehr bündig schließen, weil das Scharnier nachgibt."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 60,
+        "text": "Hallo und vielen Dank für Ihre Rückmeldung. Wir senden Ihnen im Rahmen der Garantie zwei verstärkte Ersatzscharniere inklusive Kurzanleitung zur Justierung kostenlos zu."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 70,
+        "text": "Đã lập phiếu xuất 2 bản lề giảm chấn tủ ORBI-CABN03, chờ cập nhật mã vận đơn."
+      }
+    ]
+  },
+  {
+    "key": "T015",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "KW",
+    "type": "LOI_HANG",
+    "priority": "CAO",
+    "status": "CHO_KHACH",
+    "subject": "Chờ khách gửi ảnh cối xay tiêu LUMI-MILL03 bị kẹt trục xoay",
+    "language": "ar",
+    "hoursAgo": 5,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "السلام عليكم، استلمت مطحنة الملح والفلفل الكهربائية اليوم (شحنة DEMO615009) ولكن إحدى المطاحن لا تدور عند الضغط على الزر."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 22,
+        "text": "وعليكم السلام، نأسف جداً لذلك. هل يمكنك تفضلاً إرسال فيديو قصير أو صورة لقاعدة الطحن وملصق الشحنة DEMO615009 حتى نعتمد إرسال قطعة بديلة فوراً؟"
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 28,
+        "text": "Đã hướng dẫn khách kiểm tra chốt khóa pin và xin ảnh/video thực tế để duyệt đổi mới."
+      }
+    ]
+  },
+  {
+    "key": "T016",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "DOI_TRA",
+    "priority": "KHAN",
+    "status": "CHO_KHACH",
+    "subject": "Khách báo nhận nhầm mùi mặt nạ môi NOVA-MASK02 — chờ ảnh tem SKU",
+    "language": "en",
+    "hoursAgo": 3,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hi! I ordered two Vanilla Lip Sleeping Masks under tracking DEMO348210, but the jars inside the parcel appear to be the Mixed Berry scent instead."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 15,
+        "text": "We are so sorry for the mix-up! Could you reply with a quick photo of the bottom barcode sticker on the jars so our warehouse can ship your Vanilla replacements today?"
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 19,
+        "text": "Đang chờ khách gửi ảnh tem đáy hộp để đối chiếu lô đóng gói tại kho US và gửi bù ngay."
+      }
+    ]
+  },
+  {
+    "key": "T017",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "GIAO_CHAM",
+    "priority": "TRUNG",
+    "status": "CHO_KHACH",
+    "subject": "Chờ khách xác nhận lại khung giờ nhận bàn trà ORBI-TABL01 tại Munich",
+    "language": "de",
+    "hoursAgo": 26,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hallo, der Zusteller konnte meinen runden Couchtisch aus Eiche (Sendung DEMO740118) gestern leider nicht abgeben, da ich im Büro war. Wann erfolgt der nächste Versuch?"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 40,
+        "text": "Guten Tag! Die Spedition kann die Zustellung für Donnerstag oder Freitag jeweils zwischen 9:00 und 13:00 Uhr einplanen. Welcher Tag passt Ihnen besser?"
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 45,
+        "text": "Chờ khách chọn ngày thứ Năm hoặc thứ Sáu để báo hãng vận chuyển phát lại kiện DEMO740118."
+      }
+    ]
+  },
+  {
+    "key": "T018",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "SA",
+    "type": "KHAC",
+    "priority": "THAP",
+    "status": "CHO_KHACH",
+    "subject": "Khách tại Dammam muốn đổi địa chỉ nhận đơn bình giữ nhiệt LUMI-FLASK01",
+    "language": "ar",
+    "hoursAgo": 38,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "مرحباً، أود تعديل عنوان التوصيل لطلبي الخاص بكوب الشاي الحراري (شحنة DEMO255104) من عنوان المنزل إلى عنوان العمل في الدمام."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 30,
+        "text": "أهلاً بك، يسعدنا تحديث العنوان لك. يرجى تزويدنا باسم الحي، اسم الشارع، واسم المبنى أو الموقع الجديد في الدمام لنبلغ شركة الشحن."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 34,
+        "text": "Kiện hàng chưa xuất khỏi trạm Dammam, đang chờ khách nhắn địa chỉ văn phòng chi tiết."
+      }
+    ]
+  },
+  {
+    "key": "T019",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "AE",
+    "type": "DOI_TRA",
+    "priority": "TRUNG",
+    "status": "CHO_KHACH",
+    "subject": "Chờ khách chọn đổi sản phẩm khác hay nhận phiếu mua hàng đơn NOVA",
+    "language": "vi",
+    "hoursAgo": 50,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Chào shop, mình ở Sharjah đặt nhầm 2 hộp sáp tẩy trang NOVA-BALM02 (vận đơn DEMO166201), mình muốn gửi lại 1 hộp nguyên tem để đổi sang kem mắt trà xanh được không?"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 35,
+        "text": "Dạ hoàn toàn được ạ! Kem dưỡng mắt trà xanh có giá 99 AED (chênh 4 AED so với sáp tẩy trang 95 AED). Bạn muốn đổi trực tiếp khi bưu tá tới thu hồi hay nhận mã giảm giá cho đơn sau ạ?"
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 40,
+        "text": "Đã kiểm tra hộp sáp còn nguyên niêm phong, chờ khách xác nhận phương án thu đổi tại Sharjah."
+      }
+    ]
+  },
+  {
+    "key": "T020",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "type": "LOI_HANG",
+    "priority": "CAO",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Đã gửi bù lọ gia vị nắp tre LUMI-JAR02 bị vỡ khi vận chuyển",
+    "language": "ar",
+    "hoursAgo": 72,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "السلام عليكم، وصلني طقم برطمانات التوابل 12 قطعة (DEMO170332) ووجدت برطمانين مكسورين بسبب الشحن."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 25,
+        "text": "وعليكم السلام، نعتذر بشدة عن ذلك. تم اعتماد إرسال طقم بديل جديد مجاناً برقم تتبع DEMO170990 وسيصلك خلال يومي عمل دون الحاجة لإرجاع القطع المتضررة."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 30,
+        "text": "Đã tạo đơn gửi bù miễn phí DEMO170990 cho khách VIP tại Dubai, không thu hồi hàng vỡ."
+      }
+    ]
+  },
+  {
+    "key": "T021",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "DOI_TRA",
+    "priority": "TRUNG",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Hoàn tất đổi con lăn thạch anh NOVA-TOOL01 cho khách tại Seattle",
+    "language": "en",
+    "hoursAgo": 96,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hi! The metal frame on my Rose Quartz Facial Massage Roller (tracking DEMO360418) squeaks loudly and feels loose right out of the box."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 40,
+        "text": "Thank you for reaching out! We have dispatched a brand-new replacement roller under tracking DEMO360889 at no cost to you. You do not need to return the squeaky unit."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 50,
+        "text": "Kiện hàng đổi mới DEMO360889 đã được giao thành công tại Seattle, chuyển trạng thái Đã giải quyết."
+      }
+    ]
+  },
+  {
+    "key": "T022",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "BAO_HANH",
+    "priority": "CAO",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Bảo hành thay mặt ghế ăn bọc nỉ ORBI-CHAR01 bị bung đường chỉ",
+    "language": "de",
+    "hoursAgo": 110,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Guten Tag, bei einem unserer vier Polsterstühle (Sendung DEMO755012) hat sich nach drei Wochen die Naht am Sitzkissen gelöst."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 45,
+        "text": "Vielen Dank für die Zusendung des Fotos. Wir haben Ihnen im Rahmen der Garantie einen neuen Polsterstuhl in Heidegrau mit der Sendungsnummer DEMO755800 kostenfrei zugeschickt."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 120,
+        "text": "Khách xác nhận đã nhận ghế mới DEMO755800 nguyên vẹn tại Hamburg."
+      }
+    ]
+  },
+  {
+    "key": "T023",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "SA",
+    "type": "GIAO_CHAM",
+    "priority": "TRUNG",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Đã giao thành công đơn ấm cổ ngỗng LUMI-KETL02 sau khi giục bưu cục",
+    "language": "ar",
+    "hoursAgo": 125,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "مرحباً، أين طلبي الخاص بغلاية القهوة السوداء برقم DEMO288401؟ مر أربعة أيام منذ تأكيد الطلب."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 30,
+        "text": "أهلاً بك، تواصلنا مع فرع التوصيل في الرياض والشحنة خرجت مع المندوب اليوم للتسليم خلال ساعات المساء."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 300,
+        "text": "Hệ thống vận đơn cập nhật kiện DEMO288401 đã giao và thu đủ COD 202 SAR."
+      }
+    ]
+  },
+  {
+    "key": "T024",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "type": "BAO_HANH",
+    "priority": "TRUNG",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Đổi mới đèn ngủ cảm biến LUMI-LAMP01 bị chai pin trong hạn bảo hành",
+    "language": "vi",
+    "hoursAgo": 140,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Shop ơi, chiếc đèn ngủ cảm biến chuyển động mình mua đợt trước (vận đơn DEMO180225) giờ sạc đầy chỉ sáng được nửa đêm là tắt hẳn."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 35,
+        "text": "Chào bạn, sản phẩm của bạn vẫn trong hạn bảo hành 12 tháng của LUMI. Shop đã tạo đơn gửi bù đèn mới mã DEMO180901 về địa chỉ của bạn hoàn toàn miễn phí ạ."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 90,
+        "text": "Đã xuất kho đèn bảo hành DEMO180901 và thông báo lộ trình cho khách."
+      }
+    ]
+  },
+  {
+    "key": "T025",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "FR",
+    "type": "KHAC",
+    "priority": "THAP",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Hướng dẫn bảo quản mặt bàn gỗ sồi ORBI-TABL01 cho khách tại Paris",
+    "language": "en",
+    "hoursAgo": 160,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hello! We just assembled our Solid Oak Round Coffee Table (shipment DEMO830115) and love it. What type of cloth or wax do you recommend for routine cleaning?"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 50,
+        "text": "We are delighted to hear you love your table! For daily care, wipe with a slightly damp microfiber cloth and dry immediately; every six months you can apply a thin coat of natural beeswax oil."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 55,
+        "text": "Đã gửi kèm liên kết bài tri thức hướng dẫn bảo quản đồ gỗ tự nhiên ORBI."
+      }
+    ]
+  },
+  {
+    "key": "T026",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "AE",
+    "type": "KHAC",
+    "priority": "THAP",
+    "status": "DA_GIAI_QUYET",
+    "subject": "Tư vấn cách thử phản ứng da trước khi dùng mặt nạ đất sét NOVA-MASK01",
+    "language": "ar",
+    "hoursAgo": 175,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "السلام عليكم، استلمت قناع الطين الوردي لتنظيف المسام (DEMO192004)، كم مرة في الأسبوع ينصح باستخدامه وهل يجب تجربته أولاً؟"
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 28,
+        "text": "وعليكم السلام، ننصح دائماً بإجراء اختبار حساسية بسيط على المعصم لمدة 24 ساعة قبل الاستخدام الأول، ثم استخدام القناع من مرة إلى مرتين أسبوعياً لمدة 10 دقائق على بشرة نظيفة."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 32,
+        "text": "Đã tư vấn đúng quy chuẩn bài tri thức NOVA, không đưa ra cam kết y khoa."
+      }
+    ]
+  },
+  {
+    "key": "T027",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "DOI_TRA",
+    "priority": "TRUNG",
+    "status": "DONG",
+    "subject": "Hoàn tiền đơn vỏ gối vải lanh ORBI-CUSH03 khách trả hàng đúng hạn",
+    "language": "de",
+    "hoursAgo": 195,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Guten Tag, ich habe die zwei Kissenhüllen aus Leinen mit dem Rücksendeetikett DEMO860221 zurückgeschickt, da der Farbton nicht zu unserem Sofa passt."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 60,
+        "text": "Vielen Dank für Ihre Nachricht! Ihre Rücksendung DEMO860221 ist heute im Lager eingetroffen und die vollständige Rückerstattung von 77,80 EUR wurde bereits angewiesen."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 180,
+        "text": "Kho xác nhận hàng trả nguyên vẹn, kế toán đã hoàn tiền qua cổng thanh toán và đóng ticket."
+      }
+    ]
+  },
+  {
+    "key": "T028",
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "KW",
+    "type": "GIAO_CHAM",
+    "priority": "CAO",
+    "status": "DONG",
+    "subject": "Đóng yêu cầu hỗ trợ giao hàng bộ dụng cụ cắt rau củ LUMI-CHOP02",
+    "language": "ar",
+    "hoursAgo": 210,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "مرحباً، تأخرت شحنة قطاعة الخضروات متعددة الشفرات DEMO640119 ليوم إضافي في حولي، أرجو التأكد من موعد وصول المندوب."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 20,
+        "text": "أهلاً بك، نسقنا مع المندوب وتم تسليم الشحنة DEMO640119 بنجاح اليوم. نشكرك على صبرك وثقتك بمنتجات LUMI Home."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 240,
+        "text": "Khách đã nhận hàng và thanh toán đủ 8.200 KWD, hoàn tất và đóng ticket."
+      }
+    ]
+  },
+  {
+    "key": "T029",
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "type": "BAO_HANH",
+    "priority": "TRUNG",
+    "status": "DONG",
+    "subject": "Đóng bảo hành gương trang điểm có đèn NOVA-TOOL03 sau khi khách nhận bù",
+    "language": "en",
+    "hoursAgo": 225,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hello, the touch dimmer switch on my Lighted Tabletop Vanity Mirror (shipment DEMO390112) stopped responding after three weeks of use."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 45,
+        "text": "Hi there! We have shipped a replacement vanity mirror under warranty with tracking number DEMO390774, and it was delivered to your porch this afternoon."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 360,
+        "text": "Khách đã phản hồi gương mới hoạt động tốt, đóng ticket bảo hành."
+      }
+    ]
+  },
+  {
+    "key": "T030",
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "type": "LOI_HANG",
+    "priority": "CAO",
+    "status": "DONG",
+    "subject": "Đã gửi bình gốm mới thay thế kiện ORBI-VASE01 bị sứt miệng bình",
+    "language": "de",
+    "hoursAgo": 240,
+    "messages": [
+      {
+        "kind": "CUSTOMER",
+        "minutesAfter": 0,
+        "text": "Hallo, leider ist die geriffelte Keramikvase in Kreideweiß (Sendung DEMO790554) mit einem kleinen Abplatzer am oberen Rand bei mir angekommen."
+      },
+      {
+        "kind": "REPLY",
+        "minutesAfter": 30,
+        "text": "Guten Tag! Es tut uns sehr leid, dass die Vase beim Transport beschädigt wurde. Eine kostenfreie Ersatzlieferung (DEMO790888) wurde bereits zugestellt; die beschädigte Vase müssen Sie nicht zurücksenden."
+      },
+      {
+        "kind": "NOTE",
+        "minutesAfter": 200,
+        "text": "Đơn gửi bù DEMO790888 đã hoàn tất giao hàng tại Frankfurt, đóng ticket."
+      }
+    ]
+  }
+]

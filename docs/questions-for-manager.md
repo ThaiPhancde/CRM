@@ -28,7 +28,7 @@ Mã Q-xx. Khi có trả lời, chuyển sang `docs/decisions.md` (mã D-xx) và 
 | Q-20 | "Giao dịch hợp lệ" cho RFM/giá trị khách: REV-03 hay REV-04? Với prepaid có khác không? | D-M3 | REV-03 |
 | Q-21 | Định nghĩa doanh thu ròng, lợi nhuận (chiết khấu, phí ship, hoàn, giá vốn) | HLD §7.3 | Ròng = REV-03 − hoàn; lợi nhuận chỉ khi có giá vốn |
 | Q-22 | Quy tắc phân công lead: theo market, brand, team, ngôn ngữ, tải tối đa? | Phase 4 | Market + brand, vòng tròn, tối đa 30 lead mở/người — **đã cài theo mặc định (D-46), cấu hình ở `Setting.leadRouting`; chờ xác nhận số** |
-| Q-23 | Hạn phản hồi lead mới và SLA ticket theo mức | Phase 4, 5 | Lead 4 giờ; ticket THẤP 48h/TRUNG 24h/CAO 8h/KHẨN 2h (ngày lịch) |
+| Q-23 | Hạn phản hồi lead mới và SLA ticket theo mức | Phase 4, 5 | Lead 4 giờ; ticket THẤP 48h/TRUNG 24h/CAO 8h/KHẨN 2h (ngày lịch) — **đã cài theo mặc định (D-46, D-50; phản hồi đầu 8h/4h/2h/30 phút do Claude đặt thêm), cấu hình ở `SlaPolicy`; chờ xác nhận số** |
 | Q-24 | Giới hạn liên hệ (frequency cap): bao nhiêu tin/khách/tuần, theo kênh? | Phase 7 | 2 tin/7 ngày/kênh |
 | Q-25 | Chu kỳ mua lại dùng chung hay theo danh mục sản phẩm? | CUS-02 | Theo khách, fallback trung bình brand |
 | Q-26 | Khách "giá trị cao" ngưỡng bao nhiêu? | D-24 | ≥ 3 đơn REV-03/12 tháng |

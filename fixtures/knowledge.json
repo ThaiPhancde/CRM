@@ -1,0 +1,234 @@
+[
+  {
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "AE",
+    "language": "ar",
+    "title": "سياسة تأكيد طلبات الدفع عند الاستلام (COD) ومعالجة رفض الاستلام — الإمارات",
+    "tags": ["cod", "ae", "xac-nhan", "giao-hang"],
+    "body": "# سياسة تأكيد طلبات الدفع عند الاستلام في الإمارات\n\nتعتمد LUMI Home إجراءات واضحة لتأكيد طلبات الدفع عند الاستلام قبل شحنها من مستودع دبي لضمان سرعة التسليم.\n\n## خطوات التأكيد قبل الشحن\n- يتم التواصل مع العميل عبر واتساب أو الهاتف خلال 4 ساعات من تسجيل الطلب.\n- يجب تأكيد الاسم الكامل، رقم الجوال المتاح، الإمارة، والحي أو المعلم القريب.\n- يتم إبلاغ العميل بالمبلغ الإجمالي بالدرهم الإماراتي ورقم التتبع التجريبي مثل DEMO100234.\n\n## معالجة تأجيل أو رفض الاستلام\n- في حال عدم الرد في المحاولة الأولى، يتم إرسال رسالة تذكير وجدولة محاولة ثانية في اليوم التالي.\n- إذا طلب العميل تأجيل التسليم، يمكن تعليق الشحنة لدى شركة التوصيل لمدة أقصاها 5 أيام عمل.\n- عند رفض الاستلام بدون سبب مصنعي، يتم تسجيل ملاحظة داخلية في سجل العميل لمراجعة الطلبات القادمة.",
+    "publish": true,
+    "revision": {
+      "title": "سياسة تأكيد طلبات الدفع عند الاستلام (COD) ومعالجة رفض الاستلام — تحديث الإمارات",
+      "body": "# سياسة تأكيد طلبات الدفع عند الاستلام في الإمارات (نسخة محدثة)\n\nتعتمد LUMI Home إجراءات واضحة لتأكيد طلبات الدفع عند الاستلام قبل شحنها من مستودع دبي لضمان تسليم الطلبات من المحاولة الأولى.\n\n## خطوات التأكيد قبل الشحن\n- يتم التواصل مع العميل عبر واتساب أو الهاتف خلال ساعتين من تسجيل الطلب.\n- يجب تأكيد الاسم الكامل، رقم الجوال الإضافي إن وجد، الإمارة، والعنوان التفصيلي.\n- يتم إرسال ملخص الفاتورة بالدرهم الإماراتي مع رمز التتبع التجريبي مثل DEMO100234.\n\n## معالجة تأجيل أو رفض الاستلام\n- في حال عدم الرد، تتم إعادة المحاولة مرتين خلال 24 ساعة قبل إلغاء الحجز.\n- يمكن جدولة التوصيل المسائي بناءً على رغبة العميل بالتنسيق مع المندوب.\n- عند رفض الاستلام المتكرر، يُطلب تأكيد إضافي من مشرف الفريق قبل شحن أي طلب جديد."
+    }
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "SA",
+    "language": "ar",
+    "title": "مواعيد التوصيل القياسية وتتبع الشحنات في السعودية والكويت",
+    "tags": ["giao-hang", "sa", "kw", "thoi-gian"],
+    "body": "# مواعيد التوصيل القياسية في السعودية والكويت\n\nتحرص LUMI Home على تجهيز وشحن الطلبات المنزلية بسرعة وأمان لجميع المدن الرئيسية والمناطق الفرعية.\n\n## المدة المتوقعة للتوصيل\n- المدن الرئيسية في السعودية (الرياض، جدة، الدمام): من 2 إلى 3 أيام عمل بعد التأكيد.\n- بقية مدن ومناطق المملكة العربية السعودية: من 3 إلى 5 أيام عمل.\n- دولة الكويت (مدينة الكويت، حولي، السالمية، الفروانية): من 2 إلى 4 أيام عمل.\n\n## إرشادات متابعة الشحنة\n- يحصل العميل على رمز تتبع بصيغة DEMO204501 فور خروج الطرد من المستودع.\n- يتواصل مندوب التوصيل هاتفياً قبل الوصول بساعتين لتأكيد التواجد في الموقع.\n- في حال تأخر الشحنة عن الموعد المحدد، يفتح فريق الرعاية تذكرة متابعة فورية مع قسم الشحن.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "AE",
+    "language": "ar",
+    "title": "إرشادات الاستخدام اليومي واختبار الحساسية المسبق لمنتجات NOVA Beauty",
+    "tags": ["nova", "skincare", "patch-test", "huong-dan"],
+    "body": "# إرشادات الاستخدام اليومي واختبار البشرة المسبق\n\nتم تطوير منتجات NOVA Beauty للعناية التجميلية اليومية وترطيب البشرة الظاهري بتركيبات لطيفة ومناسبة للروتين اليومي.\n\n## طريقة إجراء اختبار الحساسية (Patch Test)\n- قبل استخدام أي منتج جديد لأول مرة، ضعي كمية صغيرة على الجزء الداخلي من المعصم أو خلف الأذن.\n- انتظري لمدة 24 ساعة لملاحظة مدى ملاءمة المنتج لبشرتك.\n- في حال ظهور أي احمرار أو انزعاج، توقفي عن الاستخدام فوراً واغسلي المنطقة بالماء الفاتر.\n\n## تنبيهات هامة لفريق خدمة العملاء\n- منتجات NOVA هي مستحضرات تجميلية للعناية والترطيب فقط وليست منتجات طبية أو علاجية.\n- يُمنع تماماً تقديم أي وعود بعلاج حالات جلدية أو تقديم استشارات طبية للعملاء.\n- يُنصح بحفظ العبوات في مكان بارد وجاف بعيداً عن أشعة الشمس المباشرة.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": "KW",
+    "language": "ar",
+    "title": "إجراءات التعامل مع المنتجات المتضررة عند الاستلام في الكويت والخليج",
+    "tags": ["loi-hang", "doi-tra", "kw", "lumi"],
+    "body": "# معالجة البلاغات الخاصة بالمنتجات المتضررة عند الاستلام\n\nإذا استلم العميل منتجاً من LUMI Home به كسر في الزجاج أو خلل ظاهر نتيجة النقل، يتم التعامل مع البلاغ بأولوية عالية.\n\n## المستندات المطلوبة من العميل\n- صورة واضحة للمنتج المتضرر تظهر الجزء المكسور أو المعيب.\n- صورة للكرتون الخارجي وملصق الشحن الذي يحمل رمز التتبع مثل DEMO309812.\n- إبلاغ فريق خدمة العملاء خلال 48 ساعة من تاريخ استلام الطرد.\n\n## خطوات الحل السريع\n- يتم شحن قطعة بديلة جديدة مجاناً دون تحميل العميل أي رسوم شحن إضافية.\n- لا يُطلب من العميل إرجاع القطعة الزجاجية المكسورة حفاظاً على سلامته.\n- يتم تحديث حالة التذكرة في النظام وإبلاغ العميل برقم الشحنة البديلة فور صدوره.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": null,
+    "market": "AE",
+    "language": "ar",
+    "title": "دليل نبرة التواصل والرد على استفسار أين طلبي باللغة العربية",
+    "tags": ["tone-guide", "ar", "where-is-my-order", "cskh"],
+    "body": "# دليل نبرة التواصل والرد على استفسارات الشحن باللغة العربية\n\nيهدف هذا الدليل إلى توحيد أسلوب الرد اللبق والمهني مع عملائنا في أسواق الخليج العربي.\n\n## قواعد النبرة والأسلوب\n- ابدأ دائماً بتحية ودية محترمة واستخدم عبارات التقدير مثل شكراً لتواصلك معنا.\n- قدم المعلومة بوضوح ومباشرة دون استخدام مصطلحات تقنية معقدة.\n- تجنب اللوم وركز على الحل العملي والخطوة الزمنية التالية.\n\n## خطوات الرد على سؤال أين طلبي\n- تحقق من حالة الطلب ورقم التتبع التجريبي مثل DEMO450199 وآخر حدث مسجل في البطاقة.\n- وضح للعميل موقع الشحنة الحالي والتاريخ المتوقع للتسليم بدقة.\n- إذا تجاوزت الشحنة الموعد المعتاد، اعتذر بلطف وأكد أن الفريق يتابع مع شركة التوصيل.",
+    "publish": false,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "language": "en",
+    "title": "NOVA Beauty Daily Skincare Usage Guide and Patch-Test Disclaimer",
+    "tags": ["nova", "patch-test", "usage", "us"],
+    "body": "# NOVA Beauty Usage Guide and Patch-Test Disclaimer\n\nAll NOVA Beauty cleansers, toners, serums, and moisturizers are cosmetic products formulated for surface hydration and daily appearance care.\n\n## Recommended Patch-Test Procedure\n- Apply a small dab of the product to clean skin on the inner forearm or behind the ear.\n- Leave the area dry and observe for 24 hours before applying the formula to your face.\n- If redness or discomfort appears, rinse thoroughly with cool water and discontinue use.\n\n## Support Compliance Rules (No Medical Claims)\n- Agents must never state or imply that NOVA products diagnose, treat, cure, or prevent any skin condition.\n- Always describe benefits in cosmetic terms such as refreshing, smoothing, hydrating, or brightening appearance.\n- When a customer asks about sensitive skin reactions, share the full ingredient list and recommend consulting a personal specialist.",
+    "publish": true,
+    "revision": {
+      "title": "NOVA Beauty Daily Skincare Usage Guide, Layering Order, and Patch-Test Disclaimer",
+      "body": "# NOVA Beauty Usage Guide, Layering, and Patch-Test Disclaimer\n\nAll NOVA Beauty products are cosmetic formulations crafted for daily surface hydration, cleansing, and appearance care.\n\n## Recommended Patch-Test and Layering Routine\n- Always perform a 24-hour patch test on the inner forearm before introducing a new item to your routine.\n- Apply products from thinnest to thickest texture: cleanser, hydrating toner, water serum, eye cream, then moisturizer.\n- Discontinue use immediately and rinse with cool water if any irritation occurs.\n\n## Support Compliance Rules (Strict Non-Medical Policy)\n- Never make medical claims or suggest that any product heals acne, eczema, rosacea, or other conditions.\n- Describe outcomes strictly as cosmetic appearance improvements such as softer feel and hydrated glow.\n- Provide the official ingredient list upon request and log any sensitivity feedback under a customer ticket."
+    }
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": "US",
+    "language": "en",
+    "title": "Return, Exchange, and Refund Timing Policy for US Orders",
+    "tags": ["return", "exchange", "refund", "us"],
+    "body": "# Return, Exchange, and Refund Timing Policy (US Market)\n\nThis policy outlines how customer service agents handle return requests, product exchanges, and refund timelines for US orders.\n\n## Eligibility Window\n- Customers may request a return or exchange within 30 calendar days of the recorded delivery date.\n- Items must be in their original box with batch labels intact; beauty tools must include all charging cables and accessories.\n- Orders with a verified transit issue or wrong variant shipped qualify for a free prepaid return label (tracking format DEMO512008).\n\n## Refund Processing Timeline\n- Once the return parcel scans at our warehouse, inspection is completed within 2 business days.\n- Approved refunds are issued back to the original payment method within 3 to 5 business days.\n- Store credit or direct exchange replacements ship out within 24 hours of approval.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": null,
+    "language": "en",
+    "title": "LUMI Home 12-Month Limited Warranty Policy for Kitchen and Lighting Goods",
+    "tags": ["warranty", "lumi", "home-goods", "replacement"],
+    "body": "# LUMI Home 12-Month Limited Warranty Policy\n\nLUMI Home provides a 12-month limited warranty covering functional defects in rechargeable lamps, digital kitchen scales, and electric grinders.\n\n## What Is Covered\n- Battery charging failure or motion sensor malfunction under normal household use.\n- Digital display failure or motor defect on kitchen scales, grinders, and milk frothers.\n- Structural latch defects on glass food containers and airtight rice dispensers.\n\n## How to Process a Warranty Ticket\n- Verify the customer order number and confirm the purchase date is within 12 months.\n- Request a short description and photo showing the issue; log them inside the ticket timeline.\n- Issue a one-time replacement shipment with tracking pattern DEMO600412 and set ticket status to resolved once dispatched.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": null,
+    "market": "US",
+    "language": "en",
+    "title": "How to Answer Where Is My Order and Standard Delivery Timeframes",
+    "tags": ["where-is-my-order", "delivery", "tracking", "sla"],
+    "body": "# How to Answer \"Where Is My Order?\" Inquiries\n\nWhen a customer contacts support asking for their parcel status, follow this checklist before sending a reply.\n\n## Standard Delivery Timeframes by Market\n- United States (US): 3 to 5 business days via standard tracked ground shipping.\n- United Arab Emirates (AE): 1 to 3 business days via local COD courier.\n- Saudi Arabia (SA) and Kuwait (KW): 2 to 5 business days depending on city zone.\n\n## Step-by-Step Agent Response\n- Check the linked order card for fulfillment status and carrier tracking number (for example DEMO771205).\n- Share the latest scan event and timestamp clearly so the customer knows the exact progress.\n- If no carrier scan has occurred for over 72 hours, escalate the ticket priority to High and notify Fulfillment.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "FR",
+    "language": "en",
+    "title": "EU Customer Support Tone Guide and Damaged-on-Arrival Protocol",
+    "tags": ["tone-guide", "damaged", "orbi", "eu"],
+    "body": "# EU Customer Support Tone Guide and Damaged-on-Arrival Protocol\n\nORBI Living serves customers across European markets with warm, clear, and solution-oriented communication.\n\n## Tone Principles for English Replies\n- Acknowledge the customer's situation in the very first sentence with empathy and clarity.\n- Keep paragraphs concise and list any required actions using simple bullet points.\n- Always provide a concrete timeframe for the next update so the customer never has to guess.\n\n## Damaged-on-Arrival Handling for Furniture and Decor\n- Ask for photos of the damaged surface, inner protective corners, and outer shipping label (e.g. DEMO883104).\n- For minor hardware issues on tables or shelving, dispatch a spare hardware kit within 24 hours.\n- For cracked wood panels or broken ceramic vases, arrange a full replacement at zero cost to the customer.",
+    "publish": false,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": null,
+    "market": "AE",
+    "language": "vi",
+    "title": "Quy trình xác nhận đơn COD và xử lý từ chối nhận hàng tại AE, SA, KW",
+    "tags": ["cod", "ae", "sa", "kw", "xac-nhan"],
+    "body": "# Quy trình xác nhận đơn COD và xử lý từ chối nhận hàng (Trung Đông)\n\nTài liệu này quy định các bước bắt buộc dành cho nhóm Sales và Vận đơn khi xử lý đơn thanh toán khi nhận hàng (COD) tại UAE, Saudi Arabia và Kuwait.\n\n## 1. Xác nhận trước khi xuất kho\n- Liên hệ khách qua WhatsApp trong vòng 4 giờ kể từ khi phát sinh đơn hàng.\n- Kiểm tra đủ 3 thông tin: số điện thoại nhận cuộc gọi, thành phố/khu vực giao và khung giờ khách có mặt.\n- Gửi tin nhắn tóm tắt số tiền nguyên tệ (AED, SAR hoặc KWD) kèm mã vận đơn mẫu như DEMO901122.\n\n## 2. Xử lý khi khách hẹn lại hoặc từ chối nhận\n- Nếu bưu tá báo khách không nghe máy lần 1, CSKH nhắn tin hỗ trợ đặt lại lịch giao trong 48 giờ tiếp theo.\n- Trường hợp khách đổi ý từ chối nhận tại cửa, ghi nhận rõ lý do vào Ticket và chuyển trạng thái đơn sang hoàn kho.\n- Tuyệt đối không tranh cãi với khách; giữ thái độ lịch sự để bảo vệ uy tín thương hiệu.",
+    "publish": true,
+    "revision": {
+      "title": "Quy trình chuẩn xác nhận đơn COD và giảm tỷ lệ hoàn tại AE, SA, KW",
+      "body": "# Quy trình chuẩn xác nhận đơn COD và giảm tỷ lệ hoàn (Bản cập nhật)\n\nTài liệu hướng dẫn chi tiết cho nhóm Sales Trung Đông và Vận đơn nhằm nâng cao tỷ lệ giao thành công cho đơn COD tại AE, SA và KW.\n\n## 1. Xác nhận thông tin trước khi đóng gói\n- Phản hồi và xác nhận với khách qua WhatsApp trong vòng 2 giờ làm việc kể từ lúc tạo đơn.\n- Xác minh địa chỉ chi tiết (tòa nhà, con đường, điểm mốc) và số điện thoại dự phòng nếu có.\n- Thông báo rõ tổng tiền thu hộ theo nguyên tệ và mã tra cứu vận chuyển dạng DEMO901122.\n\n## 2. Phối hợp xử lý giao chậm hoặc từ chối nhận\n- Khi vận đơn báo giao không thành công ca sáng, chủ động liên hệ khách để hẹn lại ca chiều hoặc ngày kế tiếp.\n- Nếu khách từ chối nhận do giao trễ quá hẹn cam kết, xin lỗi khách và đề xuất ưu đãi nhỏ nếu khách đồng ý nhận lại.\n- Ghi chú đầy đủ nguyên nhân vào sự kiện nội bộ của Ticket để bộ phận vận hành đối soát."
+    }
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "LUMI",
+    "market": null,
+    "language": "vi",
+    "title": "Chính sách bảo hành 12 tháng và đổi mới sản phẩm gia dụng LUMI Home",
+    "tags": ["bao-hanh", "lumi", "gia-dung", "doi-moi"],
+    "body": "# Chính sách bảo hành 12 tháng đối với sản phẩm gia dụng LUMI Home\n\nÁp dụng cho toàn bộ dòng đèn cảm biến, đèn bàn sạc điện, cân điện tử nhà bếp và cối xay tiêu tự động thuộc thương hiệu LUMI.\n\n## Điều kiện áp dụng bảo hành\n- Sản phẩm còn trong thời hạn 12 tháng tính từ ngày trạng thái vận đơn chuyển sang Đã giao.\n- Lỗi phát sinh từ nhà sản xuất như pin không nhận sạc, cảm biến chuyển động không nhạy hoặc màn hình cân bị liệt.\n- Không áp dụng bảo hành cho trường hợp rơi vỡ ngoại lực hoặc ngấm nước vào khoang pin không chống nước.\n\n## Quy trình xử lý trên hệ thống Ticket\n- Nhân viên tạo Ticket loại Bảo hành, gắn đúng mã đơn hàng và yêu cầu khách gửi ảnh/video ngắn mô tả lỗi.\n- Sau khi xác minh hợp lệ, tạo yêu cầu gửi bù sản phẩm mới với mã vận đơn mẫu DEMO334510.\n- Cập nhật phản hồi đầu tiên cho khách trước hạn SLA và đóng Ticket khi đơn bù đã giao thành công.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": "NOVA",
+    "market": null,
+    "language": "vi",
+    "title": "Hướng dẫn sử dụng mỹ phẩm NOVA Beauty và quy tắc thử phản ứng da (Patch Test)",
+    "tags": ["nova", "patch-test", "huong-dan", "my-pham"],
+    "body": "# Hướng dẫn sử dụng mỹ phẩm NOVA Beauty và thử phản ứng da\n\nTất cả sản phẩm NOVA Beauty là mỹ phẩm chăm sóc và cấp ẩm bề mặt da hằng ngày, không phải là thuốc hay sản phẩm điều trị y tế.\n\n## Quy trình thử phản ứng da (Patch Test) bắt buộc tư vấn\n- Hướng dẫn khách thoa một lượng nhỏ sản phẩm lên vùng da mặt trong cổ tay hoặc sau tai.\n- Theo dõi trong vòng 24 giờ trước khi thoa lên toàn bộ khuôn mặt.\n- Nếu xuất hiện cảm giác châm chích kéo dài hoặc ửng đỏ, ngưng sử dụng ngay và rửa sạch bằng nước mát.\n\n## Nguyên tắc tuân thủ khi trả lời khách hàng\n- Tuyệt đối không cam kết sản phẩm có tác dụng chữa mụn, trị nám, phục hồi bệnh lý da liễu hay thay thế chỉ định bác sĩ.\n- Chỉ sử dụng các thuật ngữ làm đẹp an toàn: làm sạch dịu nhẹ, cấp ẩm bề mặt, giúp da mềm mịn và tươi tắn.\n- Khi khách phản ánh kích ứng, ưu tiên hỏi thăm, hướng dẫn ngưng dùng và hỗ trợ hoàn tiền theo chính sách.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": null,
+    "market": null,
+    "language": "vi",
+    "title": "Quy chuẩn giọng điệu chăm sóc khách hàng và xử lý hàng vỡ hỏng khi giao",
+    "tags": ["tone-guide", "loi-hang", "vo-hong", "cskh"],
+    "body": "# Quy chuẩn giọng điệu CSKH và quy trình xử lý hàng vỡ hỏng khi nhận\n\nMọi phản hồi gửi từ hệ thống CRM cần thể hiện sự tận tâm, rõ ràng và tôn trọng thời gian của khách hàng tại mọi thị trường.\n\n## Nguyên tắc giọng điệu theo ngôn ngữ\n- Tiếng Việt và Tiếng Anh: lịch sự, ngắn gọn, đi thẳng vào giải pháp và mốc thời gian xử lý cụ thể.\n- Tiếng Ả Rập: mở đầu bằng lời chào trang trọng, thể hiện sự hiếu khách và xác nhận rõ thông tin giao nhận.\n- Tiếng Đức: chuẩn xác, cấu trúc rõ ràng, nêu cụ thể quy định đổi trả và mã vận đơn đối chiếu.\n\n## Xử lý khi khách báo hàng bị vỡ hoặc móp méo khi giao tới\n- Xin lỗi khách ngay trong phản hồi đầu tiên và tiếp nhận ảnh chụp sản phẩm cùng nhãn vận đơn (ví dụ DEMO662109).\n- Với các mặt hàng thủy tinh, gốm sứ hoặc gương để bàn bị nứt vỡ, gửi bù kiện mới miễn phí mà không yêu cầu khách gửi trả mảnh vỡ.\n- Gắn mức ưu tiên Cao cho Ticket lỗi hàng để hoàn tất phương án xử lý trong vòng 8 giờ.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "PIALPHA",
+    "brand": null,
+    "market": null,
+    "language": "vi",
+    "title": "Thời gian giao hàng tiêu chuẩn, tra cứu hành trình và khung thời gian hoàn tiền",
+    "tags": ["giao-hang", "hoan-tien", "sla", "where-is-my-order"],
+    "body": "# Thời gian giao hàng tiêu chuẩn và khung thời gian hoàn tiền\n\nBảng tham chiếu nhanh giúp nhân viên trả lời chính xác câu hỏi \"Đơn hàng của tôi đang ở đâu?\" và khi nào khách nhận được tiền hoàn.\n\n## Thời gian giao hàng theo thị trường\n- Thị trường UAE (AE): 1 đến 3 ngày làm việc kể từ lúc xác nhận đơn COD.\n- Thị trường Saudi Arabia (SA) và Kuwait (KW): 2 đến 5 ngày làm việc tùy khu vực tỉnh thành.\n- Thị trường Hoa Kỳ (US) và Châu Âu (DE, FR): 3 đến 5 ngày làm việc với đơn trả trước.\n\n## Khung thời gian xử lý hoàn tiền\n- Đơn trả trước qua cổng thanh toán (US, DE, FR): tiền hoàn về thẻ của khách sau 3 đến 5 ngày làm việc kể từ lúc duyệt.\n- Đơn COD đã thu tiền cần đổi trả (AE, SA, KW): hoàn qua chuyển khoản nội địa hoặc phiếu mua hàng trong vòng 2 ngày làm việc.\n- Mọi giao dịch hoàn tiền đều phải ghi nhận mã tham chiếu vào phần ghi chú nội bộ của Ticket.",
+    "publish": false,
+    "revision": null
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "language": "de",
+    "title": "ORBI Living Garantiebedingungen für Massivholzmöbel und Wohnaccessoires",
+    "tags": ["garantie", "orbi", "de", "moebel"],
+    "body": "# ORBI Living Garantiebedingungen für Möbel und Wohnaccessoires\n\nFür alle Tische, Stühle, Regale und Spiegel der Marke ORBI Living gilt eine zweijährige Herstellergarantie ab dem Lieferdatum.\n\n## Umfang der Garantieleistung\n- Abgedeckt sind Konstruktionsmängel an Massivholzplatten, Schweißnähten von Metallgestellen sowie defekte Schubladenführungen.\n- Natürliche Holzmaserungen und leichte Farbabweichungen bei Eiche oder Walnuss sind Materialeigenschaften und kein Reklamationsgrund.\n- Schäden durch unsachgemäße Montage oder übermäßige Feuchtigkeit sind von der Garantie ausgeschlossen.\n\n## Ablauf der Garantieprüfung im Ticket-System\n- Prüfen Sie die Bestellnummer des Kunden sowie das Lieferdatum im verknüpften Auftrag.\n- Bitten Sie um zwei Fotos der betroffenen Stelle und dokumentieren Sie diese in der internen Notiz.\n- Bei berechtigtem Anspruch veranlassen Sie umgehend ein Ersatzteil oder einen Komplettaustausch mit Sendungsnummer im Format DEMO710305.",
+    "publish": true,
+    "revision": {
+      "title": "ORBI Living Garantiebedingungen und Ersatzteilservice für Deutschland und Frankreich",
+      "body": "# ORBI Living Garantiebedingungen und schneller Ersatzteilservice\n\nFür sämtliche Möbelstücke und Wohnaccessoires von ORBI Living gewähren wir eine umfassende Garantie von 24 Monaten ab Zustellung.\n\n## Was unter die Garantie fällt\n- Strukturelle Risse im Massivholz, wackelnde Stuhlbeine trotz korrekter Montage sowie fehlerhafte Beschläge.\n- Fehlende Schraubensets oder beschädigte Wandhalterungen werden kostenfrei per Express nachgesendet.\n- Natürliche Strukturen bei Eichenholz, Rattan und Jute-Teppichen stellen keinen Herstellungsfehler dar.\n\n## Bearbeitung durch den Kundenservice\n- Erfassen Sie das Anliegen als Garantiefall und prüfen Sie die Sendungsdaten (z. B. DEMO710305).\n- Senden Sie dem Kunden innerhalb der Antwortfrist eine klare Bestätigung über den Versand des Ersatzteils.\n- Nach erfolgreicher Zustellung der Ersatzlieferung wird das Ticket ordnungsgemäß geschlossen."
+    }
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "language": "de",
+    "title": "Rückgabe-, Umtausch- und Erstattungsrichtlinien für Bestellungen in Deutschland",
+    "tags": ["rueckgabe", "umtausch", "erstattung", "de"],
+    "body": "# Rückgabe-, Umtausch- und Erstattungsrichtlinien (Deutschland)\n\nKunden von ORBI Living können unbenutzte Artikel innerhalb von 30 Tagen nach Erhalt der Lieferung problemlos zurückgeben oder umtauschen.\n\n## Bedingungen für die Rücksendung\n- Die Ware muss unmontiert, vollständig und in der originalen Schutzverpackung zurückgesendet werden.\n- Für Kleinmöbel, Textilien und Dekoration stellen wir ein vorfrankiertes Rücksendeetikett (Muster DEMO802311) bereit.\n- Bei großen Tischen oder Regalen koordiniert unser Support-Team eine kostenfreie Abholung durch die Spedition.\n\n## Fristen für die Rückerstattung\n- Nach Wareneingang im europäischen Lager erfolgt die Qualitätsprüfung innerhalb von 2 Werktagen.\n- Die Rückzahlung auf das ursprüngliche Zahlungsmittel dauert in der Regel 3 bis 5 Werktage.\n- Bei einem direkten Umtausch in eine andere Farbe wird der neue Artikel sofort nach Abgabe des Rückpakets versendet.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": "DE",
+    "language": "de",
+    "title": "Vorgehensweise bei Transportschäden und beschädigter Lieferung bei Ankunft",
+    "tags": ["transportschaden", "loi-hang", "orbi", "de"],
+    "body": "# Vorgehensweise bei Transportschäden (Damaged on Arrival)\n\nWenn ein Möbelstück, ein Wandspiegel oder eine Keramikvase von ORBI Living beim Transport beschädigt wurde, hat die schnelle Lösung höchste Priorität.\n\n## Erforderliche Angaben vom Kunden\n- Fotos des beschädigten Artikels sowie der äußeren Kartonverpackung inklusive Versandetikett (Format DEMO845900).\n- Kurze Mitteilung, ob nur ein einzelnes Bauteil (z. B. ein Tischbein) oder das gesamte Produkt betroffen ist.\n- Meldung des Transportschadens idealerweise innerhalb von 5 Werktagen nach Zustellung.\n\n## Sofortmaßnahmen für das Support-Team\n- Entschuldigen Sie sich freundlich für die Unannehmlichkeiten und bieten Sie sofort kostenfreien Ersatz an.\n- Bei zerbrochenen Spiegeln oder Keramikvasen ist keine Rücksendung der Scherben erforderlich.\n- Alternativ kann auf Wunsch des Kunden ein Preisnachlass oder eine vollständige Rückerstattung gebucht werden.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": null,
+    "market": "DE",
+    "language": "de",
+    "title": "Lieferzeiten nach Markt und Standardantworten auf „Wo ist meine Bestellung?“",
+    "tags": ["lieferzeit", "where-is-my-order", "de", "fr"],
+    "body": "# Lieferzeiten in Europa und Antworten zum Sendungsstatus\n\nDieser Leitfaden unterstützt Mitarbeiter bei der Beantwortung von Kundenanfragen zum aktuellen Lieferstatus ihrer Bestellung.\n\n## Reguläre Regellaufzeiten ab Versand\n- Deutschland (DE): 2 bis 4 Werktage für Paketware, 4 bis 6 Werktage für größere Möbelstücke.\n- Frankreich (FR): 3 bis 5 Werktage für Standardpakete mit Sendungsverfolgung.\n- Vereinigte Staaten (US): 3 bis 5 Werktage ab unserem lokalen Versandzentrum.\n\n## Prüfung und Rückmeldung an den Kunden\n- Öffnen Sie die verknüpfte Bestellkarte und prüfen Sie die Sendungsnummer (zum Beispiel DEMO910445) sowie das letzte Ereignis.\n- Teilen Sie dem Kunden den letzten Paketscan und das voraussichtliche Zustellfenster präzise mit.\n- Falls sich der Status seit mehr als 3 Werktagen nicht verändert hat, informieren Sie das Versandteam zur Nachforschung.",
+    "publish": true,
+    "revision": null
+  },
+  {
+    "workspace": "TEAM-EU",
+    "brand": "ORBI",
+    "market": null,
+    "language": "de",
+    "title": "Kommunikationsleitfaden und Tonalität für den deutschsprachigen Kundenservice",
+    "tags": ["tone-guide", "de", "kommunikation", "orbi"],
+    "body": "# Kommunikationsleitfaden für den deutschsprachigen Kundenservice\n\nEine klare, höfliche und verlässliche Sprache stärkt das Vertrauen unserer Kunden in die Marke ORBI Living.\n\n## Grundregeln der Ansprache\n- Verwenden Sie stets die höfliche Sie-Form („Sie“, „Ihre Bestellung“, „wir helfen Ihnen gerne“).\n- Formulieren Sie Antworten strukturiert mit kurzen Absätzen und eindeutigen Zeitangaben.\n- Bestätigen Sie zu Beginn immer, dass das Anliegen verstanden wurde, bevor Sie die Lösung erläutern.\n\n## Qualitätsstandards vor dem Absenden\n- Nennen Sie bei Versandfragen immer die relevante Bestellnummer und den Tracking-Code wie DEMO955210.\n- Versprechen Sie keine Liefertermine, die nicht durch das Logistik-System gedeckt sind.\n- Dokumentieren Sie interne Absprachen mit dem Lager immer als interne Notiz auf Vietnamesisch im Ticket.",
+    "publish": false,
+    "revision": null
+  }
+]

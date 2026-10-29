@@ -11,7 +11,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
 | 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 133 test xanh (sau D-44 tiền VND); 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
 | 4 Nhu cầu mua + sales | **Xong, chờ nghiệm thu** | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
-| 5 Dịch vụ + tri thức | Chưa | | |
+| 5 Dịch vụ + tri thức | **Xong, chờ nghiệm thu** | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
 | 6 Chỉ số + điểm + Warehouse | Chưa | | |
 | 7 Journey + marketing | Chưa | | |
 | 8 Trung tâm AI | Chưa | | |
@@ -19,6 +19,52 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Phase 5 — đã làm (29/10/2026)
+
+**Claude (lõi).**
+- **Schema** (migration `phase5_service_knowledge`, `ticket_event_customer`): `Ticket`, `TicketEvent`, `SlaPolicy`, `KnowledgeArticle` + `KnowledgeVersion`, `Task.ticketId`. Index mọi khóa ngoại và trigram tiêu đề ngay từ đầu (quy tắc 11).
+- **`src/modules/service/tickets.ts`:**
+  - SLA mặc định theo mức (D-50) + chính sách theo brand; đổi mức tính lại hạn.
+  - Tạo ticket idempotent: mã TK-xxxxxx theo team, cờ VIP (D-24), việc cho người phụ trách.
+  - Danh sách/chi tiết theo phạm vi; chi tiết kèm đơn, vận đơn và bài tri thức gợi ý.
+  - Trả lời khách → Outbox SIMULATED + ghi phản hồi đầu; ghi chú nội bộ.
+  - Đổi trạng thái (giải quyết thì hoàn thành việc), đổi mức, chuyển phụ trách (chuyển cả việc).
+  - Nhắc SLA sắp quá hạn/quá hạn mỗi thứ một lần, ghi theo lô.
+  - Ticket vào hàng đợi: quá hạn → VIP → hạn.
+- **`knowledge.ts`:** phiên bản chỉ thêm; người đọc chỉ thấy bản xuất bản; sửa bài đã xuất bản tạo nháp, xuất bản lại mới thay; lưu trữ; lọc brand/market/ngôn ngữ.
+- **Phạm vi** `service/scope.ts` (D-50); khách có ticket giao cho Sales vào phạm vi của Sales đó.
+- **Action** `cham-soc/actions.ts`, `tri-thuc/actions.ts`; worker thêm `remindTicketSla`; Customer 360 có ticket trên dòng thời gian.
+- **Dữ liệu và đo tải:** `scripts/seed-service.ts` (hạn tính bằng `slaFor`, ticket quá hạn có sẵn coi như đã báo); seed SlaPolicy mẫu Lumi Cao 1h/6h; bộ sinh + bộ đo tải thêm 50k ticket.
+
+**Gemini (batch `p5-service`, 5 job song song, 349 s, cả 5 qua checker lần đầu, 0 ghi sai chỗ).**
+- Trang `/cham-soc` (danh sách + Drawer tạo) và `/cham-soc/[id]` (trả lời/ghi chú, dòng thời gian, trạng thái & mức, chuyển phụ trách, khách, đơn + vận đơn, việc, bài gợi ý).
+- Trang `/tri-thuc`, `/tri-thuc/[id]` (đọc bài, chọn phiên bản, xuất bản/lưu trữ, sửa tạo phiên bản), `/tri-thuc/moi`. Markdown hiển thị bằng React, không chèn HTML.
+- Nội dung `fixtures/knowledge.json` (20 bài vi/en/ar/de, 4 bài có bản sửa) và `fixtures/tickets.json` (30 ticket kèm hội thoại).
+- **Claude review sửa 2 lỗi:**
+  - Gemini tự đặt tên loại sự kiện vận đơn không có trong hệ thống (`PICKED_UP`, `LOST`…), nên `COD_COLLECTED` hiện thô — thay bằng `DELIVERY_EVENT` dùng chung.
+  - Tin khách mở ticket ghi người gửi "Hệ thống".
+- Claude bổ sung loại sự kiện "Khách nhắn" (thêm sau khi giao việc). Hai luật ranh giới client/server từ p4 đã chép vào checker p5: 0 vi phạm.
+
+**Test (29/10):** `npx vitest run` → 7 file, **157/157 passed**. Phase 5 có 8 ca:
+- hạn theo mức + theo brand + đổi mức tính lại hạn;
+- tạo bấm hai lần (đồng thời) một bản + VIP + việc; Sales không tạo được cho khách ngoài phạm vi;
+- phạm vi Sales/Vận đơn/Trưởng nhóm/Marketing/team khác;
+- trả lời → phản hồi đầu + Outbox SIMULATED + gửi lặp không nhân đôi, ghi chú không tính;
+- giải quyết hoàn thành việc, mở lại xóa mốc, chuyển phụ trách cần quyền;
+- nhắc SLA một lần + hàng đợi quá hạn → VIP;
+- tri thức nháp/xuất bản/bản sửa/lưu trữ; lọc brand/market/ngôn ngữ + gợi ý cho ticket.
+
+`tsc` sạch; `next build` thành công. Đo tải với 50k ticket: **0/35 vượt mục tiêu** (`docs/perf/phase5.json`). `seed-service` chạy hai lần: lần hai tạo 0.
+
+Trình duyệt (Trưởng nhóm, 1600):
+- `/cham-soc`: 21 ticket, 6 quá hạn, cờ VIP.
+- Chi tiết TK-000014 đủ khối; gửi trả lời → "giả lập — chưa gửi ra ngoài", dòng thời gian cập nhật.
+- `/tri-thuc`: 14 bài, có "Có bản nháp mới"; bài v2 hiển thị cảnh báo khác bản xuất bản.
+
+**Còn thiếu / để sau:** tạm dừng SLA khi "Chờ khách" và giờ làm việc theo thị trường (Phase 11 cấu hình); nút "Tạo ticket" từ trang đơn/khách (hiện nhập mã nội bộ); Q-23 chờ xác nhận số; E2E (Phase 11).
+
+**Tỷ lệ theo dòng:** Claude ~1.150 dòng lõi + test + seed / Gemini ~2.550 dòng giao diện + 62 KB nội dung (giao diện và nội dung — D-27).
 
 ## Chịu tải dữ liệu lớn + luồng lead khối lượng lớn (29/10/2026, D-48, D-49)
 

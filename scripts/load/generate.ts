@@ -30,7 +30,8 @@ async function batch<T>(label: string, total: number, make: (i: number) => T, in
 async function main() {
   const ws = await db.workspace.upsert({ where: { code: `LOAD-${S}` }, update: {}, create: { code: `LOAD-${S}`, name: `Team tải lớn x${S}` } });
   if (await db.order.count({ where: { workspaceId: ws.id } })) {
-    console.log("Đã có dữ liệu tải — bỏ qua sinh (xóa DB crm_load để sinh lại).");
+    console.log("Đã có dữ liệu Phase 2–4 — chỉ sinh phần còn thiếu (Phase 5).");
+    await phase5(ws.id);
     return;
   }
   const w = ws.id;
@@ -111,6 +112,40 @@ async function main() {
     (r) => db.task.createMany({ data: r as Prisma.TaskCreateManyInput[] }));
   await batch("Thông báo", N.notifications, (i) => ({ workspaceId: w, userId: pick(sales), title: `Thông báo tải ${i}`, idempotencyKey: `load:${i}`, readAt: rnd() < 0.8 ? new Date(NOW) : null }),
     (r) => db.notification.createMany({ data: r as Prisma.NotificationCreateManyInput[] }));
+  await phase5(w);
+}
+
+/** Phase 5: ~50k ticket/năm (≈140/ngày), 3 sự kiện mỗi ticket, 300 bài tri thức × 2 phiên bản. Chạy được trên dữ liệu đã có. */
+async function phase5(w: string) {
+  if (await db.ticket.count({ where: { workspaceId: w } })) return console.log("Đã có ticket — bỏ qua.");
+  const team = await db.team.findFirstOrThrow({ where: { workspaceId: w } });
+  const sales = (await db.membership.findMany({ where: { workspaceId: w, roles: { has: "SALES" } }, select: { userId: true } })).map((m) => m.userId);
+  const customers = await db.customer.count({ where: { workspaceId: w } });
+  const tid = (i: number) => `lt${w.slice(-6)}${i}`;
+  const NT = 50_000 * S;
+  const PR = ["THAP", "TRUNG", "TRUNG", "CAO", "KHAN"] as const;
+  const HOURS: Record<string, number> = { THAP: 48, TRUNG: 24, CAO: 8, KHAN: 2 };
+  await batch("Ticket", NT, (i) => {
+    const created = new Date(NOW - (365 - Math.floor((i / NT) * 365)) * DAY + Math.floor(rnd() * DAY));
+    const recent = NOW - created.getTime() < 7 * DAY;
+    const status = recent ? pick(["MOI", "DANG_XU_LY", "CHO_KHACH", "DA_GIAI_QUYET"] as const) : pick(["DA_GIAI_QUYET", "DONG", "DONG"] as const);
+    const priority = pick(PR);
+    const resolved = status === "DA_GIAI_QUYET" || status === "DONG";
+    return {
+      id: tid(i), workspaceId: w, code: `TK-${String(i + 1).padStart(6, "0")}`, type: pick(["GIAO_CHAM", "LOI_HANG", "DOI_TRA", "BAO_HANH", "KHAC"] as const), priority, status,
+      subject: `Sự cố tải ${i}`, customerId: `lc${w.slice(-6)}${i % customers}`, teamId: team.id, ownerId: rnd() < 0.95 ? pick(sales) : null, vip: rnd() < 0.1,
+      firstResponseDueAt: new Date(created.getTime() + (HOURS[priority] / 6) * 3600_000), resolveDueAt: new Date(created.getTime() + HOURS[priority] * 3600_000),
+      firstRespondedAt: status === "MOI" ? null : new Date(created.getTime() + 1800_000), resolvedAt: resolved ? new Date(created.getTime() + 20 * 3600_000) : null,
+      createdAt: created, breachNotifiedAt: resolved ? null : new Date(NOW),
+    };
+  }, (r) => db.ticket.createMany({ data: r as Prisma.TicketCreateManyInput[] }));
+  await batch("Sự kiện ticket", NT * 3, (i) => ({ workspaceId: w, ticketId: tid(Math.floor(i / 3)), type: (["CREATED", "REPLY", "STATUS"] as const)[i % 3], body: `Nội dung ${i}`, createdAt: new Date(NOW - (i % 365) * DAY) }),
+    (r) => db.ticketEvent.createMany({ data: r as Prisma.TicketEventCreateManyInput[] }), 10000);
+  const aid = (i: number) => `la${w.slice(-6)}${i}`;
+  await batch("Bài tri thức", 300, (i) => ({ id: aid(i), workspaceId: w, language: pick(["vi", "en", "ar", "de"]), title: `Bài tải ${i}`, status: i % 5 ? "PUBLISHED" : "DRAFT", latestVersion: 2, publishedVersion: i % 5 ? 1 : null }),
+    (r) => db.knowledgeArticle.createMany({ data: r as Prisma.KnowledgeArticleCreateManyInput[] }));
+  await batch("Phiên bản bài", 600, (i) => ({ workspaceId: w, articleId: aid(i >> 1), version: (i % 2) + 1, title: `Bài tải ${i >> 1}`, body: "Nội dung bài tải ".repeat(40) }),
+    (r) => db.knowledgeVersion.createMany({ data: r as Prisma.KnowledgeVersionCreateManyInput[] }));
   await db.$executeRawUnsafe("ANALYZE");
 }
 
