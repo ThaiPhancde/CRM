@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUserOrRedirect();
   // Ẩn mục không có quyền (server vẫn kiểm lại ở từng trang).
-  const nav = NAV.map((g) => ({ ...g, items: g.items.filter((it) => !it.perm || can(user.roles, it.perm)) })).filter((g) => g.items.length);
+  const nav = NAV.map((g) => ({ ...g, items: g.items.filter((it) => (!it.perm || can(user.roles, it.perm)) && (!it.anyPerm || it.anyPerm.some((p) => can(user.roles, p)))) })).filter((g) => g.items.length);
   const roleLabel = user.isCompanyAdmin && !user.roles.some((r) => r !== "MANAGER")
     ? "Quản trị công ty"
     : user.roles.map((r) => ROLE_LABEL[r]).join(", ");

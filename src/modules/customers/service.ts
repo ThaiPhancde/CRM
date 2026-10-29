@@ -7,6 +7,7 @@ import { audit } from "@/lib/audit";
 import { HttpError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
 import { piiFor } from "@/lib/pii";
+import { FAILURE_REASON } from "@/lib/status-badge";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
 
@@ -139,7 +140,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
     timeline.push({ at: o.bookedAt.toISOString(), kind: "order", title: `Đặt đơn ${o.orderNumber}`, detail: `${o.store.name} · ${o.items.reduce((s, i) => s + i.qty, 0)} sản phẩm${money ? ` · ${o.netAmount.toString()} ${o.currency}` : ""}`, href: `/don-hang/${o.id}`, tone: o.status === "CANCELLED" ? "neutral" : "brand" });
     for (const s of o.shipments) for (const e of s.events) {
       if (!["DELIVERED", "FAILED", "RETURNED", "COD_COLLECTED"].includes(e.type)) continue;
-      timeline.push({ at: e.occurredAt.toISOString(), kind: "delivery", title: `${EVENT_TITLE[e.type]} · ${o.orderNumber}`, detail: e.reasonCode ?? s.carrier ?? undefined, href: `/don-hang/${o.id}`, tone: e.type === "DELIVERED" || e.type === "COD_COLLECTED" ? "success" : "danger" });
+      timeline.push({ at: e.occurredAt.toISOString(), kind: "delivery", title: `${EVENT_TITLE[e.type]} · ${o.orderNumber}`, detail: (e.reasonCode ? (FAILURE_REASON[e.reasonCode] ?? e.reasonCode) : null) ?? s.carrier ?? undefined, href: `/don-hang/${o.id}`, tone: e.type === "DELIVERED" || e.type === "COD_COLLECTED" ? "success" : "danger" });
     }
     for (const r of o.refunds) timeline.push({ at: r.refundedAt.toISOString(), kind: "refund", title: `Hoàn tiền · ${o.orderNumber}`, detail: money ? `${r.amount.toString()} ${r.currency}` : undefined, href: `/don-hang/${o.id}`, tone: "danger" });
   }

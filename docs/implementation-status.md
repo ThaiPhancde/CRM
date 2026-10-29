@@ -9,7 +9,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 0 Audit + đặc tả | **Xong bản nháp, chờ duyệt** | 28/10/2026 | Bộ tài liệu vai trò + thiết kế + prompt phase; chưa có code |
 | 1 Nền tảng, quyền, UI shell | **Xong, chờ nghiệm thu** | 28/10/2026 | 22 test xanh; thử trình duyệt 2 vai; chưa commit/worktree |
 | 2 Kết nối + đơn chuẩn | **Xong, chờ nghiệm thu** | 28/10/2026 | 32 test xanh; demo 1.963 đơn / 5 shop; Gemini 1 batch |
-| 3 Customer 360 | Chưa | | |
+| 3 Customer 360 | **Xong, chờ nghiệm thu** | 29/10/2026 | 132 test xanh; 414 hồ sơ khách; Gemini 4 job (giao diện + test SĐT) |
 | 4 Nhu cầu mua + sales | Chưa | | |
 | 5 Dịch vụ + tri thức | Chưa | | |
 | 6 Chỉ số + điểm + Warehouse | Chưa | | |
@@ -19,6 +19,30 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
+
+## Phase 3 — đã làm (29/10/2026)
+
+**Claude (lõi).** Schema `Customer` (kèm `valueUsd12m`, `orderCount`, `mergedIntoId`), `CustomerIdentity`, `Address`, `ContactPreference` (chỉ thêm dòng, giữ lịch sử), `CustomerReview`; `Order.customerId` (migration `phase3_customer360`, `phase3_customer_stats`). `src/lib/phone.ts` chuẩn hóa E.164 7 nước + che SĐT/email (D-41). `src/modules/customers/resolve.ts`: hợp nhất khi nhập đơn (gọi từ ingest) và chạy bù (`scripts/resolve-customers.ts`) — tự gộp theo mã khách nguồn hoặc SĐT; email chưa xác minh → hàng đợi; tên/IP không bao giờ là bằng chứng. `src/modules/customers/service.ts` (hợp đồng cho giao diện): danh sách lọc/sắp/phân trang, hồ sơ 360 + dòng thời gian hợp nhất, hàng đợi khách, gộp/tách có ảnh chụp danh sách id, ghi lựa chọn liên hệ. `src/lib/pii.ts` + che PII ở mọi dịch vụ đơn hàng (danh sách, chi tiết, CSV, hàng đợi đơn; chặn tìm theo SĐT/email khi thiếu quyền). Server action `src/app/(app)/khach-hang/actions.ts`. Worker tính lại giá trị 12 tháng cho hồ sơ cũ hơn 24 giờ. Menu `anyPerm` cho "Cần xác minh".
+
+**Gemini (giao diện + test bảng, batch `ai-jobs/p3-ui`, 4 job song song, 284 s).** `/khach-hang` (lọc theo brand/thị trường/giá trị/lần mua gần nhất/khách mua lại, sắp xếp, ẩn lọc tiền khi thiếu quyền, gợi ý khi thiếu quyền PII), `/khach-hang/[id]` (5 thẻ tóm tắt, 6 tab: Tổng quan với dòng thời gian + quyền liên hệ + form ghi lựa chọn, Đơn hàng, Tương tác (Phase 4), Địa chỉ, Danh tính, Lịch sử gộp + Tách lại), tab Khách ở `/xac-minh` (kiểm cả `order.link` và `customer.merge`), `tests/phone.test.ts` (~90 ca). Claude đọc duyệt từng file, đối chiếu từng kỳ vọng test SĐT, sửa 3 chi tiết trang 360.
+
+**Lỗi thật phát hiện và sửa:**
+- **D-32 hiểu sai (D-40):** cấu hình "Pancake chủ nhóm giao hàng" của Team EU chặn luôn cập nhật giao hàng của đơn chỉ có ở Shopify → hầu hết đơn Orbi EU Store kẹt "Chưa giao". Sửa `ownedGroups` (chỉ giành quyền khi đơn có liên kết từ nền tảng chủ), thêm test, áp lại 400 bản ghi demo qua `scripts/reapply-latest.ts` → 339 đã giao / 28 thất bại / 12 hoàn.
+- Trang đơn hàng Phase 2 trả SĐT/email đầy đủ cho mọi vai → che theo `customer.pii`.
+- `fit()` chuẩn hóa SĐT giữ số 0 trung kế với số Việt Nam 10 chữ số → luôn bỏ tiền tố trung kế.
+
+**Dữ liệu demo.** Chạy bù: 1.963 đơn → 414 hồ sơ khách (PiAlpha 307, Team EU 107). Thêm kịch bản 4 khách Mỹ đặt lại bằng SĐT + tài khoản Shopify mới cùng email → 4 cặp chờ xác minh.
+
+**Test đã chạy (29/10):**
+- `npx vitest run` → 5 file, **132/132 passed** (customers 7 ca lõi; phone ~90 ca; orders thêm ca D-40).
+- `npx tsc --noEmit` sạch; `next build` OK; `npm run worker -- --once` exit 0.
+- Trình duyệt (1440): danh sách khách Team EU; hồ sơ Inès Dubois (34 đơn, dòng thời gian, quyền liên hệ); `/xac-minh?tab=khach` Team PiAlpha 4 cặp → **gộp Ethan Taylor trên giao diện → 1 hồ sơ 18 đơn → Tách lại → 2 hồ sơ 17 + 1 đơn như cũ**. Vai Marketing: SĐT `+1 2••••••101`, email `et•••@…`, giá trị "—", tìm theo SĐT không ra, menu không có "Cần xác minh", gõ thẳng `/xac-minh` ra trang 404 (HTTP 200 do Next đã stream layout — cùng hành vi trang quản trị, không lộ dữ liệu).
+
+**Chưa làm / còn hở:**
+- Địa chỉ demo chỉ có quốc gia (nguồn phát lại chưa có địa chỉ chi tiết).
+- Không có thao tác gộp thủ công hai hồ sơ ngoài hàng đợi (chỉ gộp từ yêu cầu xác minh).
+- Một vài khách mẫu có rất nhiều đơn (34–66 đơn/năm) do phân phối sinh dữ liệu lệch — số liệu demo hơi cao so với thực tế.
+- Tỷ lệ Phase 3 theo dòng code merge: **Claude ~45% / Gemini ~55%** (vượt ngưỡng 50%; Gemini chỉ làm giao diện + test bảng, đếm dòng thiên về JSX).
 
 ## Phase 2 — đã làm (28/10/2026)
 

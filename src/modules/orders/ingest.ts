@@ -86,7 +86,7 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
   const link = await tx.sourceOrderLink.findFirst({ where: { connectionId: ctx.conn.id, sourceRecordId: n.sourceRecordId } });
   if (link) {
     if (n.sourceUpdatedAt <= link.sourceUpdatedAt) return { outcome: "STALE", orderId: link.orderId };
-    const owned = ownedGroups(ctx.settings, link);
+    const owned = await ownedGroups(tx, ctx.settings, link);
     await writeOrder(tx, link.orderId, n, owned);
     await resolveCustomer(tx, customerInput(ctx.conn, n), link.orderId, owned.has("order"));
     await tx.sourceOrderLink.update({
@@ -104,7 +104,7 @@ async function apply(tx: Tx, ctx: { conn: Conn; platform: Platform; settings: In
   const target = await ruleMatch(tx, ctx, n);
   if (target) {
     const l = await tx.sourceOrderLink.create({ data: { ...linkData, orderId: target, isPrimary: false } as Prisma.SourceOrderLinkUncheckedCreateInput });
-    const owned = ownedGroups(ctx.settings, l);
+    const owned = await ownedGroups(tx, ctx.settings, l);
     if (owned.size) await writeOrder(tx, target, n, owned);
     // Nguồn phụ bổ sung danh tính (mã khách ở nền tảng kia) cho cùng khách; chỉ gắn lại khách nếu làm chủ nhóm đơn.
     await resolveCustomer(tx, customerInput(ctx.conn, n), target, owned.has("order"));
@@ -123,11 +123,20 @@ const customerInput = (conn: Conn, n: NormalizedOrder): CustomerInput => ({
   phone: n.customer.phone, email: n.customer.email, country: n.shipCountry, at: n.sourceUpdatedAt,
 });
 
-function ownedGroups(s: IngestSettings, link: { platform: string; isPrimary: boolean }): Set<Group> {
+/**
+ * Nhóm trường mà liên kết này làm chủ (D-32). Nền tảng được chỉ định trong sourceOfTruth chỉ giành quyền khi ĐƠN NÀY có liên kết
+ * từ nền tảng đó; đơn không có thì nguồn tạo đơn (liên kết chính) vẫn làm chủ — nếu không, đơn chỉ có một nguồn sẽ không bao giờ
+ * được cập nhật nhóm đó.
+ */
+async function ownedGroups(tx: Tx, s: IngestSettings, link: { orderId: string; platform: string; isPrimary: boolean }): Promise<Set<Group>> {
   const out = new Set<Group>();
+  const owners = [...new Set(Object.values(s.sourceOfTruth).filter(Boolean) as string[])];
+  const present = owners.length
+    ? new Set((await tx.sourceOrderLink.findMany({ where: { orderId: link.orderId, platform: { in: owners } }, select: { platform: true } })).map((l) => l.platform))
+    : new Set<string>();
   for (const g of ["order", "payment", "fulfillment"] as Group[]) {
     const owner = s.sourceOfTruth[g];
-    if (owner ? owner === link.platform : link.isPrimary) out.add(g);
+    if (owner && present.has(owner) ? owner === link.platform : link.isPrimary) out.add(g);
   }
   return out;
 }

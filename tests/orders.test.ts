@@ -183,6 +183,16 @@ describe("Phase 2 — đơn chuẩn từ nhiều nguồn", () => {
     expect(o.netAmount.toString()).toBe("95"); // nhóm order vẫn của Shopify
   });
 
+  it("chủ nhóm được chỉ định chỉ áp khi đơn có liên kết từ nền tảng đó; đơn chỉ có ở Shopify vẫn nhận cập nhật giao hàng (D-32)", async () => {
+    const s = await setup("sot-only", { sourceOfTruth: { fulfillment: "pancake" } });
+    fixture(s.sh.store.code, [
+      { visible: 2, record: shopifyOrder({ id: "6101", name: "#6101", updated: 2 }) },
+      { visible: 130, record: shopifyOrder({ id: "6101", name: "#6101", updated: 120, delivered: true }) },
+    ]);
+    await s.sync(s.sh, 140);
+    expect((await s.c.order.findFirstOrThrow()).fulfillmentStatus).toBe("DELIVERED");
+  });
+
   it("thêm nền tảng thứ ba chỉ cần đăng ký adapter, không sửa nghiệp vụ (D-28)", async () => {
     const website: Platform = {
       code: `website${RUN}`, label: "Website", verification: "CXM", capabilities: { read: ["order"], write: [], incremental: "polling" },

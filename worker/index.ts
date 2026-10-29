@@ -2,8 +2,9 @@
 // Chạy: npm run worker          (lặp mỗi WORKER_INTERVAL_MIN phút, mặc định 5)
 //       npm run worker -- --once (một lượt; có lỗi thì thoát mã 1)
 // Mỗi kết nối chạy trong try/catch riêng: lỗi một kết nối không chặn kết nối khác; lượt sau thử lại.
-import { rootDb } from "../src/lib/db";
+import { rootDb, workspaceDb } from "../src/lib/db";
 import { runSync } from "../src/modules/connectors/service";
+import { refreshCustomerStats } from "../src/modules/customers/resolve";
 
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify({ at: new Date().toISOString(), ...o }));
 
@@ -24,15 +25,34 @@ export async function syncDue(now = new Date()) {
   return { checked: conns.length, failed };
 }
 
+/** Giá trị 12 tháng là cửa sổ trượt → tính lại cho khách có số liệu cũ hơn 24 giờ (Phase 6 thay bằng Warehouse). */
+export async function refreshStaleCustomerStats(now = new Date(), limit = 500) {
+  const stale = await rootDb.customer.findMany({
+    where: { mergedIntoId: null, OR: [{ statsAt: null }, { statsAt: { lt: new Date(now.getTime() - 86400000) } }] },
+    select: { id: true, workspaceId: true }, take: limit,
+  });
+  let failed = 0;
+  for (const c of stale) {
+    try {
+      await refreshCustomerStats(workspaceDb(c.workspaceId), c.id, now);
+    } catch (e) {
+      failed++;
+      log({ job: "customer-stats", workspaceId: c.workspaceId, customerId: c.id, error: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  return { refreshed: stale.length - failed, failed };
+}
+
 async function main() {
   const once = process.argv.includes("--once");
   const minutes = Math.max(1, Number(process.env.WORKER_INTERVAL_MIN ?? 5));
   do {
     const r = await syncDue();
-    log({ job: "tick", ...r });
+    const stats = await refreshStaleCustomerStats();
+    log({ job: "tick", ...r, customerStats: stats });
     if (once) {
       await rootDb.$disconnect();
-      process.exit(r.failed.length ? 1 : 0);
+      process.exit(r.failed.length || stats.failed ? 1 : 0);
     }
     await new Promise((res) => setTimeout(res, minutes * 60000));
   } while (true);

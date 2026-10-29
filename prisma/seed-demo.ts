@@ -6,6 +6,8 @@ import path from "node:path";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { generate } from "../scripts/gen-fixtures";
 import { runSync } from "../src/modules/connectors/service";
+import { resolveAllCustomers } from "../src/modules/customers/resolve";
+import { workspaceDb } from "../src/lib/db";
 
 const db = new PrismaClient();
 type Catalog = { products: { code: string; brand: string; category: string; name_vi: string; name_en: string; name_ar?: string; variants: { sku: string; attributes: Record<string, string>; cost_usd: string }[] }[] };
@@ -52,8 +54,13 @@ async function main() {
     const r = await runSync(s.workspaceId, conn.id, "INCREMENTAL");
     console.log(`${s.code}: ${JSON.stringify(r.counts)} nghi_trung=${r.reviews} (${Math.round((Date.now() - t) / 1000)}s)`);
   }
-  const [orders, links, reviews] = await Promise.all([db.order.count(), db.sourceOrderLink.count(), db.orderLinkReview.count({ where: { status: "PENDING" } })]);
-  console.log(`xong: đơn=${orders} liên kết nguồn=${links} chờ xác minh=${reviews}`);
+  // Phase 3: đơn nhập trước khi có Customer 360 (DB cũ) được gắn khách; DB mới thì đã gắn lúc nhập, bước này không làm gì.
+  for (const w of await db.workspace.findMany()) await resolveAllCustomers(workspaceDb(w.id));
+  const [orders, links, reviews, customers, customerReviews] = await Promise.all([
+    db.order.count(), db.sourceOrderLink.count(), db.orderLinkReview.count({ where: { status: "PENDING" } }),
+    db.customer.count({ where: { mergedIntoId: null } }), db.customerReview.count({ where: { status: "PENDING" } }),
+  ]);
+  console.log(`xong: đơn=${orders} liên kết nguồn=${links} đơn chờ xác minh=${reviews} khách=${customers} khách chờ xác minh=${customerReviews}`);
 }
 
 main().finally(() => db.$disconnect());

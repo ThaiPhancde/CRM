@@ -2,7 +2,7 @@
 
 Cập nhật: 28/10/2026 (Phase 1). Nguồn: HLD §2 (quyền xuyên hệ thống), §8.4 (AI), D-21, D-34. Quyền là chuỗi `module.action`; ma trận vai trò × quyền nằm trong code `src/lib/permissions.ts` (vai trò cố định, không sửa trên giao diện — D-34). `requirePerm(user, perm)` dùng chung cho server action, route API, dịch vụ, tool AI, báo cáo, tìm kiếm.
 
-**Đã có trong code (Phase 1):** `admin.users`, `admin.roles`, `admin.settings`, `admin.audit` (MANAGER); `catalog.view` (mọi vai); `finance.view` (MANAGER, SALES_LEAD, FINANCE_VIEW). Các quyền còn lại trong bảng mục 2 được thêm vào `permissions.ts` ở phase tương ứng.
+**Đã có trong code (Phase 1):** `admin.users`, `admin.roles`, `admin.settings`, `admin.audit` (MANAGER); `catalog.view` (mọi vai); `finance.view` (MANAGER, SALES_LEAD, FINANCE_VIEW). Phase 2: `integration.manage/view`, `order.view/link`, `product.view`. Phase 3: `customer.view`, `customer.pii` (MANAGER, SALES_LEAD, SALES, FULFILLMENT — D-42), `customer.edit` (MANAGER, SALES_LEAD, SALES), `customer.merge` (MANAGER, SALES_LEAD). Che PII làm ở service qua `src/lib/pii.ts`. Các quyền còn lại trong bảng mục 2 được thêm vào `permissions.ts` ở phase tương ứng.
 
 ## 1. Vai trò
 

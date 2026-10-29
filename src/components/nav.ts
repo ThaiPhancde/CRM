@@ -2,7 +2,8 @@
 // demo mà không vào trang trống. Khi làm xong phase, đổi `phase` thành undefined và thêm `perm`.
 import type { Permission } from "@/lib/permissions";
 
-export type NavItem = { href: string; label: string; icon: string; perm?: Permission; phase?: number };
+/** `perm` hoặc `anyPerm`: hiện mục khi người dùng có quyền đó / có ít nhất một quyền trong danh sách. */
+export type NavItem = { href: string; label: string; icon: string; perm?: Permission; anyPerm?: Permission[]; phase?: number };
 export type NavGroup = { label: string; items: NavItem[] };
 
 export const NAV: NavGroup[] = [
@@ -10,7 +11,7 @@ export const NAV: NavGroup[] = [
   {
     label: "Khách hàng",
     items: [
-      { href: "/khach-hang", label: "Khách hàng", icon: "users", phase: 3 },
+      { href: "/khach-hang", label: "Khách hàng", icon: "users", perm: "customer.view" },
       { href: "/nhu-cau", label: "Nhu cầu mua", icon: "target", phase: 4 },
       { href: "/hang-doi", label: "Hàng đợi của tôi", icon: "inbox", phase: 4 },
       { href: "/nhiem-vu", label: "Nhiệm vụ", icon: "check", phase: 4 },
@@ -20,7 +21,7 @@ export const NAV: NavGroup[] = [
     label: "Bán hàng",
     items: [
       { href: "/don-hang", label: "Đơn hàng", icon: "bag", perm: "order.view" },
-      { href: "/xac-minh", label: "Cần xác minh", icon: "alert", perm: "order.link" },
+      { href: "/xac-minh", label: "Cần xác minh", icon: "alert", anyPerm: ["order.link", "customer.merge"] },
       { href: "/van-don", label: "Vận đơn", icon: "truck", phase: 10 },
       { href: "/san-pham", label: "Sản phẩm", icon: "box", perm: "product.view" },
     ],

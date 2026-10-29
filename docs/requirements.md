@@ -42,7 +42,7 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-20 | Hồ sơ hợp nhất nhiều mã nguồn; gộp bằng bằng chứng; lịch sử gộp; tách lại | HLD §6.1; D-08 | XĐ | 3 | ✓ |
+| R-20 | Hồ sơ hợp nhất nhiều mã nguồn; gộp bằng bằng chứng; lịch sử gộp; tách lại | HLD §6.1; D-08, D-41 | XĐ — **đã có Phase 3** (R-20…R-25; địa chỉ demo chỉ có quốc gia vì nguồn phát lại chưa có địa chỉ chi tiết) | 3 | ✓ |
 | R-21 | Chuẩn hóa SĐT E.164, đánh giá email; không dùng tên/IP | HLD §6.1 | XĐ | 3 | ✓ |
 | R-22 | Địa chỉ giữ bản gốc + chuẩn hóa; tách nơi giao/thanh toán | HLD §6.2 | XĐ | 3 | ✓ |
 | R-23 | Quyền liên hệ theo kênh, mục đích, brand, lịch sử | HLD §6.2 | XĐ | 3, 7 | ✓ |

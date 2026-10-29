@@ -2,6 +2,20 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 29/10/2026 (lần 4) — Phase 3 xong, chờ nghiệm thu
+
+**Đã làm:** Customer 360 — hợp nhất khách theo D-08/D-41, gộp/tách có ảnh chụp, che PII theo quyền ở mọi dịch vụ, trang `/khach-hang`, hồ sơ 360, tab Khách ở `/xac-minh`. Lần đầu chạy tỷ lệ mới (Gemini làm giao diện + test SĐT). Chi tiết: `implementation-status.md` Phase 3.
+
+**Quyết định mới:** D-40 (sửa cách hiểu chủ nhóm D-32), D-41 (SĐT + bằng chứng gộp), D-42 (quyền PII), D-43 (giá trị 12 tháng).
+
+**Chạy thêm:** `npx tsx --env-file=.env scripts/resolve-customers.ts` (chạy bù khách — `db:seed-demo` đã gọi sẵn); `scripts/reapply-latest.ts <mã shop>` (áp lại phiên bản mới nhất sau khi đổi quy tắc); `scripts/resync-store.ts <mã shop>`.
+
+**Quy ước mới:** mọi SĐT/email trả ra ngoài đi qua `piiFor(user)`; giao diện chỉ hiển thị cái service trả (null → "—"). Giao Gemini: viết service + action + test trước, work order kèm trang mẫu + checker (cấm import `@/lib/db` trong view) — mẫu ở `ai-jobs/p3-ui/`. Worktree Gemini cần `git merge --ff-only main` và junction `node_modules` trước mỗi batch.
+
+**Chờ người dùng:** nghiệm thu Phase 3; cân nhắc lại cách đo tỷ lệ 60/40 (đếm dòng cho ra 45/55 vì JSX dài).
+
+**Bước tiếp theo:** Phase 4 — nhu cầu mua + không gian sales (Gemini: kanban, hàng đợi, nhiệm vụ, fixture lead/hội thoại).
+
 ## Checkpoint 28/10/2026 (lần 3) — Phase 2 xong, chờ nghiệm thu
 
 **Đã làm:** kết nối dữ liệu (khung adapter + Pancake/Shopify phát lại), đơn chuẩn nhiều nguồn, hàng đợi xác minh gộp/tách, trang `/ket-noi`, `/don-hang`, `/xac-minh`, `/san-pham`, worker đồng bộ. Code Phase 0–1 đã đẩy lên https://github.com/ThaiPhancde/CRM (nhánh `main`). Chi tiết + kết quả test: `implementation-status.md` Phase 2.

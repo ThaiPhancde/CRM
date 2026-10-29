@@ -7,7 +7,7 @@ import { Badge, Card, PageHeader, SectionTitle, StatCard } from "@/components/ui
 const ROADMAP = [
   { p: 1, name: "Nền tảng, quyền, giao diện", done: true },
   { p: 2, name: "Kết nối dữ liệu + đơn chuẩn", done: true },
-  { p: 3, name: "Customer 360" },
+  { p: 3, name: "Customer 360", done: true },
   { p: 4, name: "Nhu cầu mua + không gian sales" },
   { p: 5, name: "Dịch vụ sau bán + tri thức" },
   { p: 6, name: "Chỉ số, chấm điểm, Warehouse" },
