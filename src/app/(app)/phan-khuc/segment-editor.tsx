@@ -33,7 +33,7 @@ export function SegmentEditor({ fields, initial, trigger = "Tạo phân khúc" }
 
   return (
     <>
-      <Button variant={initial ? "secondary" : "primary"} size={initial ? "sm" : "md"} onClick={() => setOpen(true)}>{trigger}</Button>
+      <Button variant={initial ? "secondary" : "primary"} size={initial ? "sm" : "md"} aria-label={initial ? `${trigger} phân khúc ${initial.name}` : undefined} onClick={() => setOpen(true)}>{trigger}</Button>
       <Drawer
         open={open}
         onClose={() => setOpen(false)}

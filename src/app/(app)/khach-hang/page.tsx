@@ -65,7 +65,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     <>
       <PageHeader
         title="Khách hàng"
-        crumbs={[{ label: "Khách hàng" }, { label: "Khách hàng" }]}
+        crumbs={[{ label: "Khách hàng" }]}
         description="Hồ sơ khách hàng được hợp nhất tự động từ mọi nền tảng bán hàng theo mã khách nguồn và số điện thoại chuẩn hóa."
       />
 

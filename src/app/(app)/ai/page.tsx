@@ -122,7 +122,7 @@ export default async function AiCenterPage({ searchParams }: { searchParams: Pro
       <PageHeader
         title="Trung tâm AI"
         crumbs={[{ label: "Phân tích" }, { label: "Trung tâm AI" }]}
-        description="Trợ lý chạy với quyền của bạn; mọi câu trả lời có bằng chứng, mọi lần chạy có chi phí. Demo dùng mô hình replay — không gọi mạng."
+        description="Trợ lý chạy với quyền của bạn; mọi câu trả lời có bằng chứng, mọi lần chạy có chi phí. Chế độ demo dùng dữ liệu mẫu — không gọi mạng."
       />
 
       <nav aria-label="Chuyên mục Trung tâm AI" className="mb-6 flex flex-wrap gap-1 border-b border-border pb-2">
@@ -215,7 +215,7 @@ export default async function AiCenterPage({ searchParams }: { searchParams: Pro
             </form>
           </div>
 
-          {runs.rows.length === 0 ? (
+          {runs.rows.length === 0 ? (feature || status || page > 1) ? <EmptyState title="Không có kết quả khớp bộ lọc" description="Thử đổi trạng thái, tính năng hoặc xóa bộ lọc để xem toàn bộ lịch sử." action={<ButtonLink size="sm" href="/ai?tab=lich-su">Xóa lọc</ButtonLink>} /> : (
             <EmptyState
               title="Chưa có lần chạy nào"
               description="Thử hỏi trợ lý ở tab Trợ lý"
@@ -238,7 +238,7 @@ export default async function AiCenterPage({ searchParams }: { searchParams: Pro
                     <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Tính năng</th>
                     <th scope="col" className="h-10 border-b border-border px-4">Yêu cầu</th>
                     <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Kết quả</th>
-                    <th scope="col" className="h-10 border-b border-border px-4">Tool</th>
+                    <th scope="col" className="h-10 border-b border-border px-4">Công cụ</th>
                     <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Bằng chứng</th>
                     <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Token (vào/ra)</th>
                     <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Chi phí</th>
@@ -564,7 +564,7 @@ export default async function AiCenterPage({ searchParams }: { searchParams: Pro
           </div>
 
           <p className="text-xs text-fg-muted">
-            Giá ước tính theo bảng giá cấu hình (USD / 1 triệu token); mô hình replay = 0 USD.
+            Giá ước tính theo bảng giá cấu hình (USD / 1 triệu token); chế độ demo (dữ liệu mẫu) = 0 USD.
           </p>
         </div>
       )}

@@ -26,7 +26,7 @@ test.describe("Kịch bản demo", () => {
     await switchTeam(page, "Team PiAlpha");
     await page.goto("/khach-hang?q=Sophia%20Johnson");
     await follow(page, page.getByRole("link", { name: "Sophia Johnson" }).first());
-    await page.getByRole("tab", { name: /Lịch sử gộp/ }).click();
+    await follow(page, page.getByRole("navigation", { name: "Mục hồ sơ khách hàng" }).getByRole("link", { name: /Lịch sử gộp/ }));
     expect(await mainText(page)).toMatch(/Tách lại|gộp/i);
 
     await page.goto("/ai");
@@ -36,7 +36,7 @@ test.describe("Kịch bản demo", () => {
     expect(await mainText(page)).toContain("Nhật ký thao tác");
     await page.goto("/quan-tri/cau-hinh");
     const cfg = await mainText(page);
-    for (const s of ["Ngưỡng SLA ticket", "Phân công lead", "Giới hạn liên hệ", "Giờ làm việc theo thị trường", "Ngưỡng tồn thấp"]) expect(cfg).toContain(s);
+    for (const s of ["Ngưỡng SLA ticket", "Phân công nhu cầu mua", "Giới hạn liên hệ", "Giờ làm việc theo thị trường", "Ngưỡng tồn thấp"]) expect(cfg).toContain(s);
     expect(errors).toEqual([]);
   });
 
@@ -83,7 +83,7 @@ test.describe("Kịch bản demo", () => {
     const dlg = page.getByRole("dialog");
     await expect(dlg).toBeVisible();
     await expect(dlg.getByText("Yêu cầu giao lại", { exact: true }).first()).toBeVisible();
-    await dlg.getByRole("button", { name: "Đóng", exact: true }).last().click();
+    await dlg.getByRole("button", { name: "Hủy", exact: true }).click();
     await expect(dlg).toBeHidden();
     await page.goto("/san-pham");
     await mainText(page);

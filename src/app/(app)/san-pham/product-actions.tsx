@@ -32,14 +32,14 @@ export function MapSkuForm({ sourceSku, variants }: { sourceSku: string; variant
   useResultToast(state);
   const id = `map-${sourceSku}`;
   return (
-    <form action={action} className="flex items-center gap-2">
+    <form action={action} noValidate className="flex items-center gap-2">
       <input type="hidden" name="sourceSku" value={sourceSku} />
       <label htmlFor={id} className="sr-only">Biến thể cho mã {sourceSku}</label>
       <select id={id} name="variantId" required defaultValue="" className="h-8 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-bg px-2 text-sm text-fg focus:border-brand-ring">
         <option value="" disabled>Chọn biến thể…</option>
         {variants.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
       </select>
-      <Button type="submit" size="sm" disabled={pending}>{pending ? "Đang gắn…" : "Gắn"}</Button>
+      <Button type="submit" size="sm" disabled={pending} aria-label={`Gắn mã ${sourceSku} vào biến thể đã chọn`}>{pending ? "Đang gắn…" : "Gắn"}</Button>
     </form>
   );
 }

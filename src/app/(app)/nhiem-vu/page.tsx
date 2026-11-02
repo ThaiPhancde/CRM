@@ -79,27 +79,26 @@ export default async function TasksPage({
       <Card>
         <SectionTitle>Danh sách công việc</SectionTitle>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <div role="tablist" aria-label="Lọc theo hạn" className="flex flex-wrap items-center gap-1">
+          <nav aria-label="Lọc theo hạn" className="flex flex-wrap gap-1">
             {DUE_TABS.map((tab) => {
               const active = f.due === tab.value;
               return (
                 <Link
                   key={tab.value ?? "all"}
-                  role="tab"
-                  aria-selected={active}
                   href={qs({ due: tab.value, page: undefined })}
+                  aria-current={active ? "page" : undefined}
                   className={cx(
-                    "rounded-[var(--radius-sm)] px-3 py-1.5 text-sm transition-colors",
+                    "rounded-[var(--radius-sm)] px-2.5 py-1 text-sm",
                     active
-                      ? "bg-brand-soft font-medium text-brand-active"
-                      : "text-fg-muted hover:bg-bg-subtle hover:text-fg",
+                      ? "bg-brand-soft font-medium text-brand"
+                      : "text-fg-muted hover:bg-bg-subtle",
                   )}
                 >
                   {tab.label}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
           <form method="get" className="flex flex-wrap items-end gap-2">
             {f.due && <input type="hidden" name="due" value={f.due} />}
@@ -204,7 +203,7 @@ export default async function TasksPage({
                           <div className="flex flex-col gap-0.5 text-xs">
                             {t.lead && (
                               <Link href={`/nhu-cau/${t.lead.id}`} className="font-medium text-fg hover:text-brand-active hover:underline">
-                                Lead: {t.lead.contactName}
+                                Nhu cầu mua: {t.lead.contactName}
                               </Link>
                             )}
                             {t.customer && (
@@ -226,7 +225,7 @@ export default async function TasksPage({
                         <Badge tone={st.tone}>{st.label}</Badge>
                       </td>
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                        <TaskButtons id={t.id} status={t.status} />
+                        <TaskButtons id={t.id} status={t.status} title={t.title} />
                       </td>
                     </tr>
                   );

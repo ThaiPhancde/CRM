@@ -24,7 +24,7 @@ export function SettlementForm({ carriers }: { carriers: string[] }) {
   const canApply = !!state?.ok && !state.applied && ready > 0 && !dirty;
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV((x) => ({ ...x, [k]: e.target.value }));
   return (
-    <form action={action} onSubmit={() => { submitted.current = key; }} className="space-y-3 px-4 py-3">
+    <form action={action} onSubmit={() => { submitted.current = key; }} noValidate className="space-y-3 px-4 py-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="st-carrier" className="mb-1 block text-xs font-medium text-fg">Hãng vận chuyển <span className="text-danger">*</span></label>
@@ -32,12 +32,12 @@ export function SettlementForm({ carriers }: { carriers: string[] }) {
             <option value="" disabled>Chọn hãng…</option>
             {carriers.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          {state?.fields?.carrier && <p className="mt-1 text-xs text-danger">{state.fields.carrier}</p>}
+          {state?.fields?.carrier && <p role="alert" className="mt-1 text-xs text-danger">{state.fields.carrier}</p>}
         </div>
         <div>
           <label htmlFor="st-ref" className="mb-1 block text-xs font-medium text-fg">Mã bảng đối soát <span className="text-danger">*</span></label>
           <input id="st-ref" name="reference" required maxLength={60} value={v.reference} onChange={set("reference")} placeholder="Ví dụ: ARX-2026-10-W2" className={`${field} h-9`} aria-invalid={!!state?.fields?.reference} />
-          {state?.fields?.reference && <p className="mt-1 text-xs text-danger">{state.fields.reference}</p>}
+          {state?.fields?.reference && <p role="alert" className="mt-1 text-xs text-danger">{state.fields.reference}</p>}
         </div>
       </div>
       <div>
@@ -48,7 +48,7 @@ export function SettlementForm({ carriers }: { carriers: string[] }) {
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" name="intent" value="preview" disabled={pending}>{pending ? "Đang kiểm…" : "Xem trước"}</Button>
         <Button type="submit" name="intent" value="apply" variant="primary" disabled={pending || !canApply} title={canApply ? undefined : "Xem trước bảng đã dán trước khi ghi"}>
-          {`Ghi ${ready || ""} dòng sẵn sàng`.replace("  ", " ")}
+          {ready ? `Ghi ${ready} dòng sẵn sàng` : "Ghi vào bảng đối soát"}
         </Button>
         {state?.message && <p role="status" className={`text-sm ${state.ok ? "text-fg-muted" : "text-danger"}`}>{state.message}</p>}
         {dirty && lines.length > 0 && <p className="text-xs text-warning">Bảng đã sửa — xem trước lại trước khi ghi.</p>}

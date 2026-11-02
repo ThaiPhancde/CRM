@@ -23,7 +23,7 @@ export default async function ConfigPage() {
       <PageHeader
         title="Cấu hình vận hành"
         crumbs={[{ label: "Hệ thống" }, { label: "Cấu hình" }]}
-        description="Ngưỡng SLA, phân công lead, giới hạn liên hệ, giờ làm việc theo thị trường và ngưỡng tồn thấp. Mỗi thay đổi ghi nhật ký."
+        description="Ngưỡng SLA, phân công nhu cầu mua, giới hạn liên hệ, giờ làm việc theo thị trường và ngưỡng tồn thấp. Mỗi thay đổi ghi nhật ký."
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -53,7 +53,7 @@ export default async function ConfigPage() {
             <thead className="bg-bg-subtle">
               <tr className="text-left text-xs font-medium text-fg-muted">
                 <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">
-                  Brand
+                  Thương hiệu
                 </th>
                 <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">
                   Mức
@@ -74,7 +74,7 @@ export default async function ConfigPage() {
             </thead>
             <tbody>
               {cfg.sla.map((row) => {
-                const brandLabel = row.brandId ? (brandCodeById.get(row.brandId) ?? row.brandId) : "Mọi brand";
+                const brandLabel = row.brandId ? (brandCodeById.get(row.brandId) ?? row.brandId) : "Mọi thương hiệu";
                 const isNullHours = row.firstResponseHours == null || row.resolveHours == null;
                 return (
                   <tr
@@ -89,21 +89,21 @@ export default async function ConfigPage() {
                       {row.firstResponseHours != null ? (
                         `${row.firstResponseHours} giờ`
                       ) : (
-                        <span className="text-xs text-fg-muted">Theo mọi brand</span>
+                        <span className="text-xs text-fg-muted">Theo mọi thương hiệu</span>
                       )}
                     </td>
                     <td className="tabular px-4 py-2 whitespace-nowrap text-fg">
                       {row.resolveHours != null ? (
                         `${row.resolveHours} giờ`
                       ) : (
-                        <span className="text-xs text-fg-muted">Theo mọi brand</span>
+                        <span className="text-xs text-fg-muted">Theo mọi thương hiệu</span>
                       )}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap">
                       {row.custom ? (
                         <Badge tone="brand">Tùy chỉnh</Badge>
                       ) : isNullHours ? (
-                        <span className="text-xs text-fg-muted">Theo mọi brand · Mặc định</span>
+                        <span className="text-xs text-fg-muted">Theo mọi thương hiệu · Mặc định</span>
                       ) : (
                         <span className="text-xs text-fg-muted">Mặc định</span>
                       )}
@@ -126,9 +126,9 @@ export default async function ConfigPage() {
 
       {/* 2. Phân công lead */}
       <Card>
-        <SectionTitle>Phân công lead</SectionTitle>
+        <SectionTitle>Phân công nhu cầu mua</SectionTitle>
         <p className="border-b border-border px-4 py-2 text-xs text-fg-muted">
-          Thông số chia lead tự động cho nhân viên kinh doanh theo tải mở hiện tại và quy tắc định tuyến nhóm.
+          Thông số chia nhu cầu mua tự động cho nhân viên kinh doanh theo tải mở hiện tại và quy tắc định tuyến nhóm.
         </p>
         <div className="space-y-4 p-4">
           <RoutingForm
@@ -140,7 +140,7 @@ export default async function ConfigPage() {
 
           <div className="border-t border-border pt-3">
             <h3 className="mb-2 text-xs font-medium text-fg-muted">
-              Quy tắc định tuyến nhóm (brand · market → nhóm, chỉ đọc)
+              Quy tắc định tuyến nhóm (thương hiệu · thị trường → nhóm, chỉ đọc)
             </h3>
             {cfg.routing.rules.length === 0 ? (
               <p className="text-xs text-fg-subtle">Chưa có quy tắc định tuyến riêng theo thương hiệu hoặc thị trường.</p>
@@ -166,7 +166,7 @@ export default async function ConfigPage() {
 
       {/* 3. Giới hạn liên hệ (frequency cap) */}
       <Card>
-        <SectionTitle>Giới hạn liên hệ (frequency cap)</SectionTitle>
+        <SectionTitle>Giới hạn liên hệ</SectionTitle>
         <p className="border-b border-border px-4 py-2 text-xs text-fg-muted">
           Số tin tối đa được phép gửi cho mỗi khách hàng trên từng kênh trong một chu kỳ ngày (đặt 0 để tạm dừng kênh).
         </p>

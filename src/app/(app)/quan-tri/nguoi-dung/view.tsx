@@ -89,7 +89,7 @@ function MemberDrawer({ member, teams, onClose }: { member: Member | "new" | nul
           </>
         )}
         <CheckboxGroup label="Vai trò" name="roles" required options={roleOptions} defaultValue={d.list("roles")} error={f.roles} />
-        <SelectField label="Nhóm" name="teamId" options={teams} placeholder="— Không thuộc nhóm —" defaultValue={d.str("teamId")} error={f.teamId} hint="Dùng cho phân công lead theo nhóm (Phase 4)." />
+        <SelectField label="Nhóm" name="teamId" options={teams} placeholder="— Không thuộc nhóm —" defaultValue={d.str("teamId")} error={f.teamId} hint="Dùng cho phân công nhu cầu mua theo nhóm." />
         {m && (
           <>
             <input type="hidden" name="_hasActive" value="1" />

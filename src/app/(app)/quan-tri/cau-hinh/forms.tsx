@@ -87,7 +87,13 @@ export function SlaForm({
             className={cx(inputClass, "w-24", f.resolveHours ? "border-danger" : "border-border")}
           />
         </div>
-        <Button type="submit" variant="primary" size="sm" disabled={pending}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="sm"
+          disabled={pending}
+          aria-label={`Lưu ngưỡng SLA ${brandId ?? "mọi thương hiệu"} mức ${priority}`}
+        >
           {pending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>
@@ -151,7 +157,7 @@ export function RoutingForm({
 
         <div>
           <label htmlFor="routing-maxOpenPerUser" className="mb-1 block text-xs font-medium text-fg">
-            Lead mở tối đa / Sales
+            Nhu cầu mua mở tối đa / Sales
           </label>
           <input
             id="routing-maxOpenPerUser"
@@ -216,7 +222,7 @@ export function RoutingForm({
         </div>
       </div>
       <div>
-        <Button type="submit" variant="primary" size="sm" disabled={pending}>
+        <Button type="submit" variant="primary" size="sm" disabled={pending} aria-label="Lưu cấu hình phân công nhu cầu mua">
           {pending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>
@@ -296,7 +302,7 @@ export function CapForm({
             className={cx(inputClass, "w-20", f.windowDays ? "border-danger" : "border-border")}
           />
         </div>
-        <Button type="submit" variant="primary" size="sm" disabled={pending}>
+        <Button type="submit" variant="primary" size="sm" disabled={pending} aria-label={`Lưu giới hạn liên hệ ${channelLabel}`}>
           {pending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>
@@ -385,7 +391,7 @@ export function HoursForm({
             className={cx(inputClass, "w-20", f.to ? "border-danger" : "border-border")}
           />
         </div>
-        <Button type="submit" variant="primary" size="sm" disabled={pending}>
+        <Button type="submit" variant="primary" size="sm" disabled={pending} aria-label={`Lưu giờ làm việc ${label}`}>
           {pending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>
@@ -450,7 +456,7 @@ export function LowStockForm({
             className={cx(inputClass, "w-28", f.value ? "border-danger" : "border-border")}
           />
         </div>
-        <Button type="submit" variant="primary" size="sm" disabled={pending}>
+        <Button type="submit" variant="primary" size="sm" disabled={pending} aria-label={`Lưu ngưỡng tồn thấp ${label}`}>
           {pending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>

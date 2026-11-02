@@ -16,8 +16,8 @@ type Fx = { id: string; currency: string; rateToBase: string; validFrom: string 
 type Props = { tab: Tab; brands: Brand[]; stores: Store[]; markets: Market[]; teams: TeamRow[]; fxRates: Fx[] };
 
 const LABEL: Record<Tab, { tab: string; one: string; desc: string }> = {
-  brand: { tab: "Brand", one: "brand", desc: "Thương hiệu của team. Một brand có nhiều shop." },
-  store: { tab: "Shop", one: "shop", desc: "Mỗi shop thuộc một nền tảng bán (mã adapter) và bán ở một hoặc nhiều thị trường." },
+  brand: { tab: "Thương hiệu", one: "thương hiệu", desc: "Thương hiệu của team. Một thương hiệu có nhiều cửa hàng." },
+  store: { tab: "Cửa hàng", one: "cửa hàng", desc: "Mỗi cửa hàng thuộc một nền tảng bán và bán ở một hoặc nhiều thị trường." },
   market: { tab: "Thị trường", one: "thị trường", desc: "Quốc gia bán hàng: tiền tệ, hình thức thanh toán, múi giờ." },
   team: { tab: "Nhóm", one: "nhóm", desc: "Nhóm nhân sự trong team, dùng để phân công." },
   fxRate: { tab: "Tỷ giá", one: "tỷ giá", desc: "Quy đổi về VND cho báo cáo. Chỉ thêm mốc mới, không sửa mốc cũ để giữ lịch sử quy đổi." },
@@ -36,28 +36,28 @@ export function CatalogView(p: Props) {
     <>
       <PageHeader title="Danh mục" description={L.desc} crumbs={[{ label: "Hệ thống" }, { label: "Danh mục" }]}
         actions={<Button variant="primary" onClick={() => open()}>+ Thêm {L.one}</Button>} />
-      <div role="tablist" aria-label="Loại danh mục" className="mb-4 flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)]">
+      <nav aria-label="Loại danh mục" className="mb-6 flex flex-wrap gap-1 border-b border-border pb-2">
         {(Object.keys(LABEL) as Tab[]).map((t) => (
-          <Link key={t} role="tab" aria-selected={t === p.tab} href={`?tab=${t}`} scroll={false}
-            className={cx("whitespace-nowrap border-b-2 px-3 py-2 text-sm", t === p.tab ? "border-brand font-medium text-brand-active" : "border-transparent text-fg-muted hover:text-fg")}>
+          <Link key={t} href={`?tab=${t}`} scroll={false} aria-current={t === p.tab ? "page" : undefined}
+            className={cx("rounded-[var(--radius-sm)] px-2.5 py-1 text-sm", t === p.tab ? "bg-brand-soft font-medium text-brand" : "text-fg-muted hover:bg-bg-subtle")}>
             {LABEL[t].tab}
           </Link>
         ))}
-      </div>
+      </nav>
       <Card>
         {p.tab === "brand" && (
-          <DataTable caption="Brand" rows={p.brands} rowKey={(r) => r.id} onRowClick={open} empty={empty} columns={[
+          <DataTable caption="Thương hiệu" rows={p.brands} rowKey={(r) => r.id} onRowClick={open} empty={empty} columns={[
             codeCol<Brand>(),
             { key: "name", header: "Tên", sortValue: (r) => r.name, cell: (r) => r.name },
-            { key: "stores", header: "Số shop", align: "right", sortValue: (r) => r.stores, cell: (r) => r.stores },
+            { key: "stores", header: "Số cửa hàng", align: "right", sortValue: (r) => r.stores, cell: (r) => r.stores },
             { key: "active", header: "Trạng thái", sortValue: (r) => +r.active, cell: (r) => status(r.active) },
           ]} />
         )}
         {p.tab === "store" && (
-          <DataTable caption="Shop" rows={p.stores} rowKey={(r) => r.id} onRowClick={open} empty={empty} columns={[
+          <DataTable caption="Cửa hàng" rows={p.stores} rowKey={(r) => r.id} onRowClick={open} empty={empty} columns={[
             codeCol<Store>(),
             { key: "name", header: "Tên", sortValue: (r) => r.name, cell: (r) => r.name },
-            { key: "brand", header: "Brand", sortValue: (r) => r.brandName, cell: (r) => r.brandName },
+            { key: "brand", header: "Thương hiệu", sortValue: (r) => r.brandName, cell: (r) => r.brandName },
             { key: "platform", header: "Nền tảng", sortValue: (r) => r.platform, cell: (r) => <Badge tone="info">{r.platform}</Badge> },
             { key: "markets", header: "Thị trường", sortValue: (r) => r.marketCodes.join(" "), cell: (r) => r.marketCodes.join(" · ") },
             { key: "active", header: "Trạng thái", sortValue: (r) => +r.active, cell: (r) => status(r.active) },
@@ -141,11 +141,11 @@ function CatalogDrawer({ editing, brands, markets, onClose }: Props & { editing:
             )}
             {kind === "store" && (
               <>
-                <SelectField label="Brand" name="brandId" required defaultValue={v("brandId")} placeholder="— Chọn brand —" error={f.brandId}
+                <SelectField label="Thương hiệu" name="brandId" required defaultValue={v("brandId")} placeholder="— Chọn thương hiệu —" error={f.brandId}
                   options={brands.filter((b) => b.active || b.id === v("brandId")).map((b) => ({ value: b.id, label: b.name }))} />
-                <TextField label="Nền tảng (mã adapter)" name="platform" required defaultValue={v("platform")} placeholder="shopify" error={f.platform}
-                  hint="Ví dụ pancake, shopify, website. Nền tảng mới chỉ cần đăng ký adapter, không đổi dữ liệu." />
-                <TextField label="Mã shop trên nền tảng" name="externalId" defaultValue={v("externalId")} error={f.externalId} />
+                <TextField label="Nền tảng" name="platform" required defaultValue={v("platform")} placeholder="shopify" error={f.platform}
+                  hint="Ví dụ pancake, shopify, website." />
+                <TextField label="Mã cửa hàng trên nền tảng" name="externalId" defaultValue={v("externalId")} error={f.externalId} />
                 <CheckboxGroup label="Thị trường bán" name="marketIds" required error={f.marketIds} defaultValue={d.list("marketIds")}
                   options={markets.filter((m) => m.active).map((m) => ({ value: m.id, label: `${m.code} · ${m.name}` }))} />
               </>

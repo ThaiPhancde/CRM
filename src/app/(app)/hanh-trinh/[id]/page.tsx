@@ -122,7 +122,7 @@ export default async function JourneyDetailPage({ params, searchParams }: { para
           ))}
         </nav>
         {runs.rows.length === 0 ? (
-          <EmptyState title="Chưa có khách" description={j.status === "ACTIVE" ? "Worker đưa khách trong phân khúc vào ở lượt chạy kế tiếp (mỗi phút)." : "Bật hành trình để bắt đầu đưa khách vào."} />
+          status || page > 1 ? <EmptyState title="Không có kết quả khớp bộ lọc" description="Thử chọn trạng thái khác hoặc xóa bộ lọc để xem toàn bộ khách trong hành trình." action={<ButtonLink size="sm" href={`/hanh-trinh/${id}`}>Xóa lọc</ButtonLink>} /> : <EmptyState title="Chưa có khách" description={j.status === "ACTIVE" ? "Hệ thống tự động đưa khách trong phân khúc vào ở lượt chạy kế tiếp (mỗi phút)." : "Bật hành trình để bắt đầu đưa khách vào."} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">

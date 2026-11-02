@@ -33,7 +33,7 @@ export async function FulfillmentSection({ user, f, ctx }: { user: SessionUser; 
         />
       </div>
       <p className="text-xs text-fg-muted">
-        Kỳ theo ngày xác nhận đơn; COD đã thu theo trạng thái thanh toán của đơn (đối soát COD ở Phase 10).
+        Kỳ theo ngày xác nhận đơn; COD đã thu tính theo trạng thái thanh toán và đối soát COD của đơn.
       </p>
       <div className="rounded-[var(--radius-md)] border border-border bg-bg">
         <ReportChart

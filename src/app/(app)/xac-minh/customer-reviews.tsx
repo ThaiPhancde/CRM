@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
+import { ConfirmButton } from "@/components/confirm";
 import { useToast } from "@/components/overlay";
 import { Badge, Button, Card, EmptyState } from "@/components/ui";
 import type { ActionResult } from "@/components/form";
@@ -27,40 +28,53 @@ function Act({
   action,
   id,
   label,
+  ariaLabel,
   variant,
-  confirm,
 }: {
   action: (s: ActionResult | null, fd: FormData) => Promise<ActionResult>;
   id: string;
   label: string;
+  ariaLabel: string;
   variant: "primary" | "secondary" | "ghost";
-  confirm?: string;
 }) {
   const [state, run, pending] = useActionState(action, null);
   const toast = useToast();
   useEffect(() => {
-    if (state) toast(state.message ?? "", state.ok ? "success" : "danger");
+    if (state) {
+      toast(state.message || (state.ok ? "Đã cập nhật xác minh hồ sơ." : "Không thực hiện được."), state.ok ? "success" : "danger");
+    }
   }, [state, toast]);
   return (
-    <form action={run} onSubmit={(e) => confirm && !window.confirm(confirm) && e.preventDefault()}>
+    <form action={run}>
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" size="sm" variant={variant} disabled={pending}>
+      <Button type="submit" size="sm" variant={variant} aria-label={ariaLabel} disabled={pending}>
         {pending ? "Đang xử lý…" : label}
       </Button>
     </form>
   );
 }
 
-export function CustomerReviewButtons({ id }: { id: string }) {
+export function CustomerReviewButtons({ id, names }: { id: string; names?: string }) {
+  const context = names ?? id;
   return (
     <>
-      <Act action={rejectCustomerReviewAction} id={id} label="Hai khách khác nhau" variant="secondary" />
       <Act
-        action={mergeCustomerAction}
+        action={rejectCustomerReviewAction}
         id={id}
+        label="Hai khách khác nhau"
+        ariaLabel={`Hai khách khác nhau: ${context}`}
+        variant="secondary"
+      />
+      <ConfirmButton
+        action={mergeCustomerAction}
+        fields={{ id }}
         label="Cùng một khách — gộp"
+        ariaLabel={`Gộp hồ sơ khách ${context}`}
         variant="primary"
-        confirm="Gộp hai hồ sơ? Đơn và danh tính chuyển về một hồ sơ; có thể tách lại sau."
+        title="Gộp hai hồ sơ khách hàng?"
+        description="Đơn hàng và danh tính sẽ chuyển về một hồ sơ; bạn có thể tách lại sau nếu cần."
+        confirmLabel="Gộp hai hồ sơ"
+        okMessage="Đã gộp hai hồ sơ khách hàng."
       />
     </>
   );
@@ -126,7 +140,7 @@ export function CustomerReviewList({ reviews }: { reviews: CustomerReviewItem[] 
             <CustomerSide c={r.b} />
           </div>
           <div className="flex flex-wrap justify-end gap-2 border-t border-border bg-bg-subtle px-4 py-3">
-            <CustomerReviewButtons id={r.id} />
+            <CustomerReviewButtons id={r.id} names={`${r.a.name} và ${r.b.name}`} />
           </div>
         </Card>
       ))}

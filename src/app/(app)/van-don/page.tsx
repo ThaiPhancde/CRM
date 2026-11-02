@@ -83,10 +83,10 @@ async function Interventions({ sp, user }: { sp: SP; user: U }) {
           <Filter label="Shop"><select name="store" defaultValue={f.store ?? ""} className={field}><option value="">Tất cả</option>{stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Filter>
           <Filter label="Thị trường"><select name="market" defaultValue={f.market ?? ""} className={field}><option value="">Tất cả</option>{markets.map((m) => <option key={m.id} value={m.id}>{m.code}</option>)}</select></Filter>
           <button type="submit" className="h-8 rounded-[var(--radius-sm)] bg-brand px-3 text-sm font-medium text-white hover:bg-brand-hover">Lọc</button>
-          <Link href="/van-don?tab=can-thiep" className="h-8 px-2 text-sm leading-8 text-fg-muted hover:text-fg">Đặt lại</Link>
+          <Link href="/van-don?tab=can-thiep" className="h-8 px-2 text-sm leading-8 text-fg-muted hover:text-fg">Xóa lọc</Link>
         </form>
         {data.rows.length === 0 ? (
-          filtered ? <EmptyState title="Không có đơn khớp bộ lọc" action={<ButtonLink href="/van-don?tab=can-thiep">Đặt lại</ButtonLink>} />
+          filtered ? <EmptyState title="Không có đơn khớp bộ lọc" action={<ButtonLink href="/van-don?tab=can-thiep">Xóa lọc</ButtonLink>} />
             : <EmptyState icon="✓" title="Không có đơn nào cần can thiệp" description="Mọi lần giao thất bại đã có người xử lý. Đơn thất bại mới sẽ hiện ở đây." />
         ) : (
           <div className="overflow-x-auto">
@@ -168,7 +168,7 @@ async function Cod({ sp, user }: { sp: SP; user: U }) {
                 {sum.byCarrier.map((r) => (
                   <tr key={r.key} className="border-t border-border">
                     <td className="px-4 py-2.5 font-medium text-fg"><Link href={qs({ carrier: r.key, page: 1 })} className="hover:text-brand-active">{r.key}</Link></td>
-                    <Num v={m(r.cash01)} sub={`${num(r.n01)} vđ`} /><Num v={m(r.cash02)} sub={`${num(r.n02)} vđ`} /><Num v={m(r.cash03)} sub={`${num(r.n03)} vđ`} strong />
+                    <Num v={m(r.cash01)} sub={`${num(r.n01)} vận đơn`} /><Num v={m(r.cash02)} sub={`${num(r.n02)} vận đơn`} /><Num v={m(r.cash03)} sub={`${num(r.n03)} vận đơn`} strong />
                     <Num v={m(r.age15)} /><Num v={m(r.age30)} /><Num v={m(r.age60)} /><Num v={m(r.age61)} warn={!!r.age61} />
                   </tr>
                 ))}

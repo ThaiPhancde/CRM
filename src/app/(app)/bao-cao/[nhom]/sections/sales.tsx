@@ -24,7 +24,7 @@ export async function SalesSection({ user, f, ctx }: { user: SessionUser; f: Rep
         total={{ leads: d.total.leads, contacted: d.total.contacted, contactRate: d.total.contactRate, won: d.total.won, winRate: d.total.winRate, overdue: d.total.overdue }}
         cols={[
           { key: "label", header: "Người phụ trách" },
-          { key: "leads", header: "Nhu cầu", fmt: "number" },
+          { key: "leads", header: "Nhu cầu mua", fmt: "number" },
           { key: "contacted", header: "Đã liên hệ", fmt: "number" },
           { key: "contactRate", header: "Liên hệ được", fmt: "pct" },
           { key: "avgFirstMin", header: "Phản hồi đầu TB", cell: (r) => (r.avgFirstMin == null ? "—" : `${r.avgFirstMin.toLocaleString("vi-VN")} phút`), align: "right" },

@@ -110,7 +110,7 @@ export default async function LeadDetailPage({
         }))
       : [];
 
-  const sourceText = SOURCE_LABEL[lead.source] ?? lead.source;
+  const sourceText = `${SOURCE_LABEL[lead.source] ?? lead.source} · tạo ${dateTime(lead.createdAt)}`;
   const brandMarket =
     [
       lead.brand ? `${lead.brand.code} · ${lead.brand.name}` : null,
@@ -130,7 +130,7 @@ export default async function LeadDetailPage({
           { href: "/nhu-cau", label: "Nhu cầu mua" },
           { label: lead.contactName },
         ]}
-        description={`${sourceText} · tạo ${dateTime(lead.createdAt)}`}
+        description={sourceText}
         actions={
           lead.canClaim || lead.canAssign || can(user.roles, "ai.run") ? (
             <>
@@ -285,7 +285,7 @@ export default async function LeadDetailPage({
                 label="Ngôn ngữ"
                 value={lead.language ? (LANGUAGE_LABEL[lead.language] ?? lead.language) : "—"}
               />
-              <InfoRow label="Brand · Thị trường" value={brandMarket} />
+              <InfoRow label="Thương hiệu · Thị trường" value={brandMarket} />
               <InfoRow label="Nhu cầu" value={lead.interest ?? "—"} />
               <InfoRow
                 label="Ngân sách"

@@ -82,7 +82,7 @@ export function TouchpointForm({ campaignId }: { campaignId: string }) {
 
           <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
             <TextField
-              label="Nguồn tiếp cận (source)"
+              label="Nguồn"
               name="source"
               required
               maxLength={60}
@@ -91,7 +91,7 @@ export function TouchpointForm({ campaignId }: { campaignId: string }) {
               error={f.source}
             />
             <TextField
-              label="Kênh trung gian (medium)"
+              label="Kênh"
               name="medium"
               maxLength={60}
               defaultValue={v("medium")}
@@ -101,7 +101,7 @@ export function TouchpointForm({ campaignId }: { campaignId: string }) {
           </div>
 
           <TextField
-            label="Nội dung UTM (utm_content)"
+            label="Nội dung quảng cáo"
             name="utmContent"
             maxLength={120}
             defaultValue={v("utmContent")}

@@ -67,7 +67,7 @@ export default async function CampaignDetailPage({
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
             <span>Kênh: {channelLabel(campaign.channel)}</span>
-            {campaign.brand && <span>· Brand: {campaign.brand}</span>}
+            {campaign.brand && <span>· Thương hiệu: {campaign.brand}</span>}
             {campaign.utmCampaign && <span>· UTM: {campaign.utmCampaign}</span>}
             {(campaign.startAt || campaign.endAt) && (
               <span className="tabular">
@@ -95,7 +95,7 @@ export default async function CampaignDetailPage({
           hint="Tổng lượt tiếp cận ghi nhận"
         />
         <StatCard
-          label="Lead"
+          label="Nhu cầu mua"
           value={num(campaign.leads)}
           metric="MKT-01"
           hint="Nhu cầu mua từ chiến dịch"
@@ -110,7 +110,7 @@ export default async function CampaignDetailPage({
           }
         />
         <StatCard
-          label="Chi phí/lead"
+          label="Chi phí / nhu cầu mua"
           value={base(campaign.costPerLead)}
           metric="MKT-02"
           hint="Quy đổi VND theo tỷ giá hiệu lực"
@@ -176,7 +176,7 @@ export default async function CampaignDetailPage({
                 <tr className="text-left text-xs font-medium text-fg-muted">
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Thời điểm</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Nguồn / Kênh</th>
-                  <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Nội dung UTM</th>
+                  <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Nội dung quảng cáo</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Khách / Nhu cầu mua</th>
                   <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Chi phí</th>
                 </tr>

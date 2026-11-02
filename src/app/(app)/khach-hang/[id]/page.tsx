@@ -190,16 +190,15 @@ export default async function CustomerProfilePage({
         />
       </div>
 
-      <div
-        role="tablist"
+      {/* Điều hướng bằng liên kết (mỗi mục một URL) — nav + aria-current, không phải tab ARIA. */}
+      <nav
         aria-label="Mục hồ sơ khách hàng"
         className="mb-4 flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)]"
       >
         {tabs.map((t) => (
           <Link
             key={t.key}
-            role="tab"
-            aria-selected={t.key === tab}
+            aria-current={t.key === tab ? "page" : undefined}
             href={`?tab=${t.key}`}
             scroll={false}
             className={cx(
@@ -211,7 +210,7 @@ export default async function CustomerProfilePage({
             {t.count !== undefined && <span className="tabular ml-1.5 text-xs text-fg-subtle">({num(t.count)})</span>}
           </Link>
         ))}
-      </div>
+      </nav>
 
       {tab === "tong-quan" && (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

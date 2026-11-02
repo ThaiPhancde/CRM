@@ -13,7 +13,7 @@ export function ClaimButton({ leadId }: { leadId: string }) {
   useEffect(() => {
     if (state) {
       toast(
-        state.message ?? (state.ok ? "Bạn đã nhận lead này." : "Không thể nhận lead này."),
+        state.message ?? (state.ok ? "Bạn đã nhận nhu cầu mua này." : "Không thể nhận nhu cầu mua này."),
         state.ok ? "success" : "danger",
       );
     }
@@ -23,7 +23,7 @@ export function ClaimButton({ leadId }: { leadId: string }) {
     <form action={action}>
       <input type="hidden" name="id" value={leadId} />
       <Button type="submit" variant="primary" disabled={pending}>
-        {pending ? "Đang nhận…" : "Nhận lead này"}
+        {pending ? "Đang nhận…" : "Nhận nhu cầu này"}
       </Button>
     </form>
   );

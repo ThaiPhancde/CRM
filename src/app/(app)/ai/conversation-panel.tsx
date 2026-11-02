@@ -29,12 +29,12 @@ export function ConversationPanel({ ticketId, leadId, canDraft, defaultLanguage 
 
   return (
     <>
-      <Button onClick={summarize}>✦ Tóm tắt hội thoại</Button>
-      {canDraft && <Button onClick={() => compose()}>✦ Soạn phản hồi</Button>}
+      <Button onClick={summarize}><span aria-hidden>✦</span> Tóm tắt hội thoại</Button>
+      {canDraft && <Button onClick={() => compose()}><span aria-hidden>✦</span> Soạn phản hồi</Button>}
       <Drawer open={mode !== null} onClose={() => setMode(null)} size="lg" title={mode === "conv" ? "Tóm tắt hội thoại" : "Soạn phản hồi bằng AI"}
         description={mode === "conv" ? "Từ tin nhắn trong hồ sơ này; mỗi ý dẫn tin gốc." : "Từ trạng thái đơn mới nhất và bài tri thức. Bạn sửa rồi tự gửi qua ô trả lời."}
         footer={<Button onClick={() => setMode(null)}>Đóng</Button>}>
-        {pending ? <p className="text-sm text-fg-muted">Đang xử lý…</p> : res && !res.ok ? (
+        {pending ? <p role="status" className="text-sm text-fg-muted">Đang xử lý…</p> : res && !res.ok ? (
           <p role="alert" className="rounded-[var(--radius-sm)] bg-danger-soft px-3 py-2 text-sm text-danger">{res.message}</p>
         ) : mode === "conv" && c ? (
           <div className="space-y-3">
@@ -46,12 +46,12 @@ export function ConversationPanel({ ticketId, leadId, canDraft, defaultLanguage 
           </div>
         ) : mode === "draft" && d ? (
           <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm">Ngôn ngữ
+            <div className="flex items-center gap-2 text-sm"><label className="flex items-center gap-2">Ngôn ngữ
               <select value={lang} onChange={(e) => setLang(e.target.value)} className="h-9 rounded-[var(--radius-sm)] border border-border bg-bg px-2 text-sm">
                 {REPLY_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
               </select>
-              <Button size="sm" onClick={() => compose()}>Soạn lại</Button>
-            </label>
+              </label><Button size="sm" onClick={() => compose()}>Soạn lại</Button>
+            </div>
             {d.candidates ? (
               <div className="space-y-2">
                 <p className="text-sm text-fg">{d.message}</p>

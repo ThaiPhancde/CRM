@@ -31,7 +31,7 @@ export default async function CampaignsPage() {
       <PageHeader
         title="Chiến dịch"
         crumbs={[{ label: "Marketing" }, { label: "Chiến dịch" }]}
-        description="Gom phân khúc, hành trình và nguồn tiếp cận (UTM). Chi phí nhập tay, quy VND theo tỷ giá hiệu lực (D-44)."
+        description="Gom phân khúc, hành trình và nguồn tiếp cận (UTM). Chi phí nhập tay, quy đổi về VND theo tỷ giá hiệu lực."
         actions={<CampaignForm options={options} />}
       />
 
@@ -50,14 +50,14 @@ export default async function CampaignsPage() {
                 <tr className="text-left text-xs font-medium text-fg-muted">
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Tên</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Trạng thái</th>
-                  <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Kênh · Brand</th>
+                  <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Kênh · Thương hiệu</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Phân khúc</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Hành trình</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Thời gian</th>
                   <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Chi phí</th>
                   <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Điểm chạm · MKT-01</th>
-                  <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Lead · MKT-01</th>
-                  <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Chi phí/lead · MKT-02</th>
+                  <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Nhu cầu mua · MKT-01</th>
+                  <th scope="col" className="h-10 border-b border-border px-4 text-right whitespace-nowrap">Chi phí / nhu cầu mua · MKT-02</th>
                 </tr>
               </thead>
               <tbody>

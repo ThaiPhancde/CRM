@@ -59,10 +59,7 @@ export default async function TicketsPage({
   };
 
   const filtered = Boolean(f.q || f.status || f.priority || f.type || f.owner || f.overdue);
-  const openCount =
-    f.status === "open"
-      ? data.total
-      : data.rows.filter((r) => OPEN_TICKET.includes(r.status)).length;
+  const openCount = data.open;
   const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
   return (
@@ -99,7 +96,7 @@ export default async function TicketsPage({
           label="Đang mở"
           value={num(openCount)}
           hint={f.status === "open" ? "Đang lọc các ticket mở" : "Nhấn để xem các ticket đang mở"}
-          href="?status=open"
+          href={qs({ status: "open", page: undefined })}
         />
       </div>
 

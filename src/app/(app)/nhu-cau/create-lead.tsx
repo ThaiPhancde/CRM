@@ -166,10 +166,10 @@ function CreateLeadDrawer({
 
         <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
           <SelectField
-            label="Brand"
+            label="Thương hiệu"
             name="brandId"
             defaultValue={v("brandId")}
-            placeholder="— Chọn brand —"
+            placeholder="— Chọn thương hiệu —"
             options={brands
               .filter((b) => b.active || b.id === v("brandId"))
               .map((b) => ({ value: b.id, label: `${b.code} · ${b.name}` }))}

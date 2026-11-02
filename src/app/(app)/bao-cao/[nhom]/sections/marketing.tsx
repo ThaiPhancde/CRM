@@ -11,26 +11,26 @@ export async function MarketingSection({ user, f, ctx }: { user: SessionUser; f:
   return (
     <>
       <div className="rounded-[var(--radius-md)] border border-border bg-bg">
-        <ReportChart caption="Lead và lead đã mua theo nguồn" data={top} x="label" series={[{ key: "leads", label: "Lead" }, { key: "won", label: "Đã mua" }]} />
+        <ReportChart caption="Nhu cầu mua và đã mua theo nguồn" data={top} x="label" series={[{ key: "leads", label: "Nhu cầu mua" }, { key: "won", label: "Đã mua" }]} />
       </div>
-      <ReportTable title={<span className="inline-flex items-center gap-1.5">Lead theo nguồn <Metric code="MKT-01" defs={ctx.definitions} /></span>} caption="Lead theo nguồn" currency={ctx.currency} rows={d.sources}
+      <ReportTable title={<span className="inline-flex items-center gap-1.5">Nhu cầu mua theo nguồn <Metric code="MKT-01" defs={ctx.definitions} /></span>} caption="Nhu cầu mua theo nguồn" currency={ctx.currency} rows={d.sources}
         cols={[
           { key: "label", header: "Nguồn" },
-          { key: "leads", header: "Lead", fmt: "number" },
+          { key: "leads", header: "Nhu cầu mua", fmt: "number" },
           { key: "contactRate", header: "Liên hệ được", fmt: "pct" },
           { key: "won", header: "Đã mua", fmt: "number" },
           { key: "winRate", header: "Tỷ lệ chốt", fmt: "pct" },
           { key: "lost", header: "Từ chối / mất liên lạc", fmt: "number" },
         ]} />
-      <ReportTable title={<span className="inline-flex items-center gap-1.5">Chiến dịch trong kỳ <Metric code="MKT-02" defs={ctx.definitions} /></span>} caption="Chiến dịch, chi phí và chi phí trên lead" currency={ctx.currency} rows={d.campaigns}
+      <ReportTable title={<span className="inline-flex items-center gap-1.5">Chiến dịch trong kỳ <Metric code="MKT-02" defs={ctx.definitions} /></span>} caption="Chiến dịch, chi phí và chi phí trên mỗi nhu cầu mua" currency={ctx.currency} rows={d.campaigns}
         empty="Không có chiến dịch chạy trong kỳ."
         cols={[
           { key: "name", header: "Chiến dịch" },
           { key: "channel", header: "Kênh" },
           { key: "touchpoints", header: "Điểm chạm", fmt: "number" },
-          { key: "leads", header: "Lead", fmt: "number" },
+          { key: "leads", header: "Nhu cầu mua", fmt: "number" },
           { key: "cost", header: "Chi phí", fmt: "money" },
-          { key: "costPerLead", header: "Chi phí / lead", fmt: "money" },
+          { key: "costPerLead", header: <span className="inline-flex items-center justify-end gap-1.5">Chi phí / nhu cầu mua <Metric code="MKT-02" defs={ctx.definitions} /></span>, fmt: "money" },
         ]} />
     </>
   );

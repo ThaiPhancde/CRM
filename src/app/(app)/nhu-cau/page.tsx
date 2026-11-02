@@ -194,7 +194,7 @@ export default async function LeadsPage({
             />
           </Filter>
 
-          <Filter label="Brand">
+          <Filter label="Thương hiệu">
             <Select
               name="brand"
               value={f.brand}
@@ -240,7 +240,7 @@ export default async function LeadsPage({
         <Card>
           <EmptyState
             title="Chọn người phụ trách để xem pipeline"
-            description="Kanban hiển thị pipeline của một người (mỗi người tối đa 30 lead mở) để kéo thả gọn gàng. Xem cả nhóm ở dạng Danh sách — có chọn nhiều để chuyển phụ trách hoặc đổi giai đoạn hàng loạt."
+            description="Kanban hiển thị pipeline của một người (mỗi người tối đa 30 nhu cầu mua mở) để kéo thả gọn gàng. Xem cả nhóm ở dạng Danh sách — có chọn nhiều để chuyển phụ trách hoặc đổi giai đoạn hàng loạt."
             action={<ButtonLink href={qs({ view: undefined, page: undefined })}>Xem danh sách</ButtonLink>}
           />
         </Card>
@@ -296,7 +296,7 @@ export default async function LeadsPage({
                       "Khách",
                       "Nhu cầu",
                       "Nguồn",
-                      "Brand · Thị trường",
+                      "Thương hiệu · Thị trường",
                       "Giai đoạn",
                       "Điểm",
                       "Phụ trách",

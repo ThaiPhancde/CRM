@@ -6,7 +6,7 @@ import { useToast } from "@/components/overlay";
 import { Button } from "@/components/ui";
 import { runSegmentAction } from "./actions";
 
-export function RunButton({ id }: { id: string }) {
+export function RunButton({ id, name }: { id: string; name?: string }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(runSegmentAction, null);
   const toast = useToast();
   useEffect(() => {
@@ -15,7 +15,7 @@ export function RunButton({ id }: { id: string }) {
   return (
     <form action={action}>
       <input type="hidden" name="id" value={id} />
-      <Button size="sm" type="submit" disabled={pending}>{pending ? "Đang chạy…" : "Chạy ngay"}</Button>
+      <Button size="sm" type="submit" disabled={pending} aria-label={name ? `Chạy ngay phân khúc ${name}` : undefined}>{pending ? "Đang chạy…" : "Chạy ngay"}</Button>
     </form>
   );
 }

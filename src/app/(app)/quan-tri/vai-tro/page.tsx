@@ -14,7 +14,7 @@ const PERM_LABEL: Record<Permission, string> = {
   "order.view": "Xem đơn hàng",
   "order.link": "Duyệt gộp/tách đơn nghi trùng",
   "product.view": "Xem sản phẩm",
-  "customer.view": "Xem hồ sơ khách (Customer 360)",
+  "customer.view": "Xem hồ sơ khách",
   "customer.pii": "Xem SĐT/email đầy đủ",
   "customer.edit": "Sửa hồ sơ khách, ghi lựa chọn liên hệ",
   "customer.merge": "Gộp/tách hồ sơ khách",
@@ -56,7 +56,7 @@ export default async function RolesPage() {
   return (
     <>
       <PageHeader title="Vai trò & quyền" crumbs={[{ label: "Hệ thống" }, { label: "Vai trò & quyền" }]}
-        description="Vai trò cố định; quyền được kiểm ở máy chủ cho cả giao diện, API, tìm kiếm, báo cáo và AI. Mỗi phase bổ sung quyền của mình." />
+        description="Vai trò cố định; quyền được kiểm ở máy chủ cho cả giao diện, API, tìm kiếm, báo cáo và AI." />
       <Card className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">Ma trận vai trò và quyền</caption>

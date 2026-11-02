@@ -15,7 +15,7 @@ import { FulfillmentSection } from "./sections/van-don";
 const DESC: Record<ReportGroupKey, string> = {
   sales: "Phản hồi đầu, liên hệ được, chuyển đổi và kết quả theo người phụ trách — tổng hợp ở cơ sở dữ liệu, không tải danh sách thẻ.",
   "khach-hang": "Hạng RFM, cohort mua lại theo tháng đầu mua, giá trị và biên đóng góp theo hạng.",
-  marketing: "Nguồn lead, chiến dịch, chi phí và chi phí trên mỗi lead.",
+  marketing: "Nguồn nhu cầu mua, chiến dịch, chi phí và chi phí trên mỗi nhu cầu mua.",
   "van-don": "Giao thành công, thất bại, hoàn, thời gian giao và COD theo thị trường.",
   "tai-chinh": "REV-01…04 theo mốc của từng chỉ số, hoàn tiền, nguyên tệ và tỷ giá đã dùng.",
   ai: "Mức dùng, chất lượng, lỗi và chi phí của trợ lý AI.",
@@ -33,7 +33,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
   const props = { user, f, ctx };
   return (
     <ReportShell group={g} f={f} ctx={ctx} description={DESC[g]} groupBy={GROUP_BY[g]}
-      notes={g === "tai-chinh" ? "REV-04 hiện chỉ gồm thanh toán trực tuyến trừ hoàn; COD đã đối soát vào REV-04 khi có đối soát COD (Phase 10). Đừng so REV-04 cùng kỳ với REV-01 (docs/metrics.md)." : undefined}>
+      notes={g === "tai-chinh" ? "REV-04 gồm thanh toán trực tuyến trừ hoàn và tiền COD đã đối soát. Không so sánh trực tiếp REV-04 cùng kỳ với REV-01 vì khác mốc ghi nhận." : undefined}>
       {g === "tai-chinh" && <FinanceSection {...props} />}
       {g === "sales" && <SalesSection {...props} />}
       {g === "khach-hang" && <CustomerSection {...props} />}

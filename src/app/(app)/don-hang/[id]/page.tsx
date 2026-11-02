@@ -153,7 +153,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <Row k="Giao tới" v={o.market ? `${o.market.code} · ${o.market.name}` : o.shipCountry} />
             </dl>
             {o.customerId ? (
-              <p className="border-t border-border px-4 py-2 text-xs"><Link href={`/khach-hang/${o.customerId}`} className="text-brand-active hover:underline">Mở hồ sơ khách (Customer 360)</Link></p>
+              <p className="border-t border-border px-4 py-2 text-xs"><Link href={`/khach-hang/${o.customerId}`} className="text-brand-active hover:underline">Mở hồ sơ khách</Link></p>
             ) : (
               <p className="border-t border-border px-4 py-2 text-xs text-fg-subtle">Đơn chưa gắn hồ sơ khách.</p>
             )}

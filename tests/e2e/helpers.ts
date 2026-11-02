@@ -20,7 +20,7 @@ export async function mainText(page: Page) {
 export async function follow(page: Page, link: Locator) {
   const href = await link.getAttribute("href");
   if (!href) throw new Error("Liên kết không có href");
-  await page.goto(href);
+  await page.goto(new URL(href, page.url()).toString()); // href tương đối (?tab=…) giải theo trang hiện tại
   await page.waitForLoadState("networkidle");
 }
 

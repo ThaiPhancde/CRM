@@ -8,7 +8,7 @@ import { listMetricDefinitions } from "@/modules/scoring/service";
 const GROUP_META: Record<string, { title: string; subtitle: string }> = {
   REV: {
     title: "Nhóm REV — Doanh thu theo 4 mốc ghi nhận",
-    subtitle: "Cấm ghi 'doanh thu' trần (L1). Quy về VND theo tỷ giá chốt của đơn (L2, D-44).",
+    subtitle: "Luôn ghi rõ mốc doanh thu, không ghi 'doanh thu' chung chung. Quy đổi về VND theo tỷ giá chốt của đơn.",
   },
   OPS: {
     title: "Nhóm OPS — Vận hành & giao vận",
@@ -48,13 +48,13 @@ export default async function MetricDictionaryPage() {
       <PageHeader
         title="Từ điển chỉ số"
         crumbs={[{ label: "Quản trị" }, { label: "Từ điển chỉ số" }]}
-        description="Mọi số liệu tiền và doanh thu ghi mã chỉ số (L1). Quy về VND (D-44)."
+        description="Mọi số liệu tiền và doanh thu đều gắn mã chỉ số chuẩn và quy đổi về VND theo tỷ giá hiệu lực."
       />
 
       {rows.length === 0 ? (
         <Card>
           <EmptyState
-            title="Chưa nạp từ điển — chạy npm run db:seed"
+            title="Chưa có dữ liệu từ điển chỉ số"
             description="Từ điển chỉ số chuẩn hóa công thức, mốc thời gian và nguồn dữ liệu cho toàn bộ báo cáo và trợ lý AI."
           />
         </Card>

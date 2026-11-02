@@ -17,7 +17,7 @@ export default async function SegmentsPage() {
       <PageHeader
         title="Phân khúc"
         crumbs={[{ label: "Marketing" }, { label: "Phân khúc" }]}
-        description="Nhóm khách theo điều kiện (RFM, chu kỳ mua, thị trường, thẻ…). Worker chạy lại hằng ngày; mỗi lần chạy lưu ảnh chụp danh sách khách."
+        description="Nhóm khách theo điều kiện (RFM, chu kỳ mua, thị trường, thẻ phân loại…). Hệ thống tự động chạy lại hằng ngày; mỗi lần chạy lưu ảnh chụp danh sách khách."
         actions={<SegmentEditor fields={fields} />}
       />
       <Card>
@@ -50,7 +50,7 @@ export default async function SegmentsPage() {
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="flex justify-end gap-2">
-                        <RunButton id={s.id} />
+                        <RunButton id={s.id} name={s.name} />
                         <SegmentEditor fields={fields} initial={{ id: s.id, name: s.name, description: s.description, rules: s.rules }} trigger="Sửa" />
                       </div>
                     </td>

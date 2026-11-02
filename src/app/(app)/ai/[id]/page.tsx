@@ -140,7 +140,7 @@ export default async function AiRunDetailPage({ params }: { params: Promise<{ id
       </Card>
 
       <Card className="mb-6">
-        <SectionTitle>Tool đã gọi</SectionTitle>
+        <SectionTitle>Công cụ đã gọi</SectionTitle>
         {run.toolCalls.length === 0 ? (
           <p className="p-4 text-sm text-fg-muted">Không gọi công cụ nào trong lần chạy này.</p>
         ) : (
@@ -151,7 +151,7 @@ export default async function AiRunDetailPage({ params }: { params: Promise<{ id
                 <tr>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Công cụ</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Trạng thái</th>
-                  <th scope="col" className="h-10 border-b border-border px-4">Tham số (args)</th>
+                  <th scope="col" className="h-10 border-b border-border px-4">Tham số</th>
                   <th scope="col" className="h-10 border-b border-border px-4">Lỗi</th>
                 </tr>
               </thead>
@@ -187,7 +187,7 @@ export default async function AiRunDetailPage({ params }: { params: Promise<{ id
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Loại đề xuất</th>
                   <th scope="col" className="h-10 border-b border-border px-4 whitespace-nowrap">Trạng thái</th>
                   <th scope="col" className="h-10 border-b border-border px-4">Lý do</th>
-                  <th scope="col" className="h-10 border-b border-border px-4">Nội dung (payload)</th>
+                  <th scope="col" className="h-10 border-b border-border px-4">Nội dung</th>
                 </tr>
               </thead>
               <tbody>

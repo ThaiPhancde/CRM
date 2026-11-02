@@ -45,16 +45,15 @@ export default async function VerifyPage({
             : "Hai đơn từ hai nguồn giống nhau (cùng SĐT, cùng giá trị, đặt cách nhau ít phút) nhưng không có mã tham chiếu. Hệ thống không tự gộp — bạn quyết."
         }
       />
-      <div role="tablist" aria-label="Loại xác minh" className="mb-4 flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)]">
+      <nav aria-label="Loại xác minh" className="mb-6 flex flex-wrap gap-1 border-b border-border pb-2">
         {canOrder && (
           <Link
-            role="tab"
-            aria-selected={tab === "don"}
             href="/xac-minh?tab=don"
             scroll={false}
+            aria-current={tab === "don" ? "page" : undefined}
             className={cx(
-              "whitespace-nowrap border-b-2 px-3 py-2 text-sm",
-              tab === "don" ? "border-brand font-medium text-brand-active" : "border-transparent text-fg-muted hover:text-fg",
+              "rounded-[var(--radius-sm)] px-2.5 py-1 text-sm",
+              tab === "don" ? "bg-brand-soft font-medium text-brand" : "text-fg-muted hover:bg-bg-subtle",
             )}
           >
             Đơn hàng ({num(reviews.length)})
@@ -62,19 +61,18 @@ export default async function VerifyPage({
         )}
         {canCustomer && (
           <Link
-            role="tab"
-            aria-selected={tab === "khach"}
             href="/xac-minh?tab=khach"
             scroll={false}
+            aria-current={tab === "khach" ? "page" : undefined}
             className={cx(
-              "whitespace-nowrap border-b-2 px-3 py-2 text-sm",
-              tab === "khach" ? "border-brand font-medium text-brand-active" : "border-transparent text-fg-muted hover:text-fg",
+              "rounded-[var(--radius-sm)] px-2.5 py-1 text-sm",
+              tab === "khach" ? "bg-brand-soft font-medium text-brand" : "text-fg-muted hover:bg-bg-subtle",
             )}
           >
             Khách hàng ({num(customerReviews.length)})
           </Link>
         )}
-      </div>
+      </nav>
 
       {tab === "khach" ? (
         <CustomerReviewList reviews={customerReviews} />
@@ -98,7 +96,7 @@ export default async function VerifyPage({
                       <Side o={r.b} showMoney={showMoney} />
                     </div>
                     <div className="flex flex-wrap justify-end gap-2 border-t border-border bg-bg-subtle px-4 py-3">
-                      <ReviewButtons id={r.id} />
+                      <ReviewButtons id={r.id} orderNumber={r.a.orderNumber} />
                     </div>
                   </Card>
                 );
@@ -139,7 +137,7 @@ function Side({ o, showMoney }: { o: OrderLite; showMoney: boolean }) {
         {o.links.map((l) => <Badge key={l.id} tone="info">{l.platform}</Badge>)}
       </div>
       <dl className="grid grid-cols-[110px_1fr] gap-y-1">
-        <dt className="text-fg-muted">Shop</dt><dd>{o.store.name}</dd>
+        <dt className="text-fg-muted">Cửa hàng</dt><dd>{o.store.name}</dd>
         <dt className="text-fg-muted">Đặt lúc</dt><dd className="tabular">{dateTime(o.bookedAt)}</dd>
         <dt className="text-fg-muted">Khách</dt><dd>{o.customerName ?? "—"} · <span className="tabular">{o.customerPhone ?? "—"}</span></dd>
         <dt className="text-fg-muted">Giá trị</dt><dd className="tabular">{showMoney ? money(o.netAmount.toString(), o.currency) : "—"}</dd>

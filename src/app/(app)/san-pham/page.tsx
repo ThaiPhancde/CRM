@@ -98,7 +98,7 @@ export default async function ProductsPage({
               className="h-8 w-60 rounded-[var(--radius-sm)] border border-border bg-bg px-2.5 text-sm text-fg placeholder:text-fg-subtle"
             />
           </Filter>
-          <Filter label="Brand">
+          <Filter label="Thương hiệu">
             <select
               name="brand"
               defaultValue={f.brand ?? ""}
@@ -142,9 +142,11 @@ export default async function ProductsPage({
           >
             Lọc
           </button>
-          <Link href="/san-pham" className="h-8 px-2 text-sm leading-8 text-fg-muted hover:text-fg">
-            Đặt lại
-          </Link>
+          {hasFilters && (
+            <Link href="/san-pham" className="h-8 px-2 text-sm leading-8 text-fg-muted hover:text-fg">
+              Xóa lọc
+            </Link>
+          )}
         </form>
 
         {data.rows.length === 0 ? (
@@ -152,12 +154,13 @@ export default async function ProductsPage({
             <EmptyState
               title="Không có sản phẩm khớp bộ lọc"
               description="Thử thay đổi từ khóa hoặc đặt lại bộ lọc để xem toàn bộ danh mục."
-              action={<ButtonLink href="/san-pham">Đặt lại</ButtonLink>}
+              action={<ButtonLink href="/san-pham">Xóa lọc</ButtonLink>}
             />
           ) : (
             <EmptyState
               title="Chưa có sản phẩm"
-              description="Chạy npm run db:seed-demo để nạp danh mục mẫu."
+              description="Danh mục được nạp từ Mua hàng và từ đơn đồng bộ của các cửa hàng."
+              action={<ButtonLink href="/ket-noi">Xem kết nối dữ liệu</ButtonLink>}
             />
           )
         ) : (

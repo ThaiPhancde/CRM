@@ -1,38 +1,20 @@
 "use client";
 // Nút "Tính lại ngay" — dựng lại chỉ số R12M và chấm điểm toàn bộ khách hàng của team.
-import { useActionState, useEffect } from "react";
-import type { ActionResult } from "@/components/form";
-import { useToast } from "@/components/overlay";
-import { Button } from "@/components/ui";
+import { ConfirmButton } from "@/components/confirm";
 import { recomputeAction } from "./actions";
 
-const CONFIRM_MESSAGE = "Dựng lại chỉ số và chấm điểm toàn bộ khách của team? Có thể mất vài chục giây.";
-
 export function RecomputeButton() {
-  const [state, action, pending] = useActionState<ActionResult | null, FormData>(recomputeAction, null);
-  const toast = useToast();
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.ok) {
-      toast(state.message ?? "Đã dựng chỉ số và chấm điểm lại cho toàn bộ khách hàng.", "success");
-    } else if (state.message) {
-      toast(state.message, "danger");
-    }
-  }, [state, toast]);
-
   return (
-    <form
-      action={action}
-      onSubmit={(e) => {
-        if (!window.confirm(CONFIRM_MESSAGE)) {
-          e.preventDefault();
-        }
-      }}
-    >
-      <Button variant="primary" type="submit" disabled={pending}>
-        {pending ? "Đang tính lại…" : "Tính lại ngay"}
-      </Button>
-    </form>
+    <ConfirmButton
+      action={recomputeAction}
+      fields={{}}
+      label="Tính lại ngay"
+      size="md"
+      variant="primary"
+      title="Tính lại điểm toàn bộ khách hàng?"
+      description="Hệ thống sẽ dựng lại chỉ số 12 tháng và chấm điểm lại cho toàn bộ khách hàng; có thể mất vài chục giây."
+      confirmLabel="Tính lại điểm"
+      okMessage="Đã dựng chỉ số và chấm điểm lại cho toàn bộ khách hàng."
+    />
   );
 }

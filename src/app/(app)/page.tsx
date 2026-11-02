@@ -33,17 +33,17 @@ export default async function HomePage() {
             <StatCard label="Giá trị đặt" metric="REV-01" value={base(d.revenue.total.rev01)} hint={`${num(d.revenue.total.orders)} đơn chưa hủy`} href="/bao-cao/tai-chinh" />
             <StatCard label="Xác nhận" metric="REV-02" value={base(d.revenue.total.rev02)} hint={d.revenue.r21 != null ? `${d.revenue.r21}% của REV-01` : undefined} />
             <StatCard label="Giao thành công" metric="REV-03" value={base(d.revenue.total.rev03)} hint={d.revenue.r32 != null ? `${d.revenue.r32}% của REV-02` : undefined} />
-            <StatCard label="Thực thu" metric="REV-04" value={base(d.revenue.total.rev04)} hint="Chưa gồm COD đối soát (Phase 10)" />
+            <StatCard label="Thực thu" metric="REV-04" value={base(d.revenue.total.rev04)} hint="Chưa gồm COD đối soát" />
           </div>
           <Card>
-            <SectionTitle actions={<Link href="/bao-cao/tai-chinh?group=brand_market" className="text-xs text-fg-muted hover:text-brand">Chi tiết</Link>}>REV-01 và REV-03 theo brand × thị trường</SectionTitle>
+            <SectionTitle actions={<Link href="/bao-cao/tai-chinh?group=brand_market" className="text-xs text-fg-muted hover:text-brand">Chi tiết</Link>}>REV-01 và REV-03 theo thương hiệu × thị trường</SectionTitle>
             {d.revenue.rows.length === 0 ? <p className="px-4 py-6 text-sm text-fg-muted">Chưa có đơn trong 30 ngày qua.</p> : (
               <>
-                <ReportChart caption="REV-01 và REV-03 theo brand × thị trường 30 ngày qua" data={d.revenue.rows} x="label" fmt="money" series={[{ key: "rev01", label: "REV-01 Đặt" }, { key: "rev03", label: "REV-03 Giao thành công" }]} height={240} />
+                <ReportChart caption="REV-01 và REV-03 theo thương hiệu × thị trường 30 ngày qua" data={d.revenue.rows} x="label" fmt="money" series={[{ key: "rev01", label: "REV-01 Đặt" }, { key: "rev03", label: "REV-03 Giao thành công" }]} height={240} />
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <caption className="sr-only">REV-01..04 theo brand và thị trường</caption>
-                    <thead className="bg-bg-subtle text-left text-xs text-fg-muted"><tr><th scope="col" className="px-4 py-2">Brand · thị trường</th><th scope="col" className="px-4 py-2 text-right">Đơn</th><th scope="col" className="px-4 py-2 text-right">REV-01</th><th scope="col" className="px-4 py-2 text-right">REV-02</th><th scope="col" className="px-4 py-2 text-right">REV-03</th><th scope="col" className="px-4 py-2 text-right">REV-04</th></tr></thead>
+                    <caption className="sr-only">REV-01..04 theo thương hiệu và thị trường</caption>
+                    <thead className="bg-bg-subtle text-left text-xs text-fg-muted"><tr><th scope="col" className="px-4 py-2">Thương hiệu · thị trường</th><th scope="col" className="px-4 py-2 text-right">Đơn</th><th scope="col" className="px-4 py-2 text-right">REV-01</th><th scope="col" className="px-4 py-2 text-right">REV-02</th><th scope="col" className="px-4 py-2 text-right">REV-03</th><th scope="col" className="px-4 py-2 text-right">REV-04</th></tr></thead>
                     <tbody>{d.revenue.rows.map((r) => (
                       <tr key={r.key} className="border-t border-border"><td className="px-4 py-2">{r.label}</td><td className="tabular px-4 py-2 text-right">{num(r.orders)}</td><td className="tabular px-4 py-2 text-right">{base(r.rev01)}</td><td className="tabular px-4 py-2 text-right">{base(r.rev02)}</td><td className="tabular px-4 py-2 text-right">{base(r.rev03)}</td><td className="tabular px-4 py-2 text-right">{base(r.rev04)}</td></tr>
                     ))}</tbody>
@@ -87,12 +87,12 @@ export default async function HomePage() {
         </div>
         {d.marketing && (
           <Card className="xl:col-span-3">
-            <SectionTitle actions={<Link href="/bao-cao/marketing" className="text-xs text-fg-muted hover:text-brand">Báo cáo marketing</Link>}>Nguồn lead 30 ngày qua và mua lại</SectionTitle>
+            <SectionTitle actions={<Link href="/bao-cao/marketing" className="text-xs text-fg-muted hover:text-brand">Báo cáo marketing</Link>}>Nguồn nhu cầu mua 30 ngày qua và mua lại</SectionTitle>
             <div className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-2">
               <table className="w-full text-sm">
-                <caption className="mb-1 text-left text-xs text-fg-muted">Lead theo nguồn (MKT-01)</caption>
-                <thead className="text-left text-xs text-fg-muted"><tr><th scope="col" className="py-1">Nguồn</th><th scope="col" className="py-1 text-right">Lead</th><th scope="col" className="py-1 text-right">Tỷ lệ chốt</th></tr></thead>
-                <tbody>{d.marketing.sources.length ? d.marketing.sources.map((s) => <tr key={s.key} className="border-t border-border"><td className="py-1.5">{s.label}</td><td className="tabular py-1.5 text-right">{num(s.leads)}</td><td className="tabular py-1.5 text-right">{s.winRate == null ? "—" : `${s.winRate}%`}</td></tr>) : <tr><td colSpan={3} className="py-3 text-fg-muted">Chưa có lead trong 30 ngày qua.</td></tr>}</tbody>
+                <caption className="mb-1 text-left text-xs text-fg-muted">Nhu cầu mua theo nguồn (MKT-01)</caption>
+                <thead className="text-left text-xs text-fg-muted"><tr><th scope="col" className="py-1">Nguồn</th><th scope="col" className="py-1 text-right">Nhu cầu mua</th><th scope="col" className="py-1 text-right">Tỷ lệ chốt</th></tr></thead>
+                <tbody>{d.marketing.sources.length ? d.marketing.sources.map((s) => <tr key={s.key} className="border-t border-border"><td className="py-1.5">{s.label}</td><td className="tabular py-1.5 text-right">{num(s.leads)}</td><td className="tabular py-1.5 text-right">{s.winRate == null ? "—" : `${s.winRate}%`}</td></tr>) : <tr><td colSpan={3} className="py-3 text-fg-muted">Chưa có nhu cầu mua trong 30 ngày qua.</td></tr>}</tbody>
               </table>
               {d.marketing.cohort && (
                 <table className="w-full text-sm">

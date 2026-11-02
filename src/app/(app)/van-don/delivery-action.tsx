@@ -33,8 +33,8 @@ export function DeliveryAction({ orderId, orderNumber, reasonLabel, carrierFault
     <>
       <Button size="sm" onClick={() => setOpen(true)}>Xử lý</Button>
       <Modal open={open} onClose={() => setOpen(false)} title={`Xử lý đơn ${orderNumber}`} description={`Giao thất bại: ${reasonLabel}`}
-        footer={<><Button onClick={() => setOpen(false)}>Đóng</Button><Button variant="primary" type="submit" form={formId} disabled={pending || !key}>{pending ? "Đang ghi…" : DELIVERY_ACTION_LABEL[kind]}</Button></>}>
-        <form id={formId} action={action} className="space-y-3">
+        footer={<><Button onClick={() => setOpen(false)}>Hủy</Button><Button variant="primary" type="submit" form={formId} disabled={pending || !key}>{pending ? "Đang ghi…" : DELIVERY_ACTION_LABEL[kind]}</Button></>}>
+        <form id={formId} action={action} noValidate className="space-y-3">
           <FormError result={state} />
           <input type="hidden" name="orderId" value={orderId} />
           <input type="hidden" name="idempotencyKey" value={key} />
@@ -61,7 +61,7 @@ export function DeliveryAction({ orderId, orderNumber, reasonLabel, carrierFault
             <label htmlFor={`${formId}-n`} className="mb-1 block text-xs font-medium text-fg">Ghi chú{kind === "CANCEL" ? " (bắt buộc — lý do hủy)" : ""}</label>
             <textarea id={`${formId}-n`} name="note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} required={kind === "CANCEL"} aria-invalid={!!state?.fields?.note} className={field}
               placeholder={kind === "REATTEMPT" ? "Ví dụ: khách hẹn giao sau 17h" : kind === "CANCEL" ? "Ví dụ: khách không còn nhu cầu" : "Thông tin thêm cho người xử lý"} />
-            {state?.fields?.note && <p className="mt-1 text-xs text-danger">{state.fields.note}</p>}
+            {state?.fields?.note && <p role="alert" className="mt-1 text-xs text-danger">{state.fields.note}</p>}
           </div>
         </form>
       </Modal>

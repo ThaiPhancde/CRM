@@ -1,5 +1,6 @@
 "use client";
 import { useActionState, useEffect, useState } from "react";
+import { ConfirmButton } from "@/components/confirm";
 import { Drawer, useToast } from "@/components/overlay";
 import { FormError, SelectField, TextField, type ActionResult } from "@/components/form";
 import { Badge, Button, Card, EmptyState, PageHeader } from "@/components/ui";
@@ -17,16 +18,28 @@ const VERIFY: Record<string, string> = { XM: "API đã chạy thật", TL: "Theo
 const MODE: Record<string, string> = { BACKFILL: "Nạp lịch sử", INCREMENTAL: "Gia tăng", REPLAY: "Chạy lại" };
 
 /** Nút gọi server action, báo kết quả bằng toast. */
-function ActionButton({ action, fields, children, variant = "secondary", confirm }: { action: (s: ActionResult | null, fd: FormData) => Promise<ActionResult>; fields: Record<string, string>; children: React.ReactNode; variant?: "primary" | "secondary" | "ghost"; confirm?: string }) {
+function ActionButton({
+  action,
+  fields,
+  children,
+  ariaLabel,
+  variant = "secondary",
+}: {
+  action: (s: ActionResult | null, fd: FormData) => Promise<ActionResult>;
+  fields: Record<string, string>;
+  children: React.ReactNode;
+  ariaLabel?: string;
+  variant?: "primary" | "secondary" | "ghost";
+}) {
   const [state, run, pending] = useActionState(action, null);
   const toast = useToast();
   useEffect(() => {
-    if (state) toast(state.message ?? (state.ok ? "Xong." : "Có lỗi."), state.ok ? "success" : "danger");
+    if (state) toast(state.message || (state.ok ? "Xong." : "Có lỗi."), state.ok ? "success" : "danger");
   }, [state, toast]);
   return (
-    <form action={run} onSubmit={(e) => confirm && !window.confirm(confirm) && e.preventDefault()}>
+    <form action={run}>
       {Object.entries(fields).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
-      <Button type="submit" size="sm" variant={variant} disabled={pending}>{pending ? "Đang chạy…" : children}</Button>
+      <Button type="submit" size="sm" variant={variant} aria-label={ariaLabel} disabled={pending}>{pending ? "Đang chạy…" : children}</Button>
     </form>
   );
 }
@@ -99,13 +112,22 @@ export function ConnectionsView({ connections, stores, canManage }: { connection
                 </div>
                 {canManage && (
                   <div className="flex flex-wrap gap-2 border-t border-border bg-bg-subtle px-4 py-3">
-                    <ActionButton action={syncAction} fields={{ id: c.id, mode: "INCREMENTAL" }} variant="primary">Đồng bộ ngay</ActionButton>
-                    <ActionButton action={syncAction} fields={{ id: c.id, mode: "BACKFILL" }} confirm="Nạp lại toàn bộ lịch sử? Bản ghi đã nhận sẽ được bỏ qua, không tạo trùng.">Nạp lịch sử</ActionButton>
-                    {c.errorEvents > 0 && <ActionButton action={retryAction} fields={{ id: c.id }}>Chạy lại {num(c.errorEvents)} lỗi</ActionButton>}
+                    <ActionButton action={syncAction} fields={{ id: c.id, mode: "INCREMENTAL" }} variant="primary" ariaLabel={`Đồng bộ ngay ${c.store}`}>Đồng bộ ngay</ActionButton>
+                    <ConfirmButton
+                      action={syncAction}
+                      fields={{ id: c.id, mode: "BACKFILL" }}
+                      label="Nạp lịch sử"
+                      ariaLabel={`Nạp lịch sử ${c.store}`}
+                      title="Nạp lại toàn bộ lịch sử?"
+                      description="Các bản ghi đã nhận trước đó sẽ được bỏ qua, không tạo trùng."
+                      confirmLabel="Nạp lịch sử"
+                      okMessage="Đã chạy nạp lịch sử."
+                    />
+                    {c.errorEvents > 0 && <ActionButton action={retryAction} fields={{ id: c.id }} ariaLabel={`Chạy lại ${num(c.errorEvents)} lỗi của ${c.store}`}>Chạy lại {num(c.errorEvents)} lỗi</ActionButton>}
                     <div className="ml-auto">
                       {c.status === "PAUSED"
-                        ? <ActionButton action={toggleAction} fields={{ id: c.id, status: "ACTIVE" }} variant="ghost">Bật lại</ActionButton>
-                        : <ActionButton action={toggleAction} fields={{ id: c.id, status: "PAUSED" }} variant="ghost">Tạm dừng</ActionButton>}
+                        ? <ActionButton action={toggleAction} fields={{ id: c.id, status: "ACTIVE" }} variant="ghost" ariaLabel={`Bật lại kết nối ${c.store}`}>Bật lại</ActionButton>
+                        : <ActionButton action={toggleAction} fields={{ id: c.id, status: "PAUSED" }} variant="ghost" ariaLabel={`Tạm dừng kết nối ${c.store}`}>Tạm dừng</ActionButton>}
                     </div>
                   </div>
                 )}

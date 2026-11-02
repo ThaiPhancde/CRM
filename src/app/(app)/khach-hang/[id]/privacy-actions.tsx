@@ -26,18 +26,18 @@ export function PrivacyActions({ customerId, erased }: { customerId: string; era
       <Modal open={open} onClose={() => setOpen(false)} title="Xóa dữ liệu cá nhân của khách"
         description="Tên, SĐT, email, địa chỉ, nội dung hội thoại và ticket sẽ bị xóa ở mọi nơi (kể cả hồ sơ đã gộp). Đơn và số liệu doanh thu giữ nguyên. Không hoàn tác được."
         footer={<><Button onClick={() => setOpen(false)}>Hủy</Button><Button variant="danger" type="submit" form="erase-form" disabled={pending || confirm.trim().toUpperCase() !== "XOA" || reason.trim().length < 5}>{pending ? "Đang xóa…" : "Xóa vĩnh viễn"}</Button></>}>
-        <form id="erase-form" action={action} className="space-y-3">
+        <form id="erase-form" action={action} noValidate className="space-y-3">
           <FormError result={state} />
           <input type="hidden" name="customerId" value={customerId} />
           <div>
             <label htmlFor="erase-reason" className="mb-1 block text-xs font-medium text-fg">Lý do / số yêu cầu <span className="text-danger">*</span></label>
             <input id="erase-reason" name="reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} placeholder="Ví dụ: Yêu cầu xóa dữ liệu #2026-114 qua email" className={field} aria-invalid={!!state?.fields?.reason} />
-            {state?.fields?.reason && <p className="mt-1 text-xs text-danger">{state.fields.reason}</p>}
+            {state?.fields?.reason && <p role="alert" className="mt-1 text-xs text-danger">{state.fields.reason}</p>}
           </div>
           <div>
             <label htmlFor="erase-confirm" className="mb-1 block text-xs font-medium text-fg">Gõ <strong>XOA</strong> để xác nhận <span className="text-danger">*</span></label>
             <input id="erase-confirm" name="confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" className={field} aria-invalid={!!state?.fields?.confirm} />
-            {state?.fields?.confirm && <p className="mt-1 text-xs text-danger">{state.fields.confirm}</p>}
+            {state?.fields?.confirm && <p role="alert" className="mt-1 text-xs text-danger">{state.fields.confirm}</p>}
           </div>
           <p className="text-xs text-fg-muted">Nên tải dữ liệu khách trước nếu cần lưu bản trả lời yêu cầu. Thao tác ghi nhật ký kèm lý do (không ghi thông tin cá nhân).</p>
         </form>

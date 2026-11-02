@@ -34,6 +34,8 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
   const [dragging, setDragging] = useState<{ id: string; contactName: string; stage: Stage } | null>(null);
   const [dragOverStage, setDragOverStage] = useState<Stage | null>(null);
   const [pendingLoss, setPendingLoss] = useState<PendingLoss | null>(null);
+  // Một useActionState chung cho kéo thả và modal lý do: lỗi chỉ hiện trong modal khi chính modal vừa gửi (không mang lỗi cũ của lần kéo thả).
+  const [fromModal, setFromModal] = useState(false);
 
   useEffect(() => {
     if (!state) return;
@@ -49,6 +51,7 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
   const requestStageChange = (id: string, contactName: string, fromStage: Stage, toStage: Stage) => {
     if (!canEdit || fromStage === toStage) return;
     if (NEED_REASON.includes(toStage)) {
+      setFromModal(false);
       setPendingLoss({ id, contactName, stage: toStage });
       return;
     }
@@ -64,7 +67,7 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
   const orderedColumns = LEAD_STAGES.map((stage) => colMap.get(stage) ?? { stage, closed: NEED_REASON.includes(stage) || stage === "DA_MUA", total: 0, rows: [] });
 
   const d = pick(state, null);
-  const fieldErrors = state?.fields ?? {};
+  const fieldErrors = (fromModal && state?.fields) || {};
 
   return (
     <>
@@ -255,8 +258,8 @@ export function LeadBoard({ columns, canEdit }: LeadBoardProps) {
             </>
           }
         >
-          <form id="lost-reason-form" action={submitStage} noValidate>
-            <FormError result={state && !state.ok ? state : null} />
+          <form id="lost-reason-form" action={submitStage} onSubmit={() => setFromModal(true)} noValidate>
+            <FormError result={fromModal && state && !state.ok ? state : null} />
             <input type="hidden" name="id" value={pendingLoss.id} />
             <input type="hidden" name="stage" value={pendingLoss.stage} />
             <Field label="Lý do" name="lostReason" required error={fieldErrors.lostReason}>

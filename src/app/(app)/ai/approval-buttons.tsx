@@ -1,6 +1,7 @@
 "use client";
 // Nút phê duyệt hoặc từ chối yêu cầu AI (công cụ hoặc đề xuất cập nhật nhu cầu) kèm ghi chú tùy chọn.
 import { useActionState, useEffect, useState } from "react";
+import { ConfirmButton } from "@/components/confirm";
 import type { ActionResult } from "@/components/form";
 import { useToast } from "@/components/overlay";
 import { Button } from "@/components/ui";
@@ -37,25 +38,21 @@ export function ApprovalButtons({ id }: { id: string }) {
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="approve" value="1" />
         <input type="hidden" name="note" value={note} />
-        <Button type="submit" size="sm" variant="primary" disabled={pending}>
+        <Button type="submit" size="sm" variant="primary" aria-label={`Duyệt yêu cầu ${id}`} disabled={pending}>
           {pending ? "Đang xử lý…" : "Duyệt"}
         </Button>
       </form>
-      <form
-        action={action}
-        onSubmit={(e) => {
-          if (!window.confirm("Bạn chắc chắn muốn từ chối yêu cầu này?")) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <input type="hidden" name="id" value={id} />
-        <input type="hidden" name="approve" value="0" />
-        <input type="hidden" name="note" value={note} />
-        <Button type="submit" size="sm" variant="danger" disabled={pending}>
-          Từ chối
-        </Button>
-      </form>
+      <ConfirmButton
+        action={decideApprovalAction}
+        fields={{ id, approve: "0", note }}
+        label="Từ chối"
+        ariaLabel={`Từ chối yêu cầu ${id}`}
+        title="Từ chối yêu cầu này?"
+        description="Hành động do AI đề xuất sẽ bị hủy và không được thực thi."
+        confirmLabel="Từ chối"
+        danger
+        okMessage="Đã từ chối yêu cầu."
+      />
     </div>
   );
 }

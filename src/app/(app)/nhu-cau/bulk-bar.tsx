@@ -21,7 +21,7 @@ export function BulkBar({ canAssign, people }: { canAssign: boolean; people: { i
   const err = state?.fields ?? {};
   return (
     <form id="bulk-form" action={action} className="flex flex-wrap items-end gap-2 border-b border-border bg-bg-subtle px-4 py-2.5 text-xs">
-      <span className="self-center font-medium text-fg-muted">Với các lead đã chọn:</span>
+      <span className="self-center font-medium text-fg-muted">Với các nhu cầu mua đã chọn:</span>
       <label className="flex flex-col gap-1">
         <span className="sr-only">Thao tác</span>
         <select name="action" value={mode} onChange={(e) => setMode(e.target.value as "stage" | "assign")} className={input}>

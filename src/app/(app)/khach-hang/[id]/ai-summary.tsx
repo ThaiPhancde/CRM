@@ -11,7 +11,10 @@ export function AiSummary({ customerId }: { customerId: string }) {
   const [open, setOpen] = useState(false);
   const [res, setRes] = useState<AiResult | null>(null);
   const [pending, start] = useTransition();
-  const run = () => start(async () => setRes(await summarizeAction(customerId)));
+  // Lỗi mạng / máy chủ khi gọi action → hiện thông báo trong drawer thay vì drawer trống.
+  const run = () => start(async () => {
+    try { setRes(await summarizeAction(customerId)); } catch { setRes({ ok: false, message: "Không tóm tắt được (lỗi kết nối). Thử lại." } as AiResult); }
+  });
   const sentences = res?.ok ? ((res.output as { sentences?: { text: string; evidence: Ev[] }[] }).sentences ?? null) : null;
 
   return (

@@ -148,8 +148,7 @@ const rowInclude = { customer: { select: { id: true, displayName: true } }, owne
 export async function listTickets(user: SessionUser, f: TicketFilter, now = new Date()) {
   requirePerm(user, "ticket.view");
   const and: Prisma.TicketWhereInput[] = [ticketWhere(user)];
-  if (f.status === "open") and.push({ status: { in: OPEN_TICKET } });
-  else if (f.status) and.push({ status: f.status });
+  const status: Prisma.TicketWhereInput[] = f.status === "open" ? [{ status: { in: OPEN_TICKET } }] : f.status ? [{ status: f.status }] : [];
   if (f.priority) and.push({ priority: f.priority });
   if (f.type) and.push({ type: f.type });
   if (f.owner === "me") and.push({ ownerId: user.id });
@@ -157,13 +156,15 @@ export async function listTickets(user: SessionUser, f: TicketFilter, now = new 
   else if (f.owner) and.push({ ownerId: f.owner });
   if (f.overdue) and.push({ status: { in: OPEN_TICKET }, resolveDueAt: { lt: now } });
   if (f.q) and.push({ OR: [{ code: { equals: f.q.toUpperCase() } }, { subject: { contains: f.q, mode: "insensitive" } }, { customer: { displayName: { contains: f.q, mode: "insensitive" } } }] });
-  const w = { AND: and };
-  const [total, rows, overdue] = await Promise.all([
+  const w = { AND: [...and, ...status] };
+  const [total, rows, overdue, open] = await Promise.all([
     db.ticket.count({ where: w }),
     db.ticket.findMany({ where: w, include: rowInclude, orderBy: [{ resolvedAt: { sort: "asc", nulls: "first" } }, { vip: "desc" }, { resolveDueAt: "asc" }], skip: (f.page - 1) * TICKET_PAGE_SIZE, take: TICKET_PAGE_SIZE }),
     db.ticket.count({ where: { AND: [ticketWhere(user), { status: { in: OPEN_TICKET }, resolveDueAt: { lt: now } }] } }),
+    // Số ticket mở theo đúng bộ lọc đang dùng (trừ trạng thái) — không chỉ đếm trang hiện tại.
+    db.ticket.count({ where: { AND: [...and, { status: { in: OPEN_TICKET } }] } }),
   ]);
-  return { total, overdue, page: f.page, pageSize: TICKET_PAGE_SIZE, rows: rows.map((t) => toRow(user, t, now)), canEdit: can(user.roles, "ticket.edit"), canAssign: can(user.roles, "ticket.assign") };
+  return { total, overdue, open, page: f.page, pageSize: TICKET_PAGE_SIZE, rows: rows.map((t) => toRow(user, t, now)), canEdit: can(user.roles, "ticket.edit"), canAssign: can(user.roles, "ticket.assign") };
 }
 
 // ---- Chi tiết ----

@@ -58,8 +58,11 @@ export function ArticleEditor({
         router.push(`/tri-thuc/${initial.id}`);
         router.refresh();
       } else {
-        toast("Đã tạo bài", "success");
+        // Rời form sau khi tạo: ở lại thì bấm lần nữa sẽ tạo bài trùng.
+        toast("Đã tạo bài tri thức (bản nháp v1).", "success");
         setCreatedSuccess(true);
+        router.push("/tri-thuc");
+        router.refresh();
       }
     } else if (state.message) {
       toast(state.message, "danger");

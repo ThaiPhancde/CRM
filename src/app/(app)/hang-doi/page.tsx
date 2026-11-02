@@ -137,7 +137,7 @@ export default async function MyQueuePage() {
                 {notifications.rows.map((n) => (
                   <li key={n.id} className="flex items-start gap-2.5 px-4 py-3 hover:bg-bg-subtle">
                     <span
-                      aria-label={n.read ? "Đã đọc" : "Chưa đọc"}
+                      role="img" aria-label={n.read ? "Đã đọc" : "Chưa đọc"}
                       title={n.read ? "Đã đọc" : "Chưa đọc"}
                       className={cx(
                         "mt-1.5 size-2 shrink-0 rounded-full",
