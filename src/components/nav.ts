@@ -45,7 +45,7 @@ export const NAV: NavGroup[] = [
     label: "Phân tích",
     items: [
       { href: "/bao-cao", label: "Báo cáo", icon: "chart", phase: 9 },
-      { href: "/ai", label: "Trợ lý AI", icon: "spark", phase: 8 },
+      { href: "/ai", label: "Trợ lý AI", icon: "spark", perm: "ai.run" },
     ],
   },
   {

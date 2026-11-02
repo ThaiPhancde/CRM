@@ -1,0 +1,9 @@
+[
+  {"id": "ai-admin-ui", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/ai-admin-ui.md",
+   "allowed_paths": ["src/app/(app)/ai/page.tsx", "src/app/(app)/ai/[id]/page.tsx", "src/app/(app)/ai/approval-buttons.tsx", "src/app/(app)/ai/budget-form.tsx"],
+   "check": ["python", "-I", "ai-jobs/p8-ai/checker.py", "ai-admin-ui", "."], "timeout_s": 1800},
+  {"id": "ai-lexicon", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/ai-lexicon.md",
+   "allowed_paths": ["fixtures/ai/lexicon.json", "fixtures/ai/reply-templates.json"], "check": ["python", "-I", "ai-jobs/p8-ai/checker.py", "ai-lexicon", "."], "timeout_s": 1200},
+  {"id": "ai-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/ai-tests.md",
+   "allowed_paths": ["tests/ai-rules.test.ts"], "check": ["python", "-I", "ai-jobs/p8-ai/checker.py", "ai-tests", "."], "timeout_s": 1500}
+]

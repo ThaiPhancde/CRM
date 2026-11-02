@@ -185,11 +185,19 @@ async function applySuggestion(approver: SessionUser, s: { kind: string; entityI
   });
 }
 
+/** Điều kiện yêu cầu duyệt mà người này được thấy/quyết: Quản lý mọi yêu cầu; Trưởng nhóm của thành viên cùng nhóm. */
+export async function approvalScope(u: SessionUser): Promise<Prisma.ApprovalWhereInput> {
+  if (can(u.roles, "ai.budget")) return {};
+  if (!u.teamId) return { id: "__none__" };
+  const members = await db.membership.findMany({ where: { teamId: u.teamId }, select: { userId: true } });
+  return { requestedById: { in: members.map((m) => m.userId) } };
+}
+
 /** Duyệt / từ chối. Chuyển trạng thái có điều kiện (PENDING → …) nên bấm hai lần không chạy hai lần; không tự duyệt yêu cầu của mình. */
 export async function decideApproval(user: SessionUser, input: unknown) {
   requirePerm(user, "ai.approve");
   const d = parse(z.object({ id: z.string().min(1), approve: z.boolean(), note: z.string().trim().max(500).optional() }), input);
-  const ap = await db.approval.findFirst({ where: { id: d.id }, include: { toolCall: true, suggestion: true } });
+  const ap = await db.approval.findFirst({ where: { AND: [{ id: d.id }, await approvalScope(user)] }, include: { toolCall: true, suggestion: true } });
   if (!ap) throw new HttpError(404, "Không tìm thấy yêu cầu duyệt");
   if (ap.requestedById === user.id) throw new HttpError(403, "Không tự duyệt yêu cầu của chính mình");
   const moved = await db.approval.updateMany({ where: { id: ap.id, status: "PENDING" }, data: { status: d.approve ? "APPROVED" : "REJECTED", decidedById: user.id, decidedAt: new Date(), note: d.note } });
