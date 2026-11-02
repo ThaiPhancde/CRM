@@ -90,8 +90,13 @@ WITH cust AS (
 ),
 ord AS (
   SELECT o.${c("id")} AS id, o.${c("customerId")} AS customer_id, o.${c("status")} AS status, o.${c("bookedAt")} AS booked_at,
-         COALESCE(o.${c("confirmedAt")}, o.${c("bookedAt")}) AS confirmed_at, o.${c("deliveredAt")} AS delivered_at,
-         o.${c("fxRate")} AS fx, o.${c("netBase")} AS net_base, o.${c("refundedAmount")} AS refunded, o.${c("fulfillmentStatus")} AS fstatus
+         COALESCE(o.${c("confirmedAt")}, o.${c("bookedAt")}) AS confirmed_at,
+         -- Không dùng dữ liệu tương lai: đơn giao SAU mốc tính coi như chưa giao tại mốc đó (tính lại quá khứ ra đúng số khi ấy).
+         CASE WHEN o.${c("deliveredAt")} <= ${asOf} THEN o.${c("deliveredAt")} END AS delivered_at,
+         o.${c("fxRate")} AS fx, o.${c("netBase")} AS net_base,
+         -- Hoàn tính tới mốc tính (không lấy refundedAmount hiện tại — gồm cả khoản hoàn sau mốc).
+         COALESCE((SELECT SUM(r0.${c("amount")}) FROM ${t("Refund")} r0 WHERE r0.${c("orderId")} = o.${c("id")} AND r0.${c("refundedAt")} <= ${asOf}), 0) AS refunded,
+         o.${c("fulfillmentStatus")} AS fstatus
   FROM ${t("Order")} o JOIN cust ON cust.id = o.${c("customerId")}
   WHERE o.${c("workspaceId")} = @ws AND o.${c("bookedAt")} <= ${asOf}
 ),
@@ -128,7 +133,7 @@ cfail AS (
   SELECT DISTINCT s.${c("orderId")} AS order_id FROM ${t("Shipment")} s
   JOIN ${t("DeliveryEvent")} e ON e.${c("shipmentId")} = s.${c("id")}
   JOIN ord ON ord.id = s.${c("orderId")}
-  WHERE e.${c("type")} = 'FAILED' AND e.${c("reasonCode")} IN (${reasons})
+  WHERE e.${c("type")} = 'FAILED' AND e.${c("reasonCode")} IN (${reasons}) AND e.${c("occurredAt")} <= ${asOf}
 ),
 per_order AS (
   SELECT ord.*, COALESCE(g.delivered_value, 0) AS delivered_value, g.cost_base, COALESCE(g.missing_cost, 0) AS missing_cost,
