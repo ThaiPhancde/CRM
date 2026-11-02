@@ -75,7 +75,7 @@ Tailwind 4: khai báo `@theme` ánh xạ các biến trên thành `bg-brand`, `t
 | `Toast` | Góc phải dưới, `--z-toast`, tự tắt 5s, có nút hoàn tác khi áp dụng. |
 | `AiPanel` | Drawer phải, header "Trợ lý AI" có chip model (replay/anthropic), từng câu trả lời kèm "Bằng chứng" mở rộng, nút "Tạo việc" dẫn tới form xác nhận. |
 | `Kanban` (lead) | Cột theo giai đoạn, thẻ 1 dòng tiêu đề + SĐT che + điểm; kéo thả ghi Activity. |
-| `Chart` | Recharts; màu chuỗi: cam, xám đậm, xanh dương, xanh lá, vàng; lưới nhạt; tooltip trắng viền. |
+| `Chart` | Recharts (`src/app/(app)/bao-cao/report-chart.tsx`); màu chuỗi `--chart-1..5`: cam `#eb6834`, xanh dương `#2a78d6`, xanh ngọc `#1baf7a`, tím `#6250d6`, vàng `#eda100` — đã qua `validate_palette` (D-57; xám đậm không đạt sắc độ tối thiểu, xanh lá–vàng không phân biệt được với mù màu đỏ). Một trục y; ≥ 2 chuỗi có chú giải (chữ màu thường); không hiệu ứng; luôn kèm bảng cùng số; lưới nhạt; tooltip trắng viền. |
 
 ## 6. Khả năng truy cập
 

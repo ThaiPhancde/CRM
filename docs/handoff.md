@@ -2,6 +2,13 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 14) — Phase 9 xong, chờ nghiệm thu; người dùng yêu cầu làm tuần tự 9 → nghiệm thu → 10 → nghiệm thu → 11 → nghiệm thu
+
+- **Đã làm:** báo cáo 6 nhóm + dashboard theo vai + Excel; /don-hang Mốc ngày + REV-03 khớp báo cáo. Quyết định D-57; chi tiết `docs/implementation-status.md` (Phase 9).
+- **Test:** 444 passed, 1 skipped; tsc 0; build sạch; đo tải `docs/perf/phase9.json` (11/11 báo cáo < 3 s; xem trước phân khúc 512 ms sát ngưỡng).
+- **Gói mới:** `recharts`, `exceljs` (theo thiết kế). Migration `20261102180000_report_indexes`.
+- **Tiếp theo:** nghiệm thu Phase 9 (tiêu chí mục 10: REV-03 khớp /don-hang, đổi tiền tệ thấy tỷ giá, thiếu finance.view không thấy tài chính, biểu đồ = bảng) → Phase 10 (vận đơn + sản phẩm) → nghiệm thu → Phase 11 → nghiệm thu. Phase 8 vẫn chờ nghiệm thu chính thức.
+
 ## Checkpoint 02/11/2026 (lần 13) — nghiệm thu Phase 7, Phase 8 xong, chờ nghiệm thu
 
 - **Đã làm:** nghiệm thu Phase 7 (`docs/acceptance/phase-7.md`, chạy job hành trình trên DB demo: 9 tin SIMULATED, chạy lại không trùng). Phase 8: adapter LLM (replay + khung Anthropic), lõi AI (6 tool qua service có `requirePerm`, duyệt, ngân sách, chi phí), 6 chức năng AI, `/ai` 4 tab, AI trong trang khách/ticket/nhu cầu mua, thanh tìm tự nhiên. Quyết định D-56; chi tiết `docs/implementation-status.md` (Phase 8).

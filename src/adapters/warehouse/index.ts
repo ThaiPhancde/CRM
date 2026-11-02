@@ -31,7 +31,7 @@ class PostgresWarehouse implements Warehouse {
     return rootDb.$transaction(async (tx) => {
       await tx.$executeRawUnsafe("SET TRANSACTION READ ONLY");
       await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '15s'");
-      await tx.$executeRawUnsafe("SET LOCAL work_mem = '64MB'");
+      await tx.$executeRawUnsafe("SET LOCAL work_mem = '128MB'");
       return tx.$queryRawUnsafe<T[]>(b.sql, ...b.values);
     }, { timeout: 20_000 });
   }

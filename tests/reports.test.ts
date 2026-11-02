@@ -66,6 +66,22 @@ describe("Phase 9 — báo cáo", () => {
     expect(r.fin.total.rev03).toBeCloseTo(139.12, 2); // 3.478.000 / 25.000
   });
 
+  it("cohort mua lại: tháng đầu mua, tỷ lệ còn mua theo tháng k, mua lại 60 ngày (CUS-03), tháng chưa tới để trống", async () => {
+    const s = await setup("rp3");
+    const a = await s.c.customer.create({ data: { displayName: "A" } as never });
+    const b = await s.c.customer.create({ data: { displayName: "B" } as never });
+    const mk = async (cust: string, no: string, day: string) => {
+      const o = await s.order({ no, cur: "AED", fx: "7000", net: "100", booked: day, delivered: day, items: [[1, 1, "100"]] });
+      await s.c.order.update({ where: { id: o.id }, data: { customerId: cust } });
+    };
+    await mk(a.id, "CA1", "2026-10-05"); await mk(a.id, "CA2", "2026-11-20"); // A: tháng sau, trong 60 ngày
+    await mk(b.id, "CB1", "2026-10-10"); await mk(b.id, "CB2", "2027-01-15"); // B: tháng thứ 3, sau 60 ngày
+    await mk(b.id, "CB3", "2026-10-25");                                     // cùng tháng đầu: tháng 0 vẫn 1 khách; là đơn thứ 2 trong 60 ngày của B
+    const f = parseReportFilter({ from: "2026-10-01", to: "2026-10-31" }, "2027-01-20");
+    const r = await s.as(async () => customerReport(s.mgr, f, await reportContext(s.mgr, "khach-hang", f), "2027-01-20"));
+    expect(r.cohort).toEqual([{ cohort: "2026-10", size: 2, retention: [100, 50, 0, 50, null, null, null], repeat60Pct: 100 }]);
+  });
+
   it("thiếu finance.view không thấy nhóm tài chính, số tiền ẩn ở nhóm khác; Sales chỉ thấy kết quả của mình", async () => {
     const s = await setup("rp2");
     const f = parseReportFilter({}, "2026-11-05");

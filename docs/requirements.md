@@ -96,8 +96,8 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-70 | Sáu nhóm báo cáo; mỗi báo cáo hiện phạm vi, tiền tệ, kỳ, độ mới, định nghĩa | HLD §9.2 | XĐ | 9 | ✓ |
-| R-71 | Dashboard theo vai; đa tiền tệ đối chiếu được | HLD §14.2 | XĐ | 9 | ✓ |
+| R-70 | Sáu nhóm báo cáo; mỗi báo cáo hiện phạm vi, tiền tệ, kỳ, độ mới, định nghĩa | HLD §9.2; D-57 | XĐ — **đã có Phase 9** (/bao-cao 6 nhóm, mã chỉ số + định nghĩa khi rê chuột, Excel) | 9 | ✓ |
+| R-71 | Dashboard theo vai; đa tiền tệ đối chiếu được | HLD §14.2; D-57 | XĐ — **đã có Phase 9** (Quản lý / Sales / Marketing; bảng nguyên tệ + tỷ giá đã dùng; REV khớp /don-hang) | 9 | ✓ |
 | R-72 | Vận đơn: đơn cần can thiệp, lý do thất bại, COD 4 mốc, đối soát | HLD §3; `levelup-company-os/01` §3.3 | XĐ | 10 | ✓ |
 | R-73 | Sản phẩm/mua hàng: giá vốn, tồn qua tích hợp chỉ đọc | HLD §3; D-25 | MĐ | 10 | ◐ fixture |
 | R-74 | Quản trị: thành viên, vai trò, cấu hình, audit viewer, sao lưu, vòng đời dữ liệu | HLD §3 | XĐ | 1, 11 | ✓ |

@@ -1,6 +1,6 @@
 "use client";
 // Biểu đồ báo cáo (Recharts) — nhận ĐÚNG mảng dữ liệu của bảng bên dưới nên biểu đồ và bảng luôn cùng số.
-// Quy ước dataviz: một trục y; màu theo thứ tự cố định (--chart-1..5), không xoay vòng; ≥ 2 chuỗi thì có chú giải; nét mảnh, cột bo 4px.
+// Không hiệu ứng vẽ (báo cáo đọc số, tôn trọng người nhạy chuyển động). Quy ước dataviz: một trục y; màu theo thứ tự cố định (--chart-1..5), không xoay vòng; ≥ 2 chuỗi thì có chú giải; nét mảnh, cột bo 4px.
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export type Series = { key: string; label: string };
@@ -30,7 +30,7 @@ export function ReportChart({ kind = "bar", data, x, series, fmt = "number", cur
       <XAxis dataKey={x} tick={{ fontSize: 12, fill: "var(--fg-muted)" }} tickLine={false} axisLine={{ stroke: "var(--border-strong)" }} interval="preserveStartEnd" />
       <YAxis tickFormatter={f.axis} tick={{ fontSize: 12, fill: "var(--fg-muted)" }} tickLine={false} axisLine={false} width={64} />
       <Tooltip formatter={(v) => f.full(v)} contentStyle={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12, color: "var(--fg)" }} cursor={{ fill: "var(--bg-muted)" }} />
-      {ss.length > 1 && <Legend wrapperStyle={{ fontSize: 12, color: "var(--fg-muted)" }} iconType="circle" iconSize={8} />}
+      {ss.length > 1 && <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} formatter={(v) => <span style={{ color: "var(--fg-muted)" }}>{v}</span>} />}
     </>
   );
   return (
@@ -40,12 +40,12 @@ export function ReportChart({ kind = "bar", data, x, series, fmt = "number", cur
         {kind === "line" ? (
           <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             {common}
-            {ss.map((s, i) => <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i]} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "var(--bg)" }} activeDot={{ r: 5 }} />)}
+            {ss.map((s, i) => <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i]} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "var(--bg)" }} activeDot={{ r: 5 }} isAnimationActive={false} />)}
           </LineChart>
         ) : (
           <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barGap={2}>
             {common}
-            {ss.map((s, i) => <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i]} stackId={kind === "stacked" ? "s" : undefined} radius={kind === "stacked" && i < ss.length - 1 ? 0 : [4, 4, 0, 0]} maxBarSize={48} stroke="var(--bg)" strokeWidth={kind === "stacked" ? 2 : 0} />)}
+            {ss.map((s, i) => <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i]} stackId={kind === "stacked" ? "s" : undefined} radius={kind === "stacked" && i < ss.length - 1 ? 0 : [4, 4, 0, 0]} maxBarSize={48} stroke="var(--bg)" strokeWidth={kind === "stacked" ? 2 : 0} isAnimationActive={false} />)}
           </BarChart>
         )}
       </ResponsiveContainer>

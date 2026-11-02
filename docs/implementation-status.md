@@ -15,7 +15,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 6 Chỉ số + điểm + Warehouse | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-6.md`) | 29/10/2026 | 230 test xanh; một khách tính tay khớp REV-01..04 + RFM; đo tải 0/41 vượt; Gemini 50% |
 | 7 Journey + marketing | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-7.md`) | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
 | 8 Trung tâm AI | **Xong, chờ nghiệm thu** | 02/11/2026 | 382 test (381 xanh, 1 bỏ qua); LLM replay + khung Anthropic; 6 chức năng AI; duyệt, chi phí, ngân sách; AI 5/5 đạt đo tải; Gemini 3 job (trang /ai, từ điển ar/de, bảng test) |
-| 9 Báo cáo + dashboard | Chưa | | |
+| 9 Báo cáo + dashboard | **Xong, chờ nghiệm thu** | 02/11/2026 | 445 test (444 xanh, 1 bỏ qua); 6 nhóm báo cáo + dashboard theo vai + Excel; REV khớp /don-hang; đo tải 11/11 báo cáo < 3 s; Gemini 2 job (vận đơn, AI, bảng test kỳ) |
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
@@ -143,6 +143,22 @@ Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; t�
 **Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
 
 **Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
+## Phase 9 — đã làm (02/11/2026)
+
+**Đã làm:**
+- SQL báo cáo một định nghĩa cho Postgres/BigQuery (`src/adapters/warehouse/reports.ts`): doanh thu REV-01..04 theo mốc từng chỉ số (nhóm × tiền tệ gốc), vận đơn OPS-01..04, cohort CUS-03, phân bố RFM, phễu lead + kết quả theo người / theo nguồn. `Warehouse.read` chỉ đọc 15 s. Chỉ mục mới (migration `20261102180000_report_indexes`).
+- Service `src/modules/reports`: `period.ts` (hàm thuần), `revenue.ts` (một hàm doanh thu cho báo cáo, dashboard, /don-hang), `service.ts` (6 nhóm, quyền, tiền tệ báo cáo, dữ liệu Excel), `dashboard.ts`, `scope.ts`. Quyền mới `report.customer/marketing/fulfillment/finance/ai/export`; Sales có `report.sales` phạm vi của mình.
+- Giao diện: `/bao-cao` (mục lục theo quyền), `/bao-cao/[nhom]` (thanh lọc, kỳ/phạm vi/tiền tệ + tỷ giá/độ mới, mã chỉ số có định nghĩa khi rê chuột, biểu đồ + bảng cùng số), `/bao-cao/[nhom]/xuat` (Excel), dashboard `/` theo vai; `/don-hang` thêm Mốc ngày + thẻ REV-03. Claude: khung, biểu đồ, bảng, tài chính, bán hàng, khách hàng, marketing, dashboard; Gemini: vận đơn, AI.
+- Sửa ngoài phạm vi: lỗ hổng tool AI `hoi_bao_cao` (Sales có `report.sales` sẽ hỏi được doanh thu team → chặn bằng `reportScope`); test phiên chập chờn ở `core.test.ts` (làm hỏng chữ ký bằng 'xx' cuối chuỗi).
+
+**Test đã chạy:** `npx vitest run` → **444 passed, 1 skipped** (15 file). `tests/reports.test.ts` 3 ca: REV-01/REV-03 báo cáo = `/don-hang` cùng bộ lọc (tính tay 3.830.000 / 3.478.000 ₫, có giao một phần + hoàn, đơn hủy, đặt trong kỳ giao ngoài kỳ, hai tiền tệ), đổi USD thấy tỷ giá; cohort tính tay; thiếu `finance.view` → 403 nhóm tài chính + tiền ẩn, Sales chỉ thấy của mình. `tests/reports-period.test.ts` 60 ca (Gemini 56 + Claude 4). `tsc` 0; `next build` thành công. Trình duyệt (Quản lý): dashboard, tài chính theo tháng (biểu đồ = bảng), vận đơn, khách hàng đổi USD; 6 file Excel hợp lệ; console 0 lỗi. Đo tải `docs/perf/phase9.json`.
+
+**Lỗi tìm thấy:** SQL lần đầu chạy 4,8–8,7 s (CTE vật chất hóa, sắp xếp lớn) → viết lại (performance.md); cột UNION không tên; đếm mua lại 60 ngày đếm thiếu khi đơn lặp nằm ở nhiều tháng → dòng tổng k = −1; job report-tests (Gemini) báo đúng: ngày không có thật "2026-02-30" được chấp nhận → kiểm hai chiều; biểu đồ chụp giữa hiệu ứng trông đứt → tắt hiệu ứng; chú giải tô màu chuỗi → chữ màu thường; dashboard "tháng này" trống đầu tháng → 30 ngày gần nhất; lý do thất bại "unknown" → "Không rõ lý do".
+
+**Còn thiếu:** REV-04 chưa gồm COD đối soát (Phase 10); nhóm đối chứng/Experiment (R-53 → Phase 12); kỳ theo giờ Việt Nam (đang ngày UTC, cùng cách /don-hang).
+
+**Chia việc (D-54, 70/30):** Claude ~1.320 dòng / Gemini ~545 dòng (2 phần báo cáo + 60 ca test) ≈ **71/29**.
 
 ## Phase 8 — đã làm (02/11/2026)
 

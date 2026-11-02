@@ -8,10 +8,10 @@ const S = Number(process.env.SCALE ?? 1);
 const label = process.argv[2] ?? "run";
 /**
  * Mục tiêu NFR (D-48): trang người dùng p50 < 500 ms, chi tiết < 300 ms, job worker một lượt < 5 s, xuất CSV < 5 s.
- * Job hằng ngày (chỉ số + điểm toàn bộ khách của team): < 2 phút.
+ * Job hằng ngày (chỉ số + điểm toàn bộ khách của team): < 2 phút. Báo cáo / dashboard (Phase 9): < 3 s.
  * Nhập đơn: ≥ 30 bản ghi/giây (1.000 bản ≤ 33 s) — tính từ khối lượng mục tiêu ~8.200 bản ghi/ngày/team, dư > 100 lần.
  */
-const TARGET: Record<string, number> = { page: 500, detail: 300, job: 5000, export: 5000, write: 300, ingest: 33000, daily: 120000 };
+const TARGET: Record<string, number> = { page: 500, detail: 300, job: 5000, export: 5000, write: 300, ingest: 33000, daily: 120000, report: 3000 };
 
 async function main() {
   const { rootDb, runInWorkspace, workspaceDb } = await import("../../src/lib/db");
@@ -115,6 +115,25 @@ async function main() {
   await time("AI: hỏi báo cáo REV-03 theo thị trường (R12M, 200k khách)", "page", () => ai.assistant(mgr, { text: "Doanh thu giao thành công theo thị trường" }));
   await time("AI: lịch sử lần chạy trang 1", "page", () => aiHist.listRuns(mgr, {}));
   await time("AI: chi phí tháng (AI-01..03)", "page", () => aiHist.aiStats(mgr));
+  // Phase 9: báo cáo qua Warehouse (SQL tổng hợp, chỉ đọc) — kỳ 12 tháng là trường hợp nặng nhất.
+  const rp = await import("../../src/modules/reports/service");
+  const per = await import("../../src/modules/reports/period");
+  const dash = await import("../../src/modules/reports/dashboard");
+  const today = per.todayVN();
+  const f12 = per.parseReportFilter({ from: per.addDays(today, -364), to: today, group: "market" }, today);
+  const fM = per.parseReportFilter({}, today, "brand_market");
+  const ctxFin = await runInWorkspace(ws.id, () => rp.reportContext(mgr, "tai-chinh", f12));
+  await time("Báo cáo tài chính 12 tháng theo thị trường + nguyên tệ", "report", () => rp.financeReport(mgr, f12, ctxFin));
+  await time("Báo cáo tài chính 12 tháng theo tháng", "report", () => rp.financeReport(mgr, { ...f12, group: "month" }, ctxFin));
+  await time("Báo cáo bán hàng 12 tháng (phễu + theo người)", "report", () => rp.salesReport(mgr, f12));
+  await time("Báo cáo bán hàng (Sales, của mình)", "report", () => rp.salesReport(sales, f12));
+  await time("Báo cáo khách hàng: RFM + cohort 12 tháng", "report", () => rp.customerReport(mgr, f12, ctxFin));
+  await time("Báo cáo marketing 12 tháng", "report", () => rp.marketingReport(mgr, f12, ctxFin));
+  await time("Báo cáo vận đơn 12 tháng", "report", () => rp.fulfillmentReport(mgr, f12, ctxFin));
+  await time("Báo cáo AI tháng này", "report", () => rp.aiReport(mgr, fM));
+  await time("Dashboard Quản lý (30 ngày)", "report", () => dash.dashboardFor(mgr));
+  await time("Dashboard Sales (30 ngày)", "report", () => dash.dashboardFor(sales));
+  await time("Đơn: lọc theo ngày giao + REV-03 (30 ngày)", "page", () => orders.listOrders(mgr, { ...of, page: 1, anchor: "delivered", from: per.addDays(today, -29), to: today }));
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

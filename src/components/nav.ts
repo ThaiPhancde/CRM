@@ -44,7 +44,7 @@ export const NAV: NavGroup[] = [
   {
     label: "Phân tích",
     items: [
-      { href: "/bao-cao", label: "Báo cáo", icon: "chart", phase: 9 },
+      { href: "/bao-cao", label: "Báo cáo", icon: "chart", anyPerm: ["report.sales", "report.customer", "report.marketing", "report.fulfillment", "report.finance", "report.ai"] },
       { href: "/ai", label: "Trợ lý AI", icon: "spark", perm: "ai.run" },
     ],
   },

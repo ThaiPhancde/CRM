@@ -31,8 +31,12 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 24 | 2026-11-02 | p8-ai `ai-admin-ui`: /ai 4 tab + /ai/[id], duyệt, ngân sách | 1 | gemini-4-argon-high, write | 361 s | checker 0, tsc 0 | 0 | 0 sửa (quyền theo tab đúng, Claude đọc cả 573 dòng) | ~800 dòng |
 | 25 | 2026-11-02 | p8-ai `ai-lexicon`: từ điển + mẫu trả lời ar/de | 1 | gemini-4-argon-high, write | 171 s | checker 0 (giữ nguyên cụm cũ, mỗi danh sách có ar + de) | 0 | 0 sửa | 2 file JSON |
 | 26 | 2026-11-02 | p8-ai `ai-tests`: bảng test parseSearch/parseAssistant/redact/costUsd | 1 | gemini-4-argon-high, write | 300 s | checker 0; vitest 52 ca xanh | 0 | 2 nghi vấn về code Claude, cả hai đúng → Claude sửa lõi + thêm 7 ca hồi quy | ~600 dòng |
+| 27 | 2026-11-02 | p9-reports `report-sections`: báo cáo vận đơn + AI | 1 | gemini-4-argon-high, write | 164 s | checker 0, tsc 0 | 0 | 0 sửa (Claude đổi nhãn 'unknown' ở service) | ~250 dòng |
+| 28 | 2026-11-02 | p9-reports `report-tests`: bảng test kỳ/tiền tệ/cohort | 1 | gemini-4-argon-high, write | 246 s | checker 0; vitest 56 ca xanh | 0 | 1 nghi vấn đúng (ngày không có thật được chấp nhận) → Claude sửa + 4 ca hồi quy | ~300 dòng |
 
 ## Notes
+
+8. Batch p9-reports (2 job, 246 s; ~71/29 — về lại mục tiêu D-54 nhờ giao ít việc hơn p8): cả 2 qua checker + tsc lần đầu, 0 ghi sai chỗ, 0 lỗi review phía Gemini. Lần thứ ba liên tiếp job test bảng tìm ra lỗi thật trong code Claude (ngày không có thật). Gemini dựng phần báo cáo nhanh và đúng khi có sẵn khung + mẫu + hợp đồng chặt.
 
 7. Batch p8-ai (3 job, 361 s; mục tiêu 70/30 nhưng thực tế ~48/52 theo dòng — vượt, như p3): cả 3 qua checker + tsc lần đầu, 0 ghi sai chỗ. Lần thứ hai liên tiếp job test bảng tự báo đúng 2 lỗi của Claude (tách từ bằng `\b` với chữ có dấu; khớp chuỗi con). Bài học: giao Gemini viết test cho hàm thuần là cách rà lỗi rẻ nhất — giữ quy tắc "test khớp code, liệt kê nghi vấn". Phần lớn lỗi Phase 8 nằm ở phía Claude và chỉ lộ khi xem trang (bài tri thức lạc đề, trích đoạn còn markdown, ngày ISO), không phải khi chạy test.
 

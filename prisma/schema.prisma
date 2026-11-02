@@ -471,6 +471,8 @@ model Order {
   @@index([customerName(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerName_trgm_idx")
   @@index([customerPhone(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerPhone_trgm_idx")
   @@index([customerEmail(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerEmail_trgm_idx")
+  @@index([workspaceId, deliveredAt])
+  @@index([workspaceId, confirmedAt])
 }
 
 // ---- Phase 3: Customer 360 (D-08) -----------------------------------------------------------------
@@ -697,6 +699,7 @@ model Payment {
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+  @@index([workspaceId, paidAt])
 }
 
 model Refund {
@@ -710,6 +713,7 @@ model Refund {
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+  @@index([workspaceId, refundedAt])
 }
 
 model Shipment {

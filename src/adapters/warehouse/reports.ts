@@ -18,45 +18,64 @@ function orderBase(d: Dialect) {
 }
 const inRange = (d: Dialect, x: string) => `${x} >= ${d.ts("@from")} AND ${x} < ${d.ts("@to")}`;
 
+/** Khóa nhóm, viết trên cột gốc (o = Order, s = Store) để mỗi nhánh tự lọc đơn theo mốc của nó (dùng chỉ mục, không CTE dùng chung). */
 function key(d: Dialect, g: RevenueGroup, at: string) {
+  const c = d.c;
   switch (g) {
     case "month": return d.month(at);
-    case "brand": return "COALESCE(o.br, '—')";
-    case "market": return "COALESCE(o.mk, '—')";
-    case "store": return "o.st";
-    case "currency": return "o.cur";
-    case "brand_market": return "COALESCE(o.br, '—') || '|' || COALESCE(o.mk, '—')";
+    case "brand": return `COALESCE(s.${c("brandId")}, '—')`;
+    case "market": return `COALESCE(o.${c("marketId")}, '—')`;
+    case "store": return `o.${c("storeId")}`;
+    case "currency": return `o.${c("currency")}`;
+    case "brand_market": return `COALESCE(s.${c("brandId")}, '—') || '|' || COALESCE(o.${c("marketId")}, '—')`;
     default: return "'all'";
   }
 }
+function ord(d: Dialect) {
+  const c = d.c;
+  return `${d.t("Order")} o JOIN ${d.t("Store")} s ON s.${c("id")} = o.${c("storeId")}`;
+}
+function scoped(d: Dialect) {
+  const c = d.c;
+  return `o.${c("workspaceId")} = @ws AND ${d.opt("store", `o.${c("storeId")}`)} AND ${d.opt("market", `o.${c("marketId")}`)} AND ${d.opt("brand", `s.${c("brandId")}`)}`;
+}
 
 /**
- * REV-01..04 + số đơn theo nhóm. Cột o01/o03 = nguyên tệ (có nghĩa khi nhóm theo tiền tệ); v0x = VND quy đổi theo tỷ giá chốt của đơn (D-44).
+ * REV-01..04 + số đơn theo (nhóm × tiền tệ gốc). v0x = VND quy đổi theo tỷ giá chốt của đơn (D-44); o01/o03 = nguyên tệ.
+ * Phía service gộp tiếp: theo nhóm (cộng mọi tiền tệ) và theo tiền tệ (cộng mọi nhóm) — một truy vấn cho cả hai bảng.
  * REV-03 = (Σ qtyDelivered × unitPrice − hoàn) × tỷ giá, đơn có deliveredAt trong kỳ — giống công thức CustomerMetric (sql.ts).
+ * Thanh toán thiếu paidAt không tính vào REV-04 (dữ liệu nguồn luôn có paidAt cho thanh toán thành công).
  */
 export function revenueSql(d: Dialect, g: RevenueGroup) {
   const c = d.c;
-  const zero = (n: number) => Array(n).fill("0").join(", ");
-  return `WITH o AS (${orderBase(d)}),
-g AS (
-  SELECT i.${c("orderId")} AS oid, SUM(i.${c("qtyDelivered")} * i.${c("unitPrice")}) AS dv
-  FROM ${d.t("OrderItem")} i JOIN o ON o.id = i.${c("orderId")} WHERE o.dl IS NOT NULL AND ${inRange(d, "o.dl")}
-  GROUP BY i.${c("orderId")}
-),
-r AS (
-  SELECT ${key(d, g, "o.b")} AS k, o.nb AS v01, o.na AS o01, 1 AS n01, 0 AS v02, 0 AS n02, 0 AS v03, 0 AS o03, 0 AS n03, 0 AS v04, 0 AS rfd FROM o WHERE o.status <> 'CANCELLED' AND ${inRange(d, "o.b")}
-  UNION ALL SELECT ${key(d, g, "o.cf")}, 0, 0, 0, o.nb, 1, ${zero(5)} FROM o WHERE o.status = 'CONFIRMED' AND ${inRange(d, "o.cf")}
-  UNION ALL SELECT ${key(d, g, "o.dl")}, 0, 0, 0, 0, 0, (g.dv - o.rf) * o.fx, g.dv - o.rf, 1, 0, 0 FROM o JOIN g ON g.oid = o.id WHERE g.dv > 0
-  UNION ALL SELECT ${key(d, g, `COALESCE(p.${c("paidAt")}, o.b)`)}, ${zero(8)}, p.${c("amount")} * o.fx, 0 FROM ${d.t("Payment")} p JOIN o ON o.id = p.${c("orderId")}
-    WHERE UPPER(p.${c("status")}) IN (${PAID_STATUSES}) AND ${inRange(d, `COALESCE(p.${c("paidAt")}, o.b)`)}
-  UNION ALL SELECT ${key(d, g, `x.${c("refundedAt")}`)}, ${zero(8)}, 0 - x.${c("amount")} * o.fx, x.${c("amount")} * o.fx FROM ${d.t("Refund")} x JOIN o ON o.id = x.${c("orderId")}
-    WHERE ${inRange(d, `x.${c("refundedAt")}`)}
+  const cf = `COALESCE(o.${c("confirmedAt")}, o.${c("bookedAt")})`;
+  const cur = `o.${c("currency")}`;
+  const rf = `COALESCE(o.${c("refundedAmount")}, 0)`;
+  return `WITH r AS (
+  SELECT ${key(d, g, `o.${c("bookedAt")}`)} AS k, ${cur} AS cur, SUM(o.${c("netBase")}) AS v01, SUM(o.${c("netAmount")}) AS o01, COUNT(*) AS n01, 0 AS v02, 0 AS n02, 0 AS v03, 0 AS o03, 0 AS n03, 0 AS v04, 0 AS rfd
+    FROM ${ord(d)} WHERE ${scoped(d)} AND o.${c("status")} <> 'CANCELLED' AND ${inRange(d, `o.${c("bookedAt")}`)} GROUP BY 1, 2
+  UNION ALL SELECT ${key(d, g, cf)}, ${cur}, 0, 0, 0, SUM(o.${c("netBase")}), COUNT(*), 0, 0, 0, 0, 0
+    FROM ${ord(d)} WHERE ${scoped(d)} AND o.${c("status")} = 'CONFIRMED'
+      AND ((o.${c("confirmedAt")} IS NOT NULL AND ${inRange(d, `o.${c("confirmedAt")}`)}) OR (o.${c("confirmedAt")} IS NULL AND ${inRange(d, `o.${c("bookedAt")}`)})) GROUP BY 1, 2
+  UNION ALL SELECT ${key(d, g, `o.${c("deliveredAt")}`)}, ${cur}, 0, 0, 0, 0, 0, SUM((gi.dv - ${rf}) * o.${c("fxRate")}), SUM(gi.dv - ${rf}), COUNT(*), 0, 0
+    FROM ${ord(d)} JOIN (
+      SELECT i.${c("orderId")} AS oid, SUM(i.${c("qtyDelivered")} * i.${c("unitPrice")}) AS dv FROM ${d.t("OrderItem")} i
+      WHERE i.${c("orderId")} IN (SELECT o2.${c("id")} FROM ${d.t("Order")} o2 WHERE o2.${c("workspaceId")} = @ws AND ${inRange(d, `o2.${c("deliveredAt")}`)})
+      GROUP BY i.${c("orderId")}
+    ) gi ON gi.oid = o.${c("id")}
+    WHERE ${scoped(d)} AND ${inRange(d, `o.${c("deliveredAt")}`)} AND gi.dv > 0 GROUP BY 1, 2
+  UNION ALL SELECT ${key(d, g, `p.${c("paidAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, SUM(p.${c("amount")} * o.${c("fxRate")}), 0
+    FROM ${d.t("Payment")} p JOIN ${ord(d)} ON o.${c("id")} = p.${c("orderId")}
+    WHERE p.${c("workspaceId")} = @ws AND ${scoped(d)} AND UPPER(p.${c("status")}) IN (${PAID_STATUSES}) AND ${inRange(d, `p.${c("paidAt")}`)} GROUP BY 1, 2
+  UNION ALL SELECT ${key(d, g, `x.${c("refundedAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, 0 - SUM(x.${c("amount")} * o.${c("fxRate")}), SUM(x.${c("amount")} * o.${c("fxRate")})
+    FROM ${d.t("Refund")} x JOIN ${ord(d)} ON o.${c("id")} = x.${c("orderId")}
+    WHERE x.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `x.${c("refundedAt")}`)} GROUP BY 1, 2
 )
-SELECT k AS ${c("key")}, SUM(v01) AS ${c("rev01")}, SUM(o01) AS ${c("orig01")}, SUM(n01) AS ${c("orders")}, SUM(v02) AS ${c("rev02")}, SUM(n02) AS ${c("confirmed")},
+SELECT k AS ${c("key")}, cur AS ${c("cur")}, SUM(v01) AS ${c("rev01")}, SUM(o01) AS ${c("orig01")}, SUM(n01) AS ${c("orders")}, SUM(v02) AS ${c("rev02")}, SUM(n02) AS ${c("confirmed")},
   SUM(v03) AS ${c("rev03")}, SUM(o03) AS ${c("orig03")}, SUM(n03) AS ${c("delivered")}, SUM(v04) AS ${c("rev04")}, SUM(rfd) AS ${c("refunds")}
-FROM r GROUP BY k ORDER BY k LIMIT 500`;
+FROM r GROUP BY k, cur ORDER BY 1 LIMIT 2000`;
 }
-// Thứ tự cột trong các nhánh UNION: k, v01, o01, n01, v02, n02, v03, o03, n03, v04, rfd.
+// Thứ tự cột trong các nhánh UNION: k, cur, v01, o01, n01, v02, n02, v03, o03, n03, v04, rfd.
 
 /** Vận đơn theo thị trường (OPS-01..03, COD), kỳ theo confirmedAt của đơn CONFIRMED. */
 export function fulfillmentSql(d: Dialect) {
@@ -84,25 +103,29 @@ WHERE e.${c("type")} = 'FAILED' AND ${inRange(d, `e.${c("occurredAt")}`)}
 GROUP BY COALESCE(e.${c("reasonCode")}, 'unknown') ORDER BY 2 DESC LIMIT 10`;
 }
 
-/** Cohort theo tháng mua hợp lệ đầu tiên (giao thành công, CUS-03): số khách còn mua ở tháng thứ k (0..6); dòng k = -1 mang số khách
- *  có đơn hợp lệ thứ 2 trong 60 ngày (đếm một lần mỗi khách). Cohort bắt đầu trong kỳ. */
+/**
+ * Cohort theo tháng mua hợp lệ đầu tiên (đơn có dòng đã giao, CUS-03): số khách còn mua ở tháng thứ k (0..6); dòng k = -1 mang số khách
+ * có đơn hợp lệ thứ 2 trong 60 ngày. Cohort bắt đầu trong kỳ. Khử trùng (khách, tháng) trước khi đếm thay cho COUNT(DISTINCT) trên cả bảng.
+ */
 export function cohortSql(d: Dialect) {
   const c = d.c;
-  return `WITH o AS (${orderBase(d)}),
-v AS (
-  SELECT o.cu AS cu, o.dl AS dl FROM o
-  JOIN (SELECT i.${c("orderId")} AS oid, SUM(i.${c("qtyDelivered")}) AS q FROM ${d.t("OrderItem")} i JOIN o o2 ON o2.id = i.${c("orderId")} WHERE o2.dl IS NOT NULL GROUP BY i.${c("orderId")}) g ON g.oid = o.id
-  WHERE o.dl IS NOT NULL AND g.q > 0 AND o.cu IS NOT NULL
+  const mi = (x: string) => d.monthIndex(x);
+  // Nhãn 'YYYY-MM' từ số tháng (năm×12 + tháng): cú pháp chung hai phương ngữ.
+  const label = (x: string) => `CAST(CAST(FLOOR((${x} - 1) / 12) AS INTEGER) AS ${d.name === "postgres" ? "TEXT" : "STRING"}) || '-' || LPAD(CAST(CAST(${x} - 12 * FLOOR((${x} - 1) / 12) AS INTEGER) AS ${d.name === "postgres" ? "TEXT" : "STRING"}), 2, '0')`;
+  return `WITH v AS (
+  SELECT ${d.bin(`o.${c("customerId")}`)} AS cu, o.${c("deliveredAt")} AS dl FROM ${ord(d)}
+  WHERE ${scoped(d)} AND o.${c("deliveredAt")} IS NOT NULL AND o.${c("customerId")} IS NOT NULL
+    AND EXISTS (SELECT 1 FROM ${d.t("OrderItem")} i WHERE i.${c("orderId")} = o.${c("id")} AND i.${c("qtyDelivered")} > 0)
 ),
-f AS (SELECT cu, MIN(dl) AS first FROM v GROUP BY cu),
-x AS (SELECT f.cu, ${d.month("f.first")} AS cohort, ${d.monthIndex("v.dl")} - ${d.monthIndex("f.first")} AS k,
-        CASE WHEN v.dl > f.first AND v.dl <= ${d.plusDays("f.first", 60)} THEN 1 ELSE 0 END AS r60
-      FROM f JOIN v ON v.cu = f.cu WHERE ${inRange(d, "f.first")})
-SELECT cohort AS ${c("cohort")}, k AS ${c("k")}, COUNT(DISTINCT cu) AS ${c("customers")}, 0 AS ${c("repeat60")}
-FROM x WHERE k BETWEEN 0 AND 6 GROUP BY cohort, k
-UNION ALL
-SELECT cohort, -1, 0, COUNT(DISTINCT CASE WHEN r60 = 1 THEN cu END) FROM x GROUP BY cohort
-ORDER BY 1, 2`;
+f AS (SELECT cu, MIN(dl) AS first FROM v GROUP BY cu HAVING MIN(dl) >= ${d.ts("@from")} AND MIN(dl) < ${d.ts("@to")}),
+x AS (SELECT f.cu AS cu, ${mi("f.first")} AS cm, ${mi("v.dl")} - ${mi("f.first")} AS k FROM f JOIN v ON v.cu = f.cu
+      WHERE ${mi("v.dl")} - ${mi("f.first")} BETWEEN 0 AND 6 GROUP BY f.cu, ${mi("f.first")}, ${mi("v.dl")} - ${mi("f.first")}),
+r60 AS (SELECT ${mi("f.first")} AS cm, COUNT(DISTINCT f.cu) AS n FROM f JOIN v ON v.cu = f.cu
+        WHERE v.dl > f.first AND v.dl <= ${d.plusDays("f.first", 60)} GROUP BY ${mi("f.first")})
+SELECT ${label("cm")} AS ${c("cohort")}, k AS ${c("k")}, n AS ${c("customers")}, rp AS ${c("repeat60")} FROM (
+  SELECT cm, k, COUNT(*) AS n, 0 AS rp FROM x GROUP BY cm, k
+  UNION ALL SELECT cm, -1, 0, n FROM r60
+) t ORDER BY cm, k`;
 }
 
 /** Phân bố hạng RFM (phiên bản đang dùng) + giá trị REV-03 / CM-01 12 tháng theo hạng. */

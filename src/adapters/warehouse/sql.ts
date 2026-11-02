@@ -22,6 +22,8 @@ export type Dialect = {
   monthIndex(x: string): string;
   /** Bộ lọc tùy chọn: tham số null → bỏ qua điều kiện. */
   opt(param: string, col: string): string;
+  /** Khóa so theo byte (gộp/khử trùng nhanh, không cần thứ tự theo ngôn ngữ). Postgres: COLLATE "C"; BigQuery: giữ nguyên. */
+  bin(x: string): string;
 };
 
 export function dialect(name: DialectName, dataset = "crm"): Dialect {
@@ -47,6 +49,7 @@ export function dialect(name: DialectName, dataset = "crm"): Dialect {
       month: (x) => `TO_CHAR(${x}, 'YYYY-MM')`,
       monthIndex: (x) => `(EXTRACT(YEAR FROM ${x}) * 12 + EXTRACT(MONTH FROM ${x}))`,
       opt: (p, col) => `(CAST(@${p} AS TEXT) IS NULL OR ${col} = @${p})`,
+      bin: (x) => `${x} COLLATE "C"`,
     };
   }
   return {
@@ -61,6 +64,7 @@ export function dialect(name: DialectName, dataset = "crm"): Dialect {
     month: (x) => `FORMAT_TIMESTAMP('%Y-%m', ${x})`,
     monthIndex: (x) => `(EXTRACT(YEAR FROM ${x}) * 12 + EXTRACT(MONTH FROM ${x}))`,
     opt: (p, col) => `(@${p} IS NULL OR ${col} = @${p})`,
+    bin: (x) => x,
   };
 }
 

@@ -5,7 +5,12 @@ export const REPORT_GROUPS = ["none", "brand", "market", "store", "month", "curr
 export type ReportFilter = { from: string; to: string; brand: string | null; store: string | null; market: string | null; currency: string; group: RevenueGroup };
 
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
-const valid = (s: string | undefined) => !!s && YMD.test(s) && !Number.isNaN(new Date(`${s}T00:00:00Z`).getTime());
+/** Ngày có thật: đối chiếu hai chiều (V8 tự lăn "2026-02-30" sang 02/03 thay vì báo lỗi). */
+const valid = (s: string | undefined) => {
+  if (!s || !YMD.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+};
 export const addDays = (ymd: string, n: number) => { const d = new Date(`${ymd}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 /** Ngày hôm nay theo giờ Việt Nam (UTC+7). */
 export const todayVN = (now = new Date()) => new Date(now.getTime() + 7 * 3600000).toISOString().slice(0, 10);

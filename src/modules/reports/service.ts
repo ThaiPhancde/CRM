@@ -11,7 +11,7 @@ import { aiStats } from "@/modules/ai/history";
 import { RFM_OPTIONS } from "@/modules/marketing/segments";
 import { STAGE_LABEL } from "@/modules/sales/labels";
 import { pct, pivotCohort, rangeParams, todayVN, toReportCurrency, type CohortRow, type ReportFilter } from "./period";
-import { labels, n, nn, params, revenueRows, type RevenueRow } from "./revenue";
+import { labels, n, nn, params, revenueCube, revenueRows, type RevenueRow } from "./revenue";
 import { reportScope } from "./scope";
 
 export const REPORT_GROUP_KEYS = ["sales", "khach-hang", "marketing", "van-don", "tai-chinh", "ai"] as const;
@@ -65,7 +65,8 @@ const sumRows = (rows: RevenueRow[]) => {
 export async function financeReport(u: SessionUser, f: ReportFilter, ctx: ReportContext) {
   guard(u, "tai-chinh");
   const rate = ctx.rate?.rateToBase ?? null;
-  const [rows, byCurrency] = await Promise.all([revenueRows(u, f, f.group, rate), revenueRows(u, f, "currency", rate)]);
+  const cube = await revenueCube(u, f, f.group);
+  const [rows, byCurrency] = await Promise.all([revenueRows(u, f, f.group, rate, cube), revenueRows(u, f, f.group, rate, cube, true)]);
   const total = sumRows(rows);
   return {
     rows, byCurrency, total,
@@ -165,7 +166,7 @@ export async function fulfillmentReport(u: SessionUser, f: ReportFilter, ctx: Re
     avgDays: r.avgDays == null ? null : Math.round(Number(r.avgDays) * 10) / 10, codCollected: n(r.codCollected), codValue: ctx.showMoney ? toReportCurrency(nn(r.codValue), f.currency, rate) : null,
   }));
   const t = out.reduce((a, r) => ({ confirmed: a.confirmed + r.confirmed, delivered: a.delivered + r.delivered, failed: a.failed + r.failed + r.returned }), { confirmed: 0, delivered: 0, failed: 0 });
-  return { rows: out, reasons: reasons.map((r) => ({ key: r.key, label: FAILURE_REASON[r.key] ?? r.key, n: n(r.n) })), total: { ...t, deliveredRate: pct(t.delivered, t.confirmed), failRate: pct(t.failed, t.confirmed) } };
+  return { rows: out, reasons: reasons.map((r) => ({ key: r.key, label: FAILURE_REASON[r.key] ?? (r.key === "unknown" ? "Không rõ lý do" : r.key), n: n(r.n) })), total: { ...t, deliveredRate: pct(t.delivered, t.confirmed), failRate: pct(t.failed, t.confirmed) } };
 }
 
 // ---- AI ----
