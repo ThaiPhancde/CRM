@@ -1,0 +1,30 @@
+{
+ "vi": {
+  "greeting": "Xin chào {{name}},",
+  "status": {
+   "UNFULFILLED": "Đơn {{order}} của anh/chị đã được xác nhận và đang chuẩn bị giao.",
+   "IN_TRANSIT": "Đơn {{order}} đang trên đường giao tới anh/chị.",
+   "PARTIAL": "Đơn {{order}} đã giao một phần; phần còn lại đang được xử lý.",
+   "DELIVERED": "Theo hệ thống, đơn {{order}} đã giao thành công.",
+   "FAILED": "Đơn {{order}} chưa giao được; chúng tôi sẽ liên hệ để hẹn lại thời gian giao.",
+   "RETURNED": "Đơn {{order}} đã được hoàn về kho; chúng tôi sẽ hỗ trợ anh/chị bước tiếp theo."
+  },
+  "noOrder": "Để kiểm tra chính xác, anh/chị vui lòng cho biết mã đơn hàng cần hỗ trợ.",
+  "kb": "Thông tin thêm: {{excerpt}}",
+  "closing": "Trân trọng,\n{{brand}}"
+ },
+ "en": {
+  "greeting": "Hello {{name}},",
+  "status": {
+   "UNFULFILLED": "Your order {{order}} is confirmed and being prepared for shipping.",
+   "IN_TRANSIT": "Your order {{order}} is on its way to you.",
+   "PARTIAL": "Part of your order {{order}} has been delivered; the rest is being processed.",
+   "DELIVERED": "Our records show order {{order}} was delivered.",
+   "FAILED": "We could not deliver order {{order}} yet; we will contact you to arrange a new delivery time.",
+   "RETURNED": "Order {{order}} has been returned to our warehouse; we will help you with the next step."
+  },
+  "noOrder": "To check this accurately, could you please share the order number you need help with?",
+  "kb": "More information: {{excerpt}}",
+  "closing": "Best regards,\n{{brand}}"
+ }
+}

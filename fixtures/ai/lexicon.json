@@ -1,0 +1,192 @@
+{
+ "target": {
+  "orders": [
+   "đơn",
+   "đơn hàng",
+   "order",
+   "orders"
+  ],
+  "customers": [
+   "khách",
+   "khách hàng",
+   "customer",
+   "customers"
+  ]
+ },
+ "fulfillment": {
+  "FAILED": [
+   "giao thất bại",
+   "giao không thành công",
+   "failed delivery",
+   "failed"
+  ],
+  "RETURNED": [
+   "hoàn hàng",
+   "bị hoàn",
+   "returned"
+  ],
+  "IN_TRANSIT": [
+   "đang giao",
+   "in transit"
+  ],
+  "DELIVERED": [
+   "đã giao",
+   "giao thành công",
+   "delivered"
+  ],
+  "UNFULFILLED": [
+   "chưa giao",
+   "not shipped",
+   "unfulfilled"
+  ]
+ },
+ "cancelled": [
+  "đã hủy",
+  "bị hủy",
+  "cancelled",
+  "canceled"
+ ],
+ "repeat": [
+  "mua lại",
+  "mua nhiều lần",
+  "repeat",
+  "returning"
+ ],
+ "period": {
+  "today": [
+   "hôm nay",
+   "today"
+  ],
+  "yesterday": [
+   "hôm qua",
+   "yesterday"
+  ],
+  "last_7_days": [
+   "7 ngày qua",
+   "tuần này",
+   "last 7 days",
+   "this week"
+  ],
+  "this_month": [
+   "tháng này",
+   "this month"
+  ],
+  "last_month": [
+   "tháng trước",
+   "last month"
+  ],
+  "last_30_days": [
+   "30 ngày qua",
+   "last 30 days"
+  ]
+ },
+ "markets": {
+  "AE": [
+   "uae",
+   "dubai",
+   "emirates",
+   "tiểu vương quốc"
+  ],
+  "SA": [
+   "saudi",
+   "ả rập xê út",
+   "riyadh"
+  ],
+  "KW": [
+   "kuwait",
+   "cô oét"
+  ],
+  "DE": [
+   "đức",
+   "germany"
+  ],
+  "FR": [
+   "pháp",
+   "france"
+  ],
+  "US": [
+   "mỹ",
+   "usa",
+   "united states"
+  ],
+  "VN": [
+   "việt nam",
+   "vietnam"
+  ]
+ },
+ "intents": {
+  "task": [
+   "tạo việc",
+   "nhắc tôi",
+   "nhắc việc",
+   "giao việc",
+   "create task",
+   "remind me"
+  ],
+  "appointment": [
+   "lịch hẹn",
+   "đặt hẹn",
+   "hẹn gặp",
+   "appointment",
+   "schedule a meeting"
+  ],
+  "report": [
+   "doanh thu",
+   "báo cáo",
+   "revenue",
+   "report"
+  ],
+  "find_customer": [
+   "tìm khách",
+   "find customer"
+  ],
+  "find_order": [
+   "tìm đơn",
+   "find order"
+  ]
+ },
+ "metrics": {
+  "REV-01": [
+   "giá trị đặt",
+   "rev-01",
+   "booked"
+  ],
+  "REV-02": [
+   "xác nhận",
+   "rev-02",
+   "confirmed"
+  ],
+  "REV-03": [
+   "giao thành công",
+   "rev-03",
+   "delivered"
+  ],
+  "REV-04": [
+   "thực thu",
+   "rev-04",
+   "collected",
+   "cash"
+  ]
+ },
+ "groupByMarket": [
+  "theo thị trường",
+  "từng thị trường",
+  "by market",
+  "per market"
+ ],
+ "tomorrow": [
+  "ngày mai",
+  "mai",
+  "tomorrow"
+ ],
+ "todayWords": [
+  "hôm nay",
+  "today"
+ ],
+ "customerMarkers": [
+  "khách hàng",
+  "khách",
+  "customer",
+  "with"
+ ]
+}

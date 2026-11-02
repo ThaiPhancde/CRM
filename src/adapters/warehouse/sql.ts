@@ -179,3 +179,17 @@ SELECT @ws || ':' || m.customer_id || ':R12M', @ws, m.customer_id, 'R12M', ${d.t
   m.repurchase60 = 1, m.r_score, m.f_score, m.m_score, m.open_tickets, m.max_open_priority, m.oldest_open, m.days_to_next
 FROM (${customerMetricsSelect(d)}) m`;
 }
+
+/** Tổng REV-0x kỳ R12M (từ CustomerMetric — chỉ số chuẩn Phase 6) theo thị trường hoặc cả team. Đọc, tối đa 50 dòng. */
+export function revenueSummarySql(d: Dialect, metric: "rev01" | "rev02" | "rev03" | "rev04", groupBy: "market" | "none"): string {
+  const c = d.c;
+  const key = groupBy === "market" ? `COALESCE(mk.${c("code")}, '—')` : `'Cả team'`;
+  return `SELECT ${key} AS ${c("key")}, SUM(cm.${c(metric)}) AS ${c("value")}, COUNT(*) AS ${c("customers")}, MAX(cm.${c("asOf")}) AS ${c("asOf")}
+FROM ${d.t("CustomerMetric")} cm
+JOIN ${d.t("Customer")} cu ON cu.${c("id")} = cm.${c("customerId")}
+LEFT JOIN ${d.t("Market")} mk ON mk.${c("id")} = cu.${c("marketId")}
+WHERE cm.${c("workspaceId")} = @ws AND cm.${c("period")} = 'R12M' AND cu.${c("mergedIntoId")} IS NULL
+GROUP BY ${key}
+ORDER BY SUM(cm.${c(metric)}) DESC
+LIMIT 50`;
+}

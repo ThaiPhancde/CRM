@@ -193,6 +193,8 @@ export async function getTicket(user: SessionUser, id: string, now = new Date())
     events: t.events.map((e) => ({ id: e.id, type: e.type, body: e.body, meta: e.meta, actor: e.actorId ? names.get(e.actorId) ?? null : null, at: e.createdAt.toISOString() })),
     tasks: t.tasks.map((k) => ({ id: k.id, title: k.title, dueAt: k.dueAt.toISOString(), status: k.status, assignee: k.assignee.name })),
     articles,
+    brandId: t.brandId,
+    customerLocale: t.customer?.locale ?? null,
     canEdit: can(user.roles, "ticket.edit"),
     canAssign,
   };

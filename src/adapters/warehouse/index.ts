@@ -2,7 +2,9 @@
 // Cài đặt chọn bằng WAREHOUSE=postgres (mặc định, demo — chạy trên chính DB giao dịch) | bigquery (khung, Phase 12).
 import { rootDb } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
-import { customerMetricsInsert, dialect, type Dialect } from "./sql";
+import { customerMetricsInsert, dialect, revenueSummarySql, type Dialect } from "./sql";
+
+export type RevenueRow = { key: string; value: number; customers: number; asOf: Date | null };
 
 export interface Warehouse {
   readonly dialect: Dialect;
@@ -12,6 +14,8 @@ export interface Warehouse {
   refreshCustomerMetrics(workspaceId: string, asOf: Date): Promise<{ customers: number; ms: number }>;
   /** Mốc dữ liệu chỉ số mới nhất của team (null = chưa dựng). */
   freshness(workspaceId: string): Promise<Date | null>;
+  /** Tổng REV-0x kỳ R12M theo thị trường / cả team — chỉ đọc, giới hạn thời gian + số dòng (tool AI hoi_bao_cao). */
+  revenueSummary(workspaceId: string, metric: "rev01" | "rev02" | "rev03" | "rev04", groupBy: "market" | "none"): Promise<RevenueRow[]>;
 }
 
 class PostgresWarehouse implements Warehouse {
@@ -35,6 +39,16 @@ class PostgresWarehouse implements Warehouse {
     const r = await rootDb.customerMetric.findFirst({ where: { workspaceId, period: "R12M" }, select: { asOf: true } });
     return r?.asOf ?? null;
   }
+  async revenueSummary(workspaceId: string, metric: "rev01" | "rev02" | "rev03" | "rev04", groupBy: "market" | "none") {
+    const b = this.dialect.bind(revenueSummarySql(this.dialect, metric, groupBy), { ws: workspaceId });
+    // Tương đương "tài khoản chỉ đọc" ở demo: giao dịch read-only + giới hạn 10 s (BigQuery thật: service account chỉ đọc + maximumBytesBilled).
+    const rows = await rootDb.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe("SET TRANSACTION READ ONLY");
+      await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '10s'");
+      return tx.$queryRawUnsafe<{ key: string; value: unknown; customers: unknown; asOf: Date | null }[]>(b.sql, ...b.values);
+    });
+    return rows.map((r) => ({ key: r.key, value: Number(r.value ?? 0), customers: Number(r.customers), asOf: r.asOf }));
+  }
 }
 
 /**
@@ -49,6 +63,7 @@ class BigQueryWarehouse implements Warehouse {
   async query<T>(): Promise<T[]> { return this.notReady(); }
   async refreshCustomerMetrics(): Promise<{ customers: number; ms: number }> { return this.notReady(); }
   async freshness(): Promise<Date | null> { return this.notReady(); }
+  async revenueSummary(): Promise<RevenueRow[]> { return this.notReady(); }
 }
 
 export const warehouseFor = (name: "postgres" | "bigquery"): Warehouse => (name === "bigquery" ? new BigQueryWarehouse() : new PostgresWarehouse());

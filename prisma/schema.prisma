@@ -57,6 +57,7 @@ model User {
   activities     Activity[]
   notifications  Notification[]
   ownedTickets   Ticket[]       @relation("TicketOwner")
+  agentRuns      AgentRun[]
 }
 
 model Membership {
@@ -1458,4 +1459,132 @@ model Touchpoint {
   @@index([leadId])
   @@index([campaignId])
   @@index([workspaceId, occurredAt])
+}
+
+// ---- Phase 8: Trung tâm AI ----
+
+enum AgentRunStatus {
+  OK
+  NEEDS_CLARIFICATION
+  DENIED
+  ERROR
+}
+
+enum ToolCallStatus {
+  OK
+  DENIED
+  ERROR
+  PENDING_APPROVAL
+}
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Một lần chạy AI (một yêu cầu của người dùng). Đầu vào đã lọc bí mật/PII ngoài quyền; đầu ra kèm bằng chứng.
+model AgentRun {
+  id          String         @id @default(cuid())
+  workspaceId String
+  userId      String
+  feature     String
+  provider    String
+  model       String
+  status      AgentRunStatus
+  input       String
+  output      Json?
+  evidence    Json?
+  error       String?
+  ms          Int
+  createdAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id])
+  toolCalls   ToolCall[]
+  suggestions Suggestion[]
+  cost        AiCost?
+
+  @@index([workspaceId, createdAt])
+  @@index([userId])
+  @@index([workspaceId, feature])
+}
+
+/// Tool agent gọi — luôn qua service có requirePerm; DENIED khi thiếu quyền (không có tác dụng phụ).
+model ToolCall {
+  id          String         @id @default(cuid())
+  workspaceId String
+  runId       String
+  tool        String
+  args        Json
+  status      ToolCallStatus
+  result      Json?
+  error       String?
+  createdAt   DateTime       @default(now())
+  run         AgentRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  approval    Approval?
+
+  @@index([runId])
+  @@index([workspaceId, status])
+}
+
+/// Đề xuất của AI (vd cập nhật nhu cầu mua) — chỉ áp dụng khi người có quyền duyệt.
+model Suggestion {
+  id          String           @id @default(cuid())
+  workspaceId String
+  runId       String
+  kind        String
+  entity      String
+  entityId    String
+  payload     Json
+  reason      String?
+  status      SuggestionStatus @default(PENDING)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime         @default(now())
+  run         AgentRun         @relation(fields: [runId], references: [id], onDelete: Cascade)
+  approval    Approval?
+
+  @@index([runId])
+  @@index([workspaceId, status])
+}
+
+/// Hàng chờ duyệt: tool ghi vượt phạm vi / cấu hình cần duyệt, hoặc đề xuất sửa hồ sơ. Người có ai.approve quyết ở /ai.
+model Approval {
+  id            String         @id @default(cuid())
+  workspaceId   String
+  toolCallId    String?        @unique
+  suggestionId  String?        @unique
+  requestedById String
+  status        ApprovalStatus @default(PENDING)
+  reason        String
+  decidedById   String?
+  decidedAt     DateTime?
+  note          String?
+  createdAt     DateTime       @default(now())
+  toolCall      ToolCall?      @relation(fields: [toolCallId], references: [id], onDelete: Cascade)
+  suggestion    Suggestion?    @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status])
+}
+
+/// Chi phí một lần chạy (AI-01): token + USD ước tính theo bảng giá cấu hình.
+model AiCost {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  runId        String   @unique
+  feature      String
+  provider     String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  usd          Decimal  @db.Decimal(12, 6)
+  createdAt    DateTime @default(now())
+  run          AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, createdAt])
 }

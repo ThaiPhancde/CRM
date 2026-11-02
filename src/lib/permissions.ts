@@ -69,6 +69,14 @@ const MATRIX = {
   "knowledge.publish": ["MANAGER", "SALES_LEAD", "MARKETING"],
   /** Đổi trọng số điểm (tạo phiên bản mới), tính lại điểm ngay (Phase 6). */
   "score.config": ["MANAGER"],
+  /** Báo cáo bán hàng cấp team (Phase 8: tool hoi_bao_cao; Phase 9: /bao-cao). Sales chỉ báo cáo cá nhân — có ở Phase 9. */
+  "report.sales": ["MANAGER", "SALES_LEAD", "MARKETING", "FINANCE_VIEW"],
+  /** Dùng trợ lý AI (tóm tắt, tìm tự nhiên, soạn phản hồi, tạo việc, hỏi báo cáo). Tool vẫn kiểm quyền riêng từng thao tác. */
+  "ai.run": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT"],
+  /** Duyệt thao tác AI cần duyệt (giao việc ngoài phạm vi, sửa hồ sơ theo đề xuất) — Q-32. */
+  "ai.approve": ["MANAGER", "SALES_LEAD"],
+  /** Xem chi phí AI, đặt ngân sách tháng. */
+  "ai.budget": ["MANAGER"],
   /** Phân khúc, chiến dịch, hành trình (soạn, chạy thử). Bật hành trình gửi tin thật (giả lập) cần journey.activate. */
   "segment.manage": ["MANAGER", "MARKETING"],
   "campaign.manage": ["MANAGER", "MARKETING"],
