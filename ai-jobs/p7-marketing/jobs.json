@@ -1,0 +1,9 @@
+[
+  {"id": "campaigns-ui", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/campaigns-ui.md",
+   "allowed_paths": ["src/app/(app)/chien-dich/page.tsx", "src/app/(app)/chien-dich/campaign-form.tsx", "src/app/(app)/chien-dich/[id]/page.tsx", "src/app/(app)/chien-dich/[id]/touchpoint-form.tsx", "src/app/(app)/chien-dich/[id]/status-buttons.tsx"],
+   "check": ["python", "-I", "ai-jobs/p7-marketing/checker.py", "campaigns-ui", "."], "timeout_s": 1800},
+  {"id": "message-templates", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/message-templates.md",
+   "allowed_paths": ["fixtures/message-templates.json"], "check": ["python", "-I", "ai-jobs/p7-marketing/checker.py", "message-templates", "."], "timeout_s": 900},
+  {"id": "marketing-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/marketing-tests.md",
+   "allowed_paths": ["tests/marketing-rules.test.ts"], "check": ["python", "-I", "ai-jobs/p7-marketing/checker.py", "marketing-tests", "."], "timeout_s": 1500}
+]
