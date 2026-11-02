@@ -48,7 +48,9 @@ export async function getConfig(u: SessionUser) {
 }
 
 const hours = z.coerce.number({ message: "Nhập số giờ" }).positive("Phải lớn hơn 0").max(720, "Tối đa 720 giờ");
-const optInt = (max: number) => z.union([z.literal("").transform(() => null), z.coerce.number().int("Số nguyên").min(0, "Không âm").max(max, `Tối đa ${max}`)]).nullable().optional();
+/** Ô trống hoặc chỉ khoảng trắng = "để trống" (không thành 0). */
+const blank = (v: unknown) => (typeof v === "string" ? v.trim() : v);
+const optInt = (max: number) => z.preprocess(blank, z.union([z.literal("").transform(() => null), z.coerce.number().int("Số nguyên").min(0, "Không âm").max(max, `Tối đa ${max}`)]).nullable().optional());
 
 /** Upsert Setting + audit (giữ một dòng / key / team). */
 async function saveSetting(u: SessionUser, key: string, value: Prisma.InputJsonValue, entity = "Setting") {
@@ -113,7 +115,7 @@ export async function saveCap(u: SessionUser, input: unknown) {
   });
 }
 
-const hour = (label: string) => z.union([z.literal("").transform(() => null), z.coerce.number().int(`${label}: số nguyên`).min(0, `${label}: 0–24`).max(24, `${label}: 0–24`)]).nullable().optional();
+const hour = (label: string) => z.preprocess(blank, z.union([z.literal("").transform(() => null), z.coerce.number().int(`${label}: số nguyên`).min(0, `${label}: 0–24`).max(24, `${label}: 0–24`)]).nullable().optional());
 export const hoursSchema = z.object({ market: z.string().trim().min(1), from: hour("Từ giờ"), to: hour("Đến giờ") })
   .refine((d) => (d.from == null) === (d.to == null), { path: ["to"], message: "Nhập cả giờ bắt đầu và kết thúc, hoặc để trống cả hai" })
   .refine((d) => d.from == null || d.to! - d.from >= 2, { path: ["to"], message: "Khung gửi tối thiểu 2 giờ" });

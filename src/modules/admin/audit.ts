@@ -6,7 +6,8 @@ import { db, rootDb } from "@/lib/db";
 import { requirePerm, type SessionUser } from "@/lib/session";
 
 export const AUDIT_PAGE = 50;
-const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined);
+/** Ngày "YYYY-MM-DD" có thật (kiểm hai chiều — "2026-02-30" bị bỏ, không thành Invalid Date). */
+const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => { const d = new Date(`${s}T00:00:00Z`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s; }).optional().catch(undefined);
 export const auditFilter = z.object({
   actor: z.string().trim().max(40).optional().catch(undefined).transform((v) => v || undefined),
   entity: z.string().trim().max(60).optional().catch(undefined).transform((v) => v || undefined),
@@ -18,12 +19,14 @@ export const auditFilter = z.object({
 });
 export type AuditFilter = z.infer<typeof auditFilter>;
 
-/** Khóa cấp một thay đổi giữa trước và sau (so theo JSON). Hàm thuần — có test. */
+/** JSON với khóa object đã sắp xếp — hai object cùng nội dung khác thứ tự khóa coi là bằng nhau. */
+const stable = (v: unknown): string => JSON.stringify(v, (_k, x) => (x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([p], [q]) => p.localeCompare(q))) : x));
+/** Khóa cấp một thay đổi giữa trước và sau (so theo JSON, không phụ thuộc thứ tự khóa). Hàm thuần — có test. */
 export function changedKeys(before: unknown, after: unknown): string[] {
   const obj = (v: unknown) => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
   const b = obj(before), a = obj(after);
-  if (!b || !a) return JSON.stringify(before ?? null) === JSON.stringify(after ?? null) ? [] : ["(toàn bộ)"];
-  return [...new Set([...Object.keys(b), ...Object.keys(a)])].filter((k) => JSON.stringify(b[k] ?? null) !== JSON.stringify(a[k] ?? null)).sort();
+  if (!b || !a) return stable(before ?? null) === stable(after ?? null) ? [] : ["(toàn bộ)"];
+  return [...new Set([...Object.keys(b), ...Object.keys(a)])].filter((k) => stable(b[k] ?? null) !== stable(a[k] ?? null)).sort();
 }
 
 export async function listAuditLog(u: SessionUser, f: AuditFilter) {

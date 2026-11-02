@@ -7,19 +7,21 @@
   --bg-muted: #f5f5f4;
   --border: #e7e5e4;
   --border-strong: #d6d3d1;
+  /* Viền ô nhập: ranh giới duy nhất của ô → ≥ 3:1 (WCAG 1.4.11); --border chỉ ~1,2:1. */
+  --border-input: #948e88;
   --fg: #1c1917;
   --fg-muted: #57534e;
-  --fg-subtle: #a8a29e;
-  --brand: #f97316;
-  --brand-hover: #ea580c;
-  --brand-active: #c2410c;
+  --fg-subtle: #78716c; /* AA: #a8a29e chỉ 2,5:1 trên nền trắng (tests/contrast.test.ts) */
+  --brand: #c2410c; /* AA: chữ trắng trên #f97316 chỉ 2,8:1 — cam đậm 5,2:1 (D-59) */
+  --brand-hover: #b13a0b;
+  --brand-active: #9a3412;
   --brand-soft: #fff7ed;
   --brand-ring: #fdba74;
-  --success: #16a34a;
+  --success: #15803d;
   --success-soft: #f0fdf4;
   --warning: #b45309;
   --warning-soft: #fffbeb;
-  --danger: #dc2626;
+  --danger: #b91c1c;
   --danger-soft: #fef2f2;
   --info: #2563eb;
   --info-soft: #eff6ff;
@@ -81,8 +83,14 @@ body {
 }
 
 /* Focus ring cam cho mọi phần tử tương tác (mục 6). */
+/* Mọi ô nhập dùng viền đạt 3:1 (ghi đè lớp border-border trên ô nhập). Hộp chọn/radio giữ kiểu trình duyệt. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea { border-color: var(--border-input) !important; }
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus { border-color: var(--brand) !important; }
+[aria-invalid="true"] { border-color: var(--danger) !important; }
+
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--brand-ring);
+  /* WCAG 1.4.11: viền focus ≥ 3:1 so với nền — --brand-ring (#fdba74) chỉ ~1,8:1 nên dùng --brand. */
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
