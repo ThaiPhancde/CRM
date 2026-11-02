@@ -22,7 +22,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/don-hang", label: "Đơn hàng", icon: "bag", perm: "order.view" },
       { href: "/xac-minh", label: "Cần xác minh", icon: "alert", anyPerm: ["order.link", "customer.merge"] },
-      { href: "/van-don", label: "Vận đơn", icon: "truck", phase: 10 },
+      { href: "/van-don", label: "Vận đơn", icon: "truck", perm: "fulfillment.view" },
       { href: "/san-pham", label: "Sản phẩm", icon: "box", perm: "product.view" },
     ],
   },

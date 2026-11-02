@@ -52,7 +52,7 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
   const due = lead.firstResponseDueAt ?? new Date(lead.createdAt.getTime() + r.firstResponseHours * 3600000);
   if (!teamId) {
     await client.lead.update({ where: { id: lead.id }, data: { firstResponseDueAt: due } });
-    await alertLeads(client, null, "chưa có quy tắc phân nhóm khớp brand/market", now);
+    await alertLeads(client, lead.workspaceId, null, "chưa có quy tắc phân nhóm khớp brand/market", now);
     return null;
   }
   const members = await client.membership.findMany({ where: { teamId, active: true, roles: { has: "SALES" }, user: { active: true } }, select: { userId: true } });
@@ -69,7 +69,7 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
 
   await client.lead.update({ where: { id: lead.id }, data: { teamId, ownerId: pick ?? null, firstResponseDueAt: due } });
   if (!pick) {
-    await alertLeads(client, teamId, ids.length ? `mọi Sales trong nhóm đã đủ ${r.maxOpenPerUser} lead mở` : "nhóm chưa có Sales", now);
+    await alertLeads(client, lead.workspaceId, teamId, ids.length ? `mọi Sales trong nhóm đã đủ ${r.maxOpenPerUser} lead mở` : "nhóm chưa có Sales", now);
     return null;
   }
   await client.assignment.create({ data: { leadId: lead.id, toUserId: pick, teamId, reason: "Tự động: ít lead mở nhất trong nhóm" } as never });
@@ -82,10 +82,11 @@ export async function autoAssign(client: Db, leadId: string, now = new Date()): 
  * Báo Trưởng nhóm (của nhóm) hoặc Quản lý (khi chưa có nhóm) rằng có lead chưa giao được. GỘP theo giờ: một thông báo/người/nhóm/giờ
  * thay vì một thông báo mỗi lead — 500 lead dồn lại không thành 500 thông báo (D-49).
  */
-async function alertLeads(client: Db, teamId: string | null, why: string, now: Date) {
+async function alertLeads(client: Db, workspaceId: string, teamId: string | null, why: string, now: Date) {
   const hour = Math.floor(now.getTime() / 3600000);
+  // Membership không tự gắn workspace (lib/db TENANT_MODELS) → lọc workspace tường minh, không báo Quản lý của team khác.
   const to = await client.membership.findMany({
-    where: teamId ? { teamId, active: true, roles: { has: "SALES_LEAD" } } : { active: true, roles: { has: "MANAGER" } },
+    where: teamId ? { teamId, active: true, roles: { has: "SALES_LEAD" } } : { workspaceId, active: true, roles: { has: "MANAGER" } },
     select: { userId: true },
   });
   for (const m of to)

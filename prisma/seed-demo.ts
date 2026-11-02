@@ -11,6 +11,7 @@ import { workspaceDb } from "../src/lib/db";
 import { seedSales } from "../scripts/seed-sales";
 import { seedService } from "../scripts/seed-service";
 import { seedMarketing } from "../scripts/seed-marketing";
+import { seedFulfillment } from "../scripts/seed-fulfillment";
 
 const db = new PrismaClient();
 type Catalog = { products: { code: string; brand: string; category: string; name_vi: string; name_en: string; name_ar?: string; variants: { sku: string; attributes: Record<string, string>; cost_usd: string }[] }[] };
@@ -69,6 +70,8 @@ async function main() {
   console.log("chăm sóc:", await seedService());
   // Phase 7: phân khúc, hành trình mua lại, chiến dịch (cần chỉ số/điểm Phase 6 — worker dựng; thiếu thì phân khúc rỗng tới lượt worker kế).
   console.log("marketing:", await seedMarketing());
+  // Phase 10: bảng đối soát COD (mốc tiền về) cho COD đã thu quá 14 ngày.
+  console.log("đối soát COD:", await seedFulfillment());
   console.log(`xong: đơn=${orders} liên kết nguồn=${links} đơn chờ xác minh=${reviews} khách=${customers} khách chờ xác minh=${customerReviews}`);
 }
 

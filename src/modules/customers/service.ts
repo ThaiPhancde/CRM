@@ -13,6 +13,7 @@ import { ticketWhere } from "@/modules/service/scope";
 import { scoresFor } from "@/modules/scoring/service";
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { refreshCustomerStats } from "./resolve";
+import { codStage, codSteps } from "@/modules/fulfillment/milestones";
 
 export const CUSTOMER_PAGE_SIZE = 50;
 
@@ -128,7 +129,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
       preferences: { orderBy: { changedAt: "desc" } },
       orders: {
         orderBy: { bookedAt: "desc" },
-        include: { store: { select: { name: true, platform: true } }, items: { select: { qty: true, qtyDelivered: true, qtyReturned: true, sourceSku: true, name: true } }, shipments: { include: { events: true } }, refunds: true },
+        include: { store: { select: { name: true, platform: true } }, items: { select: { qty: true, qtyDelivered: true, qtyReturned: true, sourceSku: true, name: true } }, shipments: { include: { events: true } }, refunds: true, settlementLines: { include: { settlement: { select: { reference: true } } } } },
       },
     },
   });
@@ -156,6 +157,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
       if (!["DELIVERED", "FAILED", "RETURNED", "COD_COLLECTED"].includes(e.type)) continue;
       timeline.push({ at: e.occurredAt.toISOString(), kind: "delivery", title: `${EVENT_TITLE[e.type]} · ${o.orderNumber}`, detail: (e.reasonCode ? (FAILURE_REASON[e.reasonCode] ?? e.reasonCode) : null) ?? s.carrier ?? undefined, href: `/don-hang/${o.id}`, tone: e.type === "DELIVERED" || e.type === "COD_COLLECTED" ? "success" : "danger" });
     }
+    for (const l of o.settlementLines) timeline.push({ at: l.remittedAt.toISOString(), kind: "delivery", title: `COD đã về · ${o.orderNumber}`, detail: `Bảng đối soát ${l.settlement.reference}${money ? ` · ${l.amount.toString()} ${l.currency}` : ""}`, href: `/don-hang/${o.id}`, tone: "success" });
     for (const r of o.refunds) timeline.push({ at: r.refundedAt.toISOString(), kind: "refund", title: `Hoàn tiền · ${o.orderNumber}`, detail: money ? `${r.amount.toString()} ${r.currency}` : undefined, href: `/don-hang/${o.id}`, tone: "danger" });
   }
   for (const m of merges) {
@@ -203,6 +205,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
       id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), store: o.store.name, platform: o.store.platform,
       status: o.status, paymentStatus: o.paymentStatus, fulfillmentStatus: o.fulfillmentStatus, currency: o.currency,
       net: money ? o.netAmount.toString() : null, netBase: money ? o.netBase.toString() : null,
+      cod: codStage(codSteps({ bookedAt: o.bookedAt, netAmount: o.netAmount.toString(), status: o.status }, o.shipments.map((s) => ({ ...s, codAmount: s.codAmount?.toString() ?? null })), o.settlementLines.map((l) => ({ trackingNo: l.trackingNo, amount: l.amount.toString(), remittedAt: l.remittedAt, reference: l.settlement.reference })))),
     })),
     identities: c.identities.map((i) => ({
       id: i.id, platform: i.platform, store: i.connectionId ? (storeOf.get(i.connectionId) ?? null) : null, sourceCustomerId: i.sourceCustomerId,

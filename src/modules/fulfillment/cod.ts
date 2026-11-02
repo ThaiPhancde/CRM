@@ -207,3 +207,21 @@ export async function orderCodSteps(u: SessionUser, orderIds: string[]) {
     return [o.id, steps && !money ? steps.map((s) => ({ ...s, amount: null })) : steps];
   }));
 }
+
+/** Bảng đối soát gần đây (trang Đối soát). */
+export async function recentSettlements(u: SessionUser, take = 10) {
+  requirePerm(u, "fulfillment.view");
+  const rows = await db.settlement.findMany({ orderBy: { createdAt: "desc" }, take, select: { id: true, carrier: true, reference: true, createdAt: true, createdById: true, lines: { select: { amount: true, currency: true, remittedAt: true } } } });
+  const users = new Map((await db.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.createdById).filter(Boolean))] as string[] } }, select: { id: true, name: true } })).map((x) => [x.id, x.name]));
+  const money = can(u.roles, "finance.view");
+  return rows.map((r) => {
+    const byCur = new Map<string, Prisma.Decimal>();
+    for (const l of r.lines) byCur.set(l.currency, (byCur.get(l.currency) ?? new D(0)).add(l.amount));
+    const days = r.lines.map((l) => day(l.remittedAt)).sort();
+    return {
+      id: r.id, carrier: r.carrier, reference: r.reference, createdAt: r.createdAt.toISOString(), by: r.createdById ? (users.get(r.createdById) ?? "—") : "—",
+      lines: r.lines.length, from: days[0] ?? null, to: days.at(-1) ?? null,
+      totals: money ? [...byCur].map(([currency, v]) => ({ currency, amount: v.toString() })) : null,
+    };
+  });
+}

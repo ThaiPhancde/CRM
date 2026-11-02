@@ -28,6 +28,7 @@ export function codSteps(order: { bookedAt: Date | string; netAmount: string; st
   const failed = cod.some((s) => s.status === "FAILED" || s.status === "RETURNED");
   const collected = cod.filter((s) => s.collectedAt);
   const remitted = cod.flatMap((s) => lines.filter((l) => l.trackingNo === s.trackingNo));
+  const remittedShipments = cod.filter((s) => lines.some((l) => l.trackingNo === s.trackingNo)).length;
   const all = cod.length;
   const state = (n: number, blocked: boolean): StepState => (n === all ? "done" : n > 0 ? "partial" : blocked ? "skipped" : "pending");
   const cancelled = order.status === "CANCELLED";
@@ -39,7 +40,19 @@ export function codSteps(order: { bookedAt: Date | string; netAmount: string; st
       note: dState === "failed" ? "Giao thất bại / hoàn — không có mốc thu và về tiền" : undefined },
     { key: "collected", label: "Đã thu COD", metric: "CASH-01", state: state(collected.length, noDelivery), at: latest(collected.map((s) => s.collectedAt)),
       amount: collected.length ? addDec(collected.map((s) => s.codAmount!)) : null },
-    { key: "remitted", label: "Đã về (đối soát)", metric: "CASH-02 · REV-04", state: state(remitted.length, noDelivery), at: latest(remitted.map((l) => l.remittedAt)),
+    { key: "remitted", label: "Đã về (đối soát)", metric: "CASH-02 · REV-04", state: state(remittedShipments, noDelivery), at: latest(remitted.map((l) => l.remittedAt)),
       amount: remitted.length ? addDec(remitted.map((l) => l.amount)) : null, note: remitted.length ? `Bảng ${[...new Set(remitted.map((l) => l.reference))].join(", ")}` : undefined },
   ];
+}
+
+/** Mốc COD xa nhất đã đạt — một nhãn ngắn cho bảng đơn của khách. null khi không phải COD. */
+export function codStage(steps: CodStep[] | null): { label: string; at: string | null; tone: "success" | "warning" | "danger" | "neutral" } | null {
+  if (!steps) return null;
+  const [booked, delivered, collected, remitted] = steps;
+  if (booked.state === "failed") return { label: "Đơn hủy", at: null, tone: "neutral" };
+  if (delivered.state === "failed") return { label: "Giao thất bại", at: null, tone: "danger" };
+  if (remitted.state === "done") return { label: "Đã về", at: remitted.at, tone: "success" };
+  if (collected.state === "done" || collected.state === "partial") return { label: remitted.state === "partial" ? "Về một phần" : "Đã thu, chờ về", at: collected.at, tone: "warning" };
+  if (delivered.state === "done" || delivered.state === "partial") return { label: "Đã giao, chờ thu", at: delivered.at, tone: "warning" };
+  return { label: "Đang giao", at: null, tone: "neutral" };
 }

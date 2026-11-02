@@ -14,6 +14,7 @@ import { pct, pivotCohort, rangeParams, todayVN, toReportCurrency, type CohortRo
 import { dsum, labels, n, nn, params, revenueCube, revenueRows, type RevenueRow } from "./revenue";
 import { reportScope } from "./scope";
 import { reasonLabel } from "@/modules/fulfillment/reasons";
+import { codSummary } from "@/modules/fulfillment/cod";
 
 export const REPORT_GROUP_KEYS = ["sales", "khach-hang", "marketing", "van-don", "tai-chinh", "ai"] as const;
 export type ReportGroupKey = (typeof REPORT_GROUP_KEYS)[number];
@@ -211,10 +212,11 @@ export async function reportSheets(u: SessionUser, g: ReportGroupKey, f: ReportF
   const m = (k: string, h: string) => ({ key: k, header: `${h} (${cur})`, money: true });
   switch (g) {
     case "tai-chinh": {
-      const d = await financeReport(u, f, ctx);
+      const [d, cod] = await Promise.all([financeReport(u, f, ctx), codSummary(u, f, ctx.rate?.rateToBase ?? null)]);
       return { title: "Tài chính quản trị", sheets: [
         { name: "Doanh thu", columns: [{ key: "label", header: "Nhóm" }, { key: "orders", header: "Số đơn đặt" }, m("rev01", "REV-01"), m("rev02", "REV-02"), m("rev03", "REV-03"), m("rev04", "REV-04"), m("refunds", "Hoàn")], rows: d.rows },
         { name: "Theo nguyên tệ", columns: [{ key: "label", header: "Tiền tệ" }, { key: "orig01", header: "REV-01 nguyên tệ" }, { key: "fx01", header: "Tỷ giá TB đã dùng (VND)" }, m("rev01", "REV-01"), { key: "orig03", header: "REV-03 nguyên tệ" }, m("rev03", "REV-03")], rows: d.byCurrency },
+        { name: "COD theo hãng", columns: [{ key: "key", header: "Hãng" }, { key: "n01", header: "Vận đơn đã thu" }, m("cash01", "CASH-01 đã thu"), m("cash02", "CASH-02 đã về"), m("cash03", "CASH-03 đang kẹt cuối kỳ"), m("age61", "Kẹt > 60 ngày")], rows: cod.byCarrier },
       ] };
     }
     case "sales": {

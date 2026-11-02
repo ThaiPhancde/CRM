@@ -19,8 +19,9 @@ export class PasteError extends Error {}
 
 /** Bảng dán → các dòng có dữ liệu (rowNo = số dòng trong bảng gốc, tính cả tiêu đề). Lỗi cấu trúc → PasteError. */
 export function parseSettlementPaste(text: string): PasteRow[] {
-  const lines = text.replace(/^﻿/, "").split(/\r?\n/);
-  while (lines.length && !lines[0].trim()) lines.shift();
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+  let skipped = 0;
+  while (lines.length && !lines[0].trim()) (lines.shift(), skipped++);
   if (!lines.length) throw new PasteError("Chưa dán dữ liệu");
   const sep = lines[0].includes("\t") ? "\t" : ",";
   // ponytail: CSV tách phẩy đơn giản, không hiểu ô có ngoặc kép — số tiền có dấu phẩy nghìn thì dán dạng tab từ Excel.
@@ -29,7 +30,7 @@ export function parseSettlementPaste(text: string): PasteRow[] {
   if (!cols.includes("amount") || !cols.includes("date") || !(cols.includes("tracking") || cols.includes("order")))
     throw new PasteError("Thiếu cột: cần ma_van_don hoặc ma_don, so_tien, ngay_ve (dòng đầu là tiêu đề)");
   const rows = body
-    .map((cells, i) => ({ rowNo: i + 2, raw: Object.fromEntries(cols.flatMap((k, j) => (k && cells[j]?.trim() ? [[k, cells[j].trim()]] : []))) as SettlementRaw }))
+    .map((cells, i) => ({ rowNo: i + 2 + skipped, raw: Object.fromEntries(cols.flatMap((k, j) => (k && cells[j]?.trim() ? [[k, cells[j].trim()]] : []))) as SettlementRaw }))
     .filter((r) => Object.keys(r.raw).length);
   if (!rows.length) throw new PasteError("Bảng chưa có dòng dữ liệu");
   if (rows.length > MAX_ROWS) throw new PasteError(`Tối đa ${MAX_ROWS} dòng mỗi lần`);
@@ -43,7 +44,7 @@ export function parseSettlementPaste(text: string): PasteRow[] {
  */
 export function parseAmount(s: string | undefined): string | null {
   if (s == null) return null;
-  let t = s.trim().replace(/[\s ]/g, "").replace(/^[A-Za-z]{3}|[A-Za-z]{3}$/g, "");
+  let t = s.trim().replace(/[\s\u00a0]/g, "").replace(/^[A-Za-z]{3}|[A-Za-z]{3}$/g, "");
   if (!t || !/^[\d.,]+$/.test(t)) return null;
   const lastDot = t.lastIndexOf("."), lastComma = t.lastIndexOf(",");
   if (lastDot >= 0 && lastComma >= 0) {
@@ -53,6 +54,7 @@ export function parseAmount(s: string | undefined): string | null {
     if (dec === ",") t = t.replace(",", ".");
   } else if (lastComma >= 0) {
     const parts = t.split(",");
+    if (parts.length > 2 && parts.slice(1).some((p) => p.length !== 3)) return null; // "12,34,56" — không phải nhóm nghìn
     t = parts.length > 2 || parts[1].length === 3 ? parts.join("") : parts.join(".");
   }
   if ((t.match(/\./g) ?? []).length > 1) return null;
@@ -60,14 +62,14 @@ export function parseAmount(s: string | undefined): string | null {
   return t.replace(/^0+(?=\d)/, "");
 }
 
-/** "dd/mm/yyyy" hoặc "yyyy-mm-dd" (giờ "hh:mm" tùy chọn, coi là UTC như mọi mốc của báo cáo) → Date; ngày không có thật → null. */
+/** "dd/mm/yyyy" hoặc "yyyy-mm-dd" (giờ "hh:mm[:ss]" tùy chọn, coi là UTC như mọi mốc của báo cáo; giây bỏ qua) → Date; ngày/giờ không có thật → null. */
 export function parseDay(s: string | undefined): Date | null {
   const t = s?.trim() ?? "";
-  let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T]+(\d{1,2}):(\d{2})(?::\d{2})?)?$/);
+  let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T]+(\d{1,2}):(\d{2})(?::[0-5]\d)?)?$/);
   let y: number, mo: number, d: number, h = 0, mi = 0;
   if (m) [d, mo, y, h, mi] = [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4] ?? 0), Number(m[5] ?? 0)];
   else {
-    m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T]+(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?Z?)?$/);
+    m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T]+(\d{1,2}):(\d{2})(?::[0-5]\d(?:\.\d+)?)?Z?)?$/);
     if (!m) return null;
     [y, mo, d, h, mi] = [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4] ?? 0), Number(m[5] ?? 0)];
   }

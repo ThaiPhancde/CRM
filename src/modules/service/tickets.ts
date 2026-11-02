@@ -315,14 +315,18 @@ export async function remindTicketSla(client: Db, now = new Date()) {
     await client.notification.createMany({ data: soon.map((t) => ({ userId: t.ownerId, title: `Sắp quá hạn: ${t.code}`, body: `Hạn xử lý ${dateTime(t.resolveDueAt)}`, link: `/cham-soc/${t.id}`, idempotencyKey: `ticket-soon:${t.id}` })) as never, skipDuplicates: true });
     await client.ticket.updateMany({ where: { id: { in: soon.map((t) => t.id) } }, data: { dueSoonNotifiedAt: now } });
   }
-  const late = await client.ticket.findMany({ where: { ...open, breachNotifiedAt: null, resolveDueAt: { lt: now } }, select: { id: true, code: true, ownerId: true, teamId: true }, take: 1000 });
+  const late = await client.ticket.findMany({ where: { ...open, breachNotifiedAt: null, resolveDueAt: { lt: now } }, select: { id: true, code: true, ownerId: true, teamId: true, workspaceId: true }, take: 1000 });
   if (late.length) {
     const leadsOf = new Map<string, string[]>();
-    for (const team of new Set(late.map((t) => t.teamId ?? "none"))) {
-      const ms = await client.membership.findMany({ where: team === "none" ? { active: true, roles: { has: "MANAGER" } } : { teamId: team, active: true, roles: { has: "SALES_LEAD" } }, select: { userId: true } });
-      leadsOf.set(team, ms.map((m) => m.userId));
+    // Membership không tự gắn workspace → ticket chưa có nhóm báo Quản lý CỦA workspace đó, không phải mọi Quản lý.
+    const keyOf = (t: { teamId: string | null; workspaceId: string }) => t.teamId ?? `none:${t.workspaceId}`;
+    for (const t of late) {
+      const k = keyOf(t);
+      if (leadsOf.has(k)) continue;
+      const ms = await client.membership.findMany({ where: t.teamId ? { teamId: t.teamId, active: true, roles: { has: "SALES_LEAD" } } : { workspaceId: t.workspaceId, active: true, roles: { has: "MANAGER" } }, select: { userId: true } });
+      leadsOf.set(k, ms.map((m) => m.userId));
     }
-    const rows = late.flatMap((t) => [...new Set([...(t.ownerId ? [t.ownerId] : []), ...(leadsOf.get(t.teamId ?? "none") ?? [])])].map((u) => ({ userId: u, title: `Quá hạn xử lý: ${t.code}`, link: `/cham-soc/${t.id}`, idempotencyKey: `ticket-breach:${t.id}:${u}` })));
+    const rows = late.flatMap((t) => [...new Set([...(t.ownerId ? [t.ownerId] : []), ...(leadsOf.get(keyOf(t)) ?? [])])].map((u) => ({ userId: u, title: `Quá hạn xử lý: ${t.code}`, link: `/cham-soc/${t.id}`, idempotencyKey: `ticket-breach:${t.id}:${u}` })));
     if (rows.length) await client.notification.createMany({ data: rows as never, skipDuplicates: true });
     await client.ticket.updateMany({ where: { id: { in: late.map((t) => t.id) } }, data: { breachNotifiedAt: now } });
   }

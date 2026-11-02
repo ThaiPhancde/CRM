@@ -268,4 +268,16 @@ describe("Chịu tải — luồng lead ở khối lượng lớn (D-49)", () =>
     const won = b.columns.find((c) => c.stage === "DA_MUA")!;
     expect([won.closed, won.total, won.rows.length]).toEqual([true, 1, 0]);
   });
+
+  it("lead / ticket chưa có nhóm chỉ báo Quản lý của chính workspace (Membership không tự gắn workspace)", async () => {
+    const other = await makeWorkspace("iso-other");
+    const outsider = await makeUser(`iso-mgr-${RUN}`, { workspaceId: other.id, roles: ["MANAGER"] });
+    const s = await setup("iso", { rules: [{ market: "AE", team: "A" }], maxOpenPerUser: 1 });
+    await s.newLead(s.mgr, { marketId: s.de.id }); // không quy tắc khớp → báo Quản lý
+    const t = await s.c.ticket.create({ data: { code: `TK-ISO-${RUN}`, type: "KHAC", priority: "TRUNG", subject: "x", firstResponseDueAt: h(-5), resolveDueAt: h(-1) } as never });
+    const { remindTicketSla } = await import("@/modules/service/tickets");
+    await remindTicketSla(s.c, h(0));
+    expect(await rootDb.notification.count({ where: { userId: outsider.id } })).toBe(0);
+    expect(await s.c.notification.count({ where: { userId: s.mgr.id, OR: [{ title: "Có lead chưa giao được" }, { title: { contains: t.code } }] } })).toBe(2);
+  });
 });

@@ -43,3 +43,5 @@ export function normalizeReason(raw: string | null | undefined): FailureReason |
   for (const [code, list] of PHRASES) if (list.some((p) => f.includes(` ${fold(p)} `))) return code;
   return "other";
 }
+
+export const DELIVERY_ACTION_LABEL: Record<string, string> = { REATTEMPT: "Yêu cầu giao lại", CANCEL: "Yêu cầu hủy", TICKET: "Chuyển ticket" };

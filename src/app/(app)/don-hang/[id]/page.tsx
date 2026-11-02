@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { pageUser } from "@/lib/current-user";
 import { HttpError } from "@/lib/errors";
 import { getOrder } from "@/modules/orders/service";
+import { orderCodSteps } from "@/modules/fulfillment/cod";
+import { deliveryActions } from "@/modules/fulfillment/service";
+import { DELIVERY_ACTION_LABEL } from "@/modules/fulfillment/reasons";
+import { bindTenant } from "@/lib/db";
+import { CodSteps } from "../../van-don/cod-steps";
 import { DELIVERY_EVENT, EVENT_OUTCOME, FAILURE_REASON, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, RETURN_STATUS, pickBadge } from "@/lib/status-badge";
 import { dateTime, money, base } from "@/lib/format";
 import { Badge, ButtonLink, Card, PageHeader, SectionTitle, type Tone } from "@/components/ui";
@@ -18,6 +23,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     throw e;
   }
   const { order: o, events, showMoney, pendingReviews } = data;
+  bindTenant(user);
+  const [codMap, actions] = await Promise.all([orderCodSteps(user, [o.id]), deliveryActions(o.id)]);
+  const cod = codMap.get(o.id);
   const m = (v: string | null) => (showMoney ? money(v, o.currency) : "—");
   const platformOf = new Map(o.links.map((l) => [l.connectionId, l.connection.store.name]));
   const timeline = o.shipments.flatMap((s) => s.events.map((e) => ({ ...e, carrier: s.carrier }))).sort((a, b) => +new Date(a.occurredAt) - +new Date(b.occurredAt));
@@ -95,6 +103,28 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </ol>
             )}
           </Card>
+
+          {cod && (
+            <Card>
+              <SectionTitle>COD — bốn mốc</SectionTitle>
+              <div className="px-4 py-3"><CodSteps steps={cod} currency={o.currency} /></div>
+              <p className="border-t border-border px-4 py-2 text-xs text-fg-subtle">Đã thu theo sự kiện của hãng (COD_COLLECTED); đã về theo bảng đối soát nhập ở Vận đơn. REV-04 chỉ tính khi đã về.</p>
+            </Card>
+          )}
+
+          {actions.length > 0 && (
+            <Card>
+              <SectionTitle>Xử lý giao thất bại ({actions.length})</SectionTitle>
+              <ul className="divide-y divide-border">
+                {actions.map((a) => (
+                  <li key={a.id} className="px-4 py-2.5 text-sm">
+                    <p className="text-fg"><span className="font-medium">{DELIVERY_ACTION_LABEL[a.kind] ?? a.kind}</span> <span className="text-fg-muted">sau lần thất bại {dateTime(a.failedAt)} · {a.reasonLabel}</span></p>
+                    <p className="text-xs text-fg-muted">{a.by} · {dateTime(a.createdAt)}{a.note ? ` · ${a.note}` : ""}{a.ticketId && <> · <Link href={`/cham-soc/${a.ticketId}`} className="text-brand-active hover:underline">Mở ticket</Link></>}</p>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
 
           <Card>
             <SectionTitle>Nhật ký bản ghi nguồn</SectionTitle>

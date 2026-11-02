@@ -457,11 +457,11 @@ export default async function CustomerProfilePage({
                 <caption className="sr-only">Danh sách đơn hàng của khách hàng</caption>
                 <thead className="sticky top-0 z-[var(--z-sticky)] bg-bg-subtle">
                   <tr className="text-left text-xs font-medium text-fg-muted">
-                    {["Mã đơn", "Ngày đặt", "Shop", "Đơn", "Thanh toán", "Giao hàng", "Giá trị"].map((h, i) => (
+                    {["Mã đơn", "Ngày đặt", "Shop", "Đơn", "Thanh toán", "Giao hàng", "COD", "Giá trị"].map((h, i) => (
                       <th
                         key={h}
                         scope="col"
-                        className={cx("h-10 border-b border-border px-4 whitespace-nowrap", i === 6 && "text-right")}
+                        className={cx("h-10 border-b border-border px-4 whitespace-nowrap", i === 7 && "text-right")}
                       >
                         {h}
                       </th>
@@ -489,6 +489,16 @@ export default async function CustomerProfilePage({
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <StatusBadge map={FULFILLMENT_STATUS} value={o.fulfillmentStatus} />
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        {o.cod ? (
+                          <>
+                            <Badge tone={o.cod.tone}>{o.cod.label}</Badge>
+                            {o.cod.at && <p className="tabular mt-0.5 text-xs text-fg-subtle">{dateTime(o.cod.at)}</p>}
+                          </>
+                        ) : (
+                          <span className="text-fg-subtle" title="Đơn trả trước">—</span>
+                        )}
                       </td>
                       <td className="tabular px-4 py-2.5 text-right whitespace-nowrap">
                         {showMoney && o.net != null ? (

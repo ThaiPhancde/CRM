@@ -4,11 +4,12 @@ import { money } from "@/lib/format";
 import type { SessionUser } from "@/lib/session";
 import type { ReportFilter } from "@/modules/reports/period";
 import { financeReport, type ReportContext } from "@/modules/reports/service";
+import { codSummary } from "@/modules/fulfillment/cod";
 import { ReportChart } from "../../report-chart";
 import { Metric, ReportTable } from "../../report-ui";
 
 export async function FinanceSection({ user, f, ctx }: { user: SessionUser; f: ReportFilter; ctx: ReportContext }) {
-  const d = await financeReport(user, f, ctx);
+  const [d, cod] = await Promise.all([financeReport(user, f, ctx), codSummary(user, f, ctx.rate?.rateToBase ?? null)]);
   const cur = ctx.currency;
   const m = (code: string, label: string) => <span className="inline-flex items-center gap-1.5">{label} <Metric code={code} defs={ctx.definitions} /></span>;
   return (
@@ -45,6 +46,17 @@ export async function FinanceSection({ user, f, ctx }: { user: SessionUser; f: R
           { key: "orig03", header: "REV-03 nguyên tệ", cell: (r) => money(r.orig03, r.key) },
           { key: "rev03", header: `REV-03 (${cur})`, fmt: "money" },
         ]} />
+      <ReportTable title="COD theo hãng vận chuyển" caption="COD đã thu, đã về trong kỳ và đang kẹt cuối kỳ theo hãng" currency={cur} rows={cod.byCarrier} total={cod.total ?? undefined}
+        cols={[
+          { key: "key", header: "Hãng" },
+          { key: "n01", header: "Vận đơn đã thu", fmt: "number" },
+          { key: "cash01", header: m("CASH-01", "Đã thu"), fmt: "money" },
+          { key: "cash02", header: m("CASH-02", "Đã về"), fmt: "money" },
+          { key: "cash03", header: m("CASH-03", "Đang kẹt cuối kỳ"), fmt: "money" },
+          { key: "age61", header: "Kẹt > 60 ngày", fmt: "money" },
+        ]}
+        empty="Không có COD trong kỳ và phạm vi đã chọn."
+        actions={<span className="text-xs text-fg-muted">CASH-02 là phần COD của REV-04; CASH-03 là số tồn tại cuối kỳ</span>} />
     </>
   );
 }
