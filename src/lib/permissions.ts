@@ -69,8 +69,20 @@ const MATRIX = {
   "knowledge.publish": ["MANAGER", "SALES_LEAD", "MARKETING"],
   /** Đổi trọng số điểm (tạo phiên bản mới), tính lại điểm ngay (Phase 6). */
   "score.config": ["MANAGER"],
-  /** Báo cáo bán hàng cấp team (Phase 8: tool hoi_bao_cao; Phase 9: /bao-cao). Sales chỉ báo cáo cá nhân — có ở Phase 9. */
-  "report.sales": ["MANAGER", "SALES_LEAD", "MARKETING", "FINANCE_VIEW"],
+  /** Báo cáo bán hàng (/bao-cao/sales). Sales chỉ thấy kết quả của chính mình — service ép phạm vi (reportScope). */
+  "report.sales": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FINANCE_VIEW"],
+  /** Báo cáo khách hàng: RFM, cohort mua lại, giá trị theo hạng. */
+  "report.customer": ["MANAGER", "SALES_LEAD", "MARKETING", "FINANCE_VIEW"],
+  /** Báo cáo marketing: nguồn lead, chiến dịch, chi phí/lead. */
+  "report.marketing": ["MANAGER", "MARKETING", "FINANCE_VIEW"],
+  /** Báo cáo vận đơn: giao thành công/thất bại/hoàn, thời gian giao, COD. */
+  "report.fulfillment": ["MANAGER", "FULFILLMENT", "FINANCE_VIEW"],
+  /** Báo cáo tài chính quản trị (cần cả finance.view để thấy số tiền). */
+  "report.finance": ["MANAGER", "FINANCE_VIEW"],
+  /** Báo cáo AI: mức dùng, chất lượng, chi phí. */
+  "report.ai": ["MANAGER"],
+  /** Xuất Excel báo cáo đang xem. */
+  "report.export": ["MANAGER", "SALES_LEAD", "MARKETING", "FULFILLMENT", "PURCHASING_VIEW", "FINANCE_VIEW"],
   /** Dùng trợ lý AI (tóm tắt, tìm tự nhiên, soạn phản hồi, tạo việc, hỏi báo cáo). Tool vẫn kiểm quyền riêng từng thao tác. */
   "ai.run": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT"],
   /** Duyệt thao tác AI cần duyệt (giao việc ngoài phạm vi, sửa hồ sơ theo đề xuất) — Q-32. */

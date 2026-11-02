@@ -15,6 +15,7 @@ import { listOrders, orderFilter } from "@/modules/orders/service";
 import { leadEditWhere } from "@/modules/sales/scope";
 import { createTask } from "@/modules/sales/tasks";
 import { getCustomerScores } from "@/modules/scoring/service";
+import { reportScope } from "@/modules/reports/scope";
 import { redactDeep, redactText } from "./redact";
 
 const isDenied = (e: unknown) => e instanceof HttpError && e.status === 403;
@@ -71,6 +72,7 @@ export const TOOLS = {
     schema: z.object({ metric: z.enum(["REV-01", "REV-02", "REV-03", "REV-04"]), groupBy: z.enum(["market", "none"]).default("none") }),
     run: async (u, a) => {
       requirePerm(u, "report.sales");
+      if (reportScope(u) !== "team") throw new HttpError(403, "Báo cáo doanh thu cấp team cần vai Quản lý/Trưởng nhóm/Marketing/Kế toán");
       const wh = getWarehouse();
       const col = `rev0${a.metric.slice(-1)}` as "rev01";
       const [rows, asOf] = await Promise.all([wh.revenueSummary(u.workspaceId, col, a.groupBy), wh.freshness(u.workspaceId)]);

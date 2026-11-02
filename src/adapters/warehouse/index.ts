@@ -10,6 +10,8 @@ export interface Warehouse {
   readonly dialect: Dialect;
   /** Truy vấn đọc (báo cáo Phase 9). SQL viết bằng dialect(); tham số dạng @ten. */
   query<T = Record<string, unknown>>(sql: string, params: Record<string, unknown>): Promise<T[]>;
+  /** Truy vấn báo cáo chỉ đọc, giới hạn thời gian (tương đương tài khoản chỉ đọc — HLD §9.2). */
+  read<T = Record<string, unknown>>(sql: string, params: Record<string, unknown>): Promise<T[]>;
   /** Dựng lại CustomerMetric kỳ R12M tới asOf cho một team. */
   refreshCustomerMetrics(workspaceId: string, asOf: Date): Promise<{ customers: number; ms: number }>;
   /** Mốc dữ liệu chỉ số mới nhất của team (null = chưa dựng). */
@@ -23,6 +25,15 @@ class PostgresWarehouse implements Warehouse {
   async query<T>(sql: string, params: Record<string, unknown>) {
     const b = this.dialect.bind(sql, params);
     return rootDb.$queryRawUnsafe<T[]>(b.sql, ...b.values);
+  }
+  async read<T>(sql: string, params: Record<string, unknown>) {
+    const b = this.dialect.bind(sql, params);
+    return rootDb.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe("SET TRANSACTION READ ONLY");
+      await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '15s'");
+      await tx.$executeRawUnsafe("SET LOCAL work_mem = '64MB'");
+      return tx.$queryRawUnsafe<T[]>(b.sql, ...b.values);
+    }, { timeout: 20_000 });
   }
   async refreshCustomerMetrics(workspaceId: string, asOf: Date) {
     const t = Date.now();
@@ -61,6 +72,7 @@ class BigQueryWarehouse implements Warehouse {
     throw new HttpError(501, "BigQuery chưa bật: cần GOOGLE_APPLICATION_CREDENTIALS, BIGQUERY_DATASET và gói @google-cloud/bigquery (Phase 12). Dùng WAREHOUSE=postgres cho demo.");
   }
   async query<T>(): Promise<T[]> { return this.notReady(); }
+  async read<T>(): Promise<T[]> { return this.notReady(); }
   async refreshCustomerMetrics(): Promise<{ customers: number; ms: number }> { return this.notReady(); }
   async freshness(): Promise<Date | null> { return this.notReady(); }
   async revenueSummary(): Promise<RevenueRow[]> { return this.notReady(); }

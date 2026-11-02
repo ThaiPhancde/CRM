@@ -16,6 +16,12 @@ export type Dialect = {
   minusDays(x: string, n: number): string;
   plusDays(x: string, n: number): string;
   ts(x: string): string;
+  /** Nhãn tháng 'YYYY-MM' (UTC) của mốc thời gian x. */
+  month(x: string): string;
+  /** Số thứ tự tháng (năm×12 + tháng) — trừ hai giá trị ra số tháng cách nhau. Cú pháp chung hai phương ngữ. */
+  monthIndex(x: string): string;
+  /** Bộ lọc tùy chọn: tham số null → bỏ qua điều kiện. */
+  opt(param: string, col: string): string;
 };
 
 export function dialect(name: DialectName, dataset = "crm"): Dialect {
@@ -38,6 +44,9 @@ export function dialect(name: DialectName, dataset = "crm"): Dialect {
       plusDays: (x, n) => `(${x} + INTERVAL '${n} days')`,
       // Cột Prisma lưu UTC (timestamp không múi giờ); tham số phải quy về UTC, không theo múi giờ phiên DB (máy dev +7).
       ts: (x) => `(CAST(${x} AS TIMESTAMPTZ) AT TIME ZONE 'UTC')`,
+      month: (x) => `TO_CHAR(${x}, 'YYYY-MM')`,
+      monthIndex: (x) => `(EXTRACT(YEAR FROM ${x}) * 12 + EXTRACT(MONTH FROM ${x}))`,
+      opt: (p, col) => `(CAST(@${p} AS TEXT) IS NULL OR ${col} = @${p})`,
     };
   }
   return {
@@ -49,6 +58,9 @@ export function dialect(name: DialectName, dataset = "crm"): Dialect {
     minusDays: (x, n) => `TIMESTAMP_SUB(${x}, INTERVAL ${n} DAY)`,
     plusDays: (x, n) => `TIMESTAMP_ADD(${x}, INTERVAL ${n} DAY)`,
     ts: (x) => `CAST(${x} AS TIMESTAMP)`,
+    month: (x) => `FORMAT_TIMESTAMP('%Y-%m', ${x})`,
+    monthIndex: (x) => `(EXTRACT(YEAR FROM ${x}) * 12 + EXTRACT(MONTH FROM ${x}))`,
+    opt: (p, col) => `(@${p} IS NULL OR ${col} = @${p})`,
   };
 }
 

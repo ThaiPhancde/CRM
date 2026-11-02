@@ -8,7 +8,9 @@ import { piiFor } from "@/lib/pii";
 import { dateTimeCsv } from "@/lib/format";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/lib/status-badge";
 import { requirePerm, type SessionUser } from "@/lib/session";
-import { orderScopeWhere } from "@/modules/sales/scope";
+import { customerScopeWhere, orderScopeWhere } from "@/modules/sales/scope";
+import { todayVN } from "@/modules/reports/period";
+import { revenueRows } from "@/modules/reports/revenue";
 
 export const PAGE_SIZE = 50;
 
@@ -21,9 +23,24 @@ export const orderFilter = z.object({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   multi: z.enum(["1"]).optional(),
+  /** Mốc ngày của bộ lọc kỳ: mặc định ngày đặt (REV-01); "delivered" = ngày giao (REV-03). */
+  anchor: z.enum(["delivered"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
 });
 export type OrderFilter = z.infer<typeof orderFilter>;
+
+/**
+ * REV-03 (giao thành công, theo ngày giao) cho cùng bộ lọc kỳ/shop/thị trường — tính bằng ĐÚNG hàm của báo cáo tài chính để hai nơi khớp số.
+ * Chỉ khi mốc là ngày giao, không lọc thêm trạng thái/chữ/nhiều nguồn, và người xem có phạm vi đơn đầy đủ (Warehouse tính trên cả team).
+ */
+async function rev03For(user: SessionUser, f: OrderFilter, showMoney: boolean): Promise<{ value: string | null; note: string | null }> {
+  if (f.anchor !== "delivered") return { value: null, note: null };
+  if (!showMoney) return { value: null, note: "Cần quyền xem tiền" };
+  if (f.q || f.status || f.fulfillment || f.multi) return { value: null, note: "Bỏ lọc trạng thái/chữ để đối chiếu REV-03" };
+  if (Object.keys(customerScopeWhere(user)).length) return { value: null, note: "REV-03 cấp team chỉ hiện với phạm vi đơn đầy đủ" };
+  const [row] = await revenueRows(user, { from: f.from ?? "2000-01-01", to: f.to ?? todayVN(), brand: null, store: f.store ?? null, market: f.market ?? null, currency: "VND", group: "none" }, "none", null);
+  return { value: String(row?.rev03 ?? 0), note: null };
+}
 
 /** Bộ lọc từ query string; giá trị không hợp lệ bị bỏ qua (không ném lỗi trên trang danh sách). */
 export function parseFilter(sp: Record<string, string | string[] | undefined>): OrderFilter {
@@ -42,7 +59,7 @@ function where(f: OrderFilter, pii: boolean): Prisma.OrderWhereInput {
   if (f.market) w.marketId = f.market;
   if (f.status) w.status = f.status;
   if (f.fulfillment) w.fulfillmentStatus = f.fulfillment;
-  if (f.from || f.to) w.bookedAt = { ...(f.from ? { gte: new Date(f.from) } : {}), ...(f.to ? { lt: new Date(new Date(f.to).getTime() + 86400000) } : {}) };
+  if (f.from || f.to) w[f.anchor === "delivered" ? "deliveredAt" : "bookedAt"] = { ...(f.from ? { gte: new Date(f.from) } : {}), ...(f.to ? { lt: new Date(new Date(f.to).getTime() + 86400000) } : {}) };
   if (f.multi) w.links = { some: { isPrimary: false } };
   if (f.q) {
     const digits = f.q.replace(/\D/g, "");
@@ -81,6 +98,7 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
     showMoney,
     rev01Base: showMoney ? (agg._sum.netBase?.toString() ?? "0") : null,
+    rev03: await rev03For(user, f, showMoney),
     rev01Count: agg._count,
     rows: rows.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: pii.phone(o.customerPhone), customerId: o.customerId,

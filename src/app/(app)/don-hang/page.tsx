@@ -31,10 +31,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         crumbs={[{ label: "Bán hàng" }, { label: "Đơn hàng" }]}
         actions={<ButtonLink href={`/don-hang/xuat${qs({ page: undefined })}`} download>Xuất CSV</ButtonLink>}
       />
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className={`mb-4 grid grid-cols-1 gap-4 ${f.anchor === "delivered" ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
         <StatCard label="Số đơn (theo bộ lọc)" value={num(data.total)} />
         <StatCard label="Giá trị đặt, quy VND" metric="REV-01" value={data.rev01Base != null ? base(data.rev01Base) : "—"}
           hint={data.rev01Base != null ? `${num(data.rev01Count)} đơn chưa hủy · tỷ giá chốt theo ngày đặt` : "Cần quyền xem tiền"} />
+        {f.anchor === "delivered" && (
+          <StatCard label="Giao thành công, quy VND" metric="REV-03" value={data.rev03.value != null ? base(data.rev03.value) : "—"}
+            hint={data.rev03.note ?? "Theo ngày giao · cùng công thức Báo cáo › Tài chính"} />
+        )}
         <StatCard label="Đơn có nhiều nguồn" value={<Link href={qs({ multi: f.multi ? undefined : "1", page: undefined })} className="hover:text-brand">{f.multi ? "Đang lọc" : "Xem"}</Link>} hint="Đơn được liên kết từ hơn một nền tảng" />
       </div>
       <Card>
@@ -46,6 +50,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <Filter label="Thị trường"><Select name="market" value={f.market} options={markets.map((m) => [m.id, `${m.code} · ${m.name}`])} /></Filter>
           <Filter label="Trạng thái"><Select name="status" value={f.status} options={Object.entries(ORDER_STATUS).map(([k, v]) => [k, v.label])} /></Filter>
           <Filter label="Giao hàng"><Select name="fulfillment" value={f.fulfillment} options={Object.entries(FULFILLMENT_STATUS).map(([k, v]) => [k, v.label])} /></Filter>
+          <Filter label="Mốc ngày">
+            <select name="anchor" defaultValue={f.anchor ?? ""} className="h-8 rounded-[var(--radius-sm)] border border-border bg-bg px-2 text-sm">
+              <option value="">Ngày đặt (REV-01)</option>
+              <option value="delivered">Ngày giao (REV-03)</option>
+            </select>
+          </Filter>
           <Filter label="Từ ngày"><input type="date" name="from" defaultValue={f.from} className="h-8 rounded-[var(--radius-sm)] border border-border px-2 text-sm" /></Filter>
           <Filter label="Đến ngày"><input type="date" name="to" defaultValue={f.to} className="h-8 rounded-[var(--radius-sm)] border border-border px-2 text-sm" /></Filter>
           {f.multi && <input type="hidden" name="multi" value="1" />}
