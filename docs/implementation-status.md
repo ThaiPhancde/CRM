@@ -13,7 +13,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 4 Nhu cầu mua + sales | **Đã nghiệm thu** (29/10) | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
 | 5 Dịch vụ + tri thức | **Đã nghiệm thu** (29/10) | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
 | 6 Chỉ số + điểm + Warehouse | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-6.md`) | 29/10/2026 | 230 test xanh; một khách tính tay khớp REV-01..04 + RFM; đo tải 0/41 vượt; Gemini 50% |
-| 7 Journey + marketing | **Xong, chờ nghiệm thu** | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
+| 7 Journey + marketing | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-7.md`) | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
 | 8 Trung tâm AI | Chưa | | |
 | 9 Báo cáo + dashboard | Chưa | | |
 | 10 Vận đơn + sản phẩm | Chưa | | |
