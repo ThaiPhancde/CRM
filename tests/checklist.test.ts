@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { makeUser, makeWorkspace, RUN } from "./helpers";
 import { getWarehouse } from "@/adapters/warehouse";
-import { runInWorkspace, workspaceDb } from "@/lib/db";
+import { rootDb, runInWorkspace, workspaceDb } from "@/lib/db";
 import { loadUser } from "@/lib/session";
 import { askReport } from "@/modules/ai/features";
 
@@ -38,6 +38,13 @@ describe("Checklist mục 12", () => {
     const m = await s.c.customerMetric.findFirstOrThrow({ where: { customerId: s.k.id } });
     expect([m.rev01.toString(), m.rev03.toString(), m.orders, m.deliveredOrders]).toEqual(["800", "300", 3, 2]);
     expect(m.asOf.toISOString()).toBe(T.toISOString());
+  });
+
+  it("bảng nóng (Order, OrderItem, Customer) có ngưỡng autovacuum 1% — mặc định 20% làm trang đơn hàng chậm dần giữa hai lần dọn", async () => {
+    const rows = await rootDb.$queryRawUnsafe<{ relname: string; reloptions: string[] | null }[]>(
+      `SELECT relname, reloptions FROM pg_class WHERE relname IN ('Order','OrderItem','Customer') AND relkind = 'r' ORDER BY relname`);
+    expect(rows.map((r) => [r.relname, [...(r.reloptions ?? [])].sort()])).toEqual(["Customer", "Order", "OrderItem"].map((t) =>
+      [t, ["autovacuum_analyze_scale_factor=0.01", "autovacuum_vacuum_insert_scale_factor=0.01", "autovacuum_vacuum_scale_factor=0.01"]]));
   });
 
   it("báo cáo AI nêu kỳ, phạm vi, nguồn, độ mới; tách dữ kiện và giả thuyết; có bằng chứng dẫn tới định nghĩa chỉ số", async () => {

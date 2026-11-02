@@ -24,7 +24,7 @@
 | 12 | Điểm có phiên bản, lý do, dữ liệu thiếu; không dùng dữ liệu tương lai | scoring "chưa đủ dữ liệu không mặc định rủi ro; đổi trọng số tạo phiên bản mới, điểm cũ giữ"; `tests/checklist.test.ts` (mới) — **tìm ra và sửa lỗi**: đơn giao / khoản hoàn / giao thất bại sau mốc tính từng lọt vào chỉ số | **Đạt** (sau sửa) |
 | 13 | UI trắng – cam, đủ 4 trạng thái, không chồng lớp, tiếng Việt, AA | `tests/contrast.test.ts` 20 cặp ≥ AA trên token thật (sau khi đổi token, D-59); E2E: không chồng lớp, không cuộn ngang 768/1280/1440/1920, focus 2px, rỗng/lỗi tiếng Việt; rà 2 reviewer, sửa 50 phát hiện đã xác minh; `loading.tsx`/`error.tsx` nhóm + empty state từng trang | **Đạt** |
 | 14 | Không gửi gì ra ngoài: Outbox toàn SIMULATED, không gọi API thật | DB demo: Outbox **19/19 SIMULATED**; `tests/contracts.test.ts` gửi ra ngoài chỉ SIMULATED khi tắt, mọi khung thật trả 501; LLM/connector replay | **Đạt** |
-| 15 | Chịu tải: bench đạt toàn bộ `performance.md`; đo đồng thời 20 người | `docs/perf/phase11.json` **75/75** (200k khách, 600k đơn, 180k nhu cầu mua, 600k vận đơn); `docs/perf/concurrent20.json` 20 phiên 0 lỗi 13/13 p95 | **Đạt** |
+| 15 | Chịu tải: bench đạt toàn bộ `performance.md`; đo đồng thời 20 người | `docs/perf/phase11.json` **75/75** (200k khách, 600k đơn, 180k nhu cầu mua, 600k vận đơn); `docs/perf/concurrent20.json` 20 phiên 0 lỗi 13/13 p95 — **đính chính khi nghiệm thu lại**: lượt thuận lợi; đo lặp 0 lỗi, 0–4/13 vượt p95 (xem cuối biên bản) | **Đạt** (0 lỗi; p95 có điều kiện) |
 | 16 | Mọi điểm cắm thật có adapter khung, biến env, test hợp đồng bỏ qua khi thiếu khóa, ghi trong `deploy-checklist.md` | `docs/deploy-checklist.md` mục 1; `tests/contracts.test.ts` (5 ca luôn chạy + 4 ca chờ khóa) + BigQuery dry-run. Hội thoại, bộ gửi tin, OIDC chưa có adapter — ghi rõ "chưa có" kèm việc cần làm | **Đạt** (khung còn thiếu được liệt kê trung thực) |
 
 ## Lát 11.1–11.4
@@ -44,3 +44,22 @@
 ## Kết luận
 
 Phase 11 **đạt toàn bộ tiêu chí nghiệm thu**: checklist mục 12 16/16, E2E xanh, tài liệu cập nhật.
+
+## Nghiệm thu lại toàn bộ code (02/11/2026)
+
+Theo yêu cầu kiểm lại toàn bộ sau khi đã nghiệm thu Phase 9–11.
+
+| Hạng mục | Kết quả |
+|---|---|
+| `tsc --noEmit` | sạch |
+| `npx vitest run` | 22 file, **691 passed, 5 skipped** (thêm 1 ca: ngưỡng autovacuum bảng nóng; đỏ trước migration, xanh sau) |
+| `rm -rf .next && npx next build` + `npm run e2e` | build sạch; **12/12** |
+| Migration | 24 migration, `crm` / `crm_test` / `crm_load` cập nhật; `prisma migrate diff` DB ↔ schema không lệch |
+| Đo tải `bench.ts` (crm_load) | **75/75** đạt (3 lượt) |
+| Đồng thời 20 người | 8 lượt: **0 lỗi** mọi lượt; 0–4/13 vượt p95 — xem `performance.md` mục 4–5 |
+| Quyền phía server (quét tĩnh) | 43 file service: mọi hàm export nhận người dùng đều qua `requirePerm` trực tiếp hoặc qua hàm chặn (`aiRun`, `guard`, `requireTeamScope`, `editable*`); 17 file server action đều qua `runAction`/`currentUser`; 3/3 route handler kiểm phiên |
+| Bí mật / chế độ demo | không có khóa thật trong git; `DEMO_MODE=replay`, `EXTERNAL_WRITES_ENABLED=false`; Outbox 19/19 `SIMULATED` |
+
+**Lỗi tìm thấy và đã sửa:** trang đơn hàng (Quản lý) tính REV-01 bằng quét tuần tự cả bảng `Order` mỗi lần mở → chỉ mục phủ (`20261102211000_order_rev01_idx`), p95 khi 20 người 1,7–2,2 s → 0,37–0,9 s; autovacuum bảng nóng 1% (`20261102210000_autovacuum_hot_tables`).
+
+**Đính chính:** "13/13 p95" của mục 15 là một lượt đo thuận lợi. Đo lặp cho thấy đơn hàng phạm vi Sales p95 1,1–1,95 s dao động quanh ngưỡng 1,5 s, và trên máy dev mỗi lượt có thể có một thao tác Quản lý vượt (≈15 mẫu/lượt). Tiêu chí "0 lỗi" đạt; p95 cần đo lại trên máy chủ thật trước khi lên thật.

@@ -17,7 +17,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 8 Trung tâm AI | **Xong, chờ nghiệm thu** | 02/11/2026 | 382 test (381 xanh, 1 bỏ qua); LLM replay + khung Anthropic; 6 chức năng AI; duyệt, chi phí, ngân sách; AI 5/5 đạt đo tải; Gemini 3 job (trang /ai, từ điển ar/de, bảng test) |
 | 9 Báo cáo + dashboard | **Đã nghiệm thu** (`docs/acceptance/phase-9.md`) | 02/11/2026 | 445 test (444 xanh, 1 bỏ qua); 6 nhóm báo cáo + dashboard theo vai + Excel; REV khớp /don-hang; đo tải 11/11 báo cáo < 3 s; Gemini 2 job (vận đơn, AI, bảng test kỳ) |
 | 10 Vận đơn + sản phẩm | **Đã nghiệm thu** (`docs/acceptance/phase-10.md`) | 02/11/2026 | 591 test (590 xanh, 1 bỏ qua); /van-don can thiệp + COD bốn mốc + đối soát dán bảng; REV-04 gồm COD đã về; /san-pham qua PurchasingLink; đo tải 74/75; Gemini 2 job (trang sản phẩm, bảng test — 4 lỗi biên đúng) |
-| 11 Quản trị + rà soát UI + chạy thử | **Đã nghiệm thu** (`docs/acceptance/phase-11.md`) | 02/11/2026 | 695 test (690 xanh, 5 bỏ qua chờ khóa thật); E2E 12/12; checklist mục 12 đạt 16/16; đo tải 75/75 + đồng thời 20 người 0 lỗi; Gemini 4 job |
+| 11 Quản trị + rà soát UI + chạy thử | **Đã nghiệm thu** (`docs/acceptance/phase-11.md`) | 02/11/2026 | 695 test (690 xanh, 5 bỏ qua chờ khóa thật); E2E 12/12; checklist mục 12 đạt 16/16; đo tải 75/75 + đồng thời 20 người 0 lỗi; Gemini 4 job. **Nghiệm thu lại 02/11:** 696 test (691 xanh), E2E 12/12, sửa REV-01 trang đơn hàng quét cả bảng (chỉ mục phủ) + autovacuum 1%; đồng thời p95 dao động 0–4/13 (đính chính) |
 | 12 Lên thật | Ngoài demo | | |
 
 ## Phase 6 — đã làm (29/10/2026) — tỷ lệ Claude/Gemini 50/50 (D-51)

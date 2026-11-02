@@ -2,6 +2,13 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 18) — nghiệm thu lại toàn bộ code
+
+- **Kết quả:** tsc sạch; 691 passed, 5 skipped; build + E2E 12/12; bench 75/75; đồng thời 20 người 0 lỗi, p95 0–4/13 vượt tùy lượt (đính chính con số 13/13 cũ). Chi tiết: cuối `docs/acceptance/phase-11.md`.
+- **Đã sửa:** REV-01 trang đơn hàng quét cả bảng `Order` → chỉ mục `Order_workspaceId_status_netBase_idx`; ngưỡng autovacuum 1% cho `Order`/`OrderItem`/`Customer`.
+- **Migration mới:** `20261102210000_autovacuum_hot_tables`, `20261102211000_order_rev01_idx` (đã áp `crm`, DB test, `crm_load`).
+- **Điểm sát nhất còn lại:** đơn hàng phạm vi Sales p95 1,1–1,95 s (ngưỡng 1,5 s) — `performance.md` mục 5.
+
 ## Checkpoint 02/11/2026 (lần 17) — Phase 11 xong và đã nghiệm thu; bản demo hoàn tất Phase 1–11
 
 - **Đã làm:** quản trị (cấu hình, nhật ký, dữ liệu khách theo yêu cầu, sao lưu), rà UI/UX + AA, kịch bản demo + E2E, deploy-checklist + test hợp đồng, đo đồng thời 20 người. Quyết định D-59; biên bản `docs/acceptance/phase-11.md` (checklist mục 12 16/16).

@@ -1,0 +1,135 @@
+{
+  "at": "2026-11-02T14:52:01.248Z",
+  "sessions": 20,
+  "seconds": 90,
+  "thinkMs": [
+    2000,
+    5000
+  ],
+  "target": {
+    "page": 1500,
+    "report": 6000
+  },
+  "total": 471,
+  "errors": 0,
+  "errorSamples": [],
+  "rows": [
+    {
+      "name": "Sales: ticket của tôi",
+      "kind": "page",
+      "n": 86,
+      "p50": 24,
+      "p95": 263,
+      "max": 422,
+      "ok": true
+    },
+    {
+      "name": "Sales: hàng đợi của tôi",
+      "kind": "page",
+      "n": 86,
+      "p50": 26,
+      "p95": 475,
+      "max": 479,
+      "ok": true
+    },
+    {
+      "name": "Sales: nhu cầu mua (danh sách)",
+      "kind": "page",
+      "n": 86,
+      "p50": 55,
+      "p95": 336,
+      "max": 686,
+      "ok": true
+    },
+    {
+      "name": "Trưởng nhóm: báo cáo bán hàng 30 ngày",
+      "kind": "report",
+      "n": 13,
+      "p50": 178,
+      "p95": 870,
+      "max": 870,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: hồ sơ 360",
+      "kind": "page",
+      "n": 15,
+      "p50": 30,
+      "p95": 553,
+      "max": 553,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: khách hàng trang 1",
+      "kind": "page",
+      "n": 16,
+      "p50": 170,
+      "p95": 696,
+      "max": 696,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: vận đơn cần can thiệp",
+      "kind": "page",
+      "n": 15,
+      "p50": 542,
+      "p95": 2579,
+      "max": 2579,
+      "ok": false
+    },
+    {
+      "name": "Quản lý: đơn hàng trang 1",
+      "kind": "page",
+      "n": 15,
+      "p50": 357,
+      "p95": 895,
+      "max": 895,
+      "ok": true
+    },
+    {
+      "name": "Trưởng nhóm: nhu cầu mua của nhóm",
+      "kind": "page",
+      "n": 12,
+      "p50": 201,
+      "p95": 559,
+      "max": 559,
+      "ok": true
+    },
+    {
+      "name": "Sales: đơn hàng (theo phạm vi)",
+      "kind": "page",
+      "n": 84,
+      "p50": 780,
+      "p95": 1367,
+      "max": 1699,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: COD theo hãng 30 ngày",
+      "kind": "report",
+      "n": 15,
+      "p50": 1564,
+      "p95": 2886,
+      "max": 2886,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: báo cáo tài chính 30 ngày",
+      "kind": "report",
+      "n": 13,
+      "p50": 983,
+      "p95": 2156,
+      "max": 2156,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: dashboard 30 ngày",
+      "kind": "report",
+      "n": 15,
+      "p50": 2302,
+      "p95": 4121,
+      "max": 4121,
+      "ok": true
+    }
+  ]
+}

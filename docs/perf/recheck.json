@@ -1,0 +1,547 @@
+{
+  "at": "2026-11-02T14:48:35.409Z",
+  "scale": 1,
+  "counts": {
+    "orders": 619000,
+    "customers": 200500,
+    "leads": 180095,
+    "activities": 1445958
+  },
+  "target": {
+    "page": 500,
+    "detail": 300,
+    "job": 5000,
+    "export": 5000,
+    "write": 300,
+    "ingest": 33000,
+    "daily": 120000,
+    "report": 3000
+  },
+  "rows": [
+    {
+      "name": "Đơn: danh sách trang 1 (Quản lý)",
+      "kind": "page",
+      "p50": 150,
+      "max": 269,
+      "ok": true
+    },
+    {
+      "name": "Đơn: trang 500 (offset sâu)",
+      "kind": "page",
+      "p50": 150,
+      "max": 168,
+      "ok": true
+    },
+    {
+      "name": "Đơn: lọc trạng thái giao + thị trường",
+      "kind": "page",
+      "p50": 212,
+      "max": 218,
+      "ok": true
+    },
+    {
+      "name": "Đơn: tìm theo mã/tên",
+      "kind": "page",
+      "p50": 10,
+      "max": 18,
+      "ok": true
+    },
+    {
+      "name": "Đơn: danh sách (Sales, theo phạm vi)",
+      "kind": "page",
+      "p50": 364,
+      "max": 377,
+      "ok": true
+    },
+    {
+      "name": "Đơn: chi tiết",
+      "kind": "detail",
+      "p50": 7,
+      "max": 30,
+      "ok": true
+    },
+    {
+      "name": "Đơn: xuất CSV 10.000 dòng",
+      "kind": "export",
+      "p50": 3264,
+      "max": 3264,
+      "ok": true
+    },
+    {
+      "name": "Khách: danh sách mặc định",
+      "kind": "page",
+      "p50": 110,
+      "max": 132,
+      "ok": true
+    },
+    {
+      "name": "Khách: sắp theo giá trị",
+      "kind": "page",
+      "p50": 44,
+      "max": 53,
+      "ok": true
+    },
+    {
+      "name": "Khách: tìm theo SĐT",
+      "kind": "page",
+      "p50": 271,
+      "max": 272,
+      "ok": true
+    },
+    {
+      "name": "Khách: danh sách (Sales, theo phạm vi)",
+      "kind": "page",
+      "p50": 145,
+      "max": 152,
+      "ok": true
+    },
+    {
+      "name": "Khách: hồ sơ 360",
+      "kind": "detail",
+      "p50": 37,
+      "max": 49,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách (Quản lý)",
+      "kind": "page",
+      "p50": 122,
+      "max": 126,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách quá hạn",
+      "kind": "page",
+      "p50": 9,
+      "max": 11,
+      "ok": true
+    },
+    {
+      "name": "Lead: Kanban (Quản lý)",
+      "kind": "page",
+      "p50": 86,
+      "max": 207,
+      "ok": true
+    },
+    {
+      "name": "Lead: Kanban (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 81,
+      "max": 158,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách (Sales)",
+      "kind": "page",
+      "p50": 22,
+      "max": 29,
+      "ok": true
+    },
+    {
+      "name": "Lead: chi tiết",
+      "kind": "detail",
+      "p50": 19,
+      "max": 23,
+      "ok": true
+    },
+    {
+      "name": "Hàng đợi của tôi (Sales)",
+      "kind": "page",
+      "p50": 24,
+      "max": 27,
+      "ok": true
+    },
+    {
+      "name": "Hàng đợi của tôi (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 8,
+      "max": 16,
+      "ok": true
+    },
+    {
+      "name": "Thông báo (Sales)",
+      "kind": "detail",
+      "p50": 9,
+      "max": 27,
+      "ok": true
+    },
+    {
+      "name": "Việc: danh sách (Trưởng nhóm)",
+      "kind": "page",
+      "p50": 165,
+      "max": 186,
+      "ok": true
+    },
+    {
+      "name": "Ticket: danh sách (Quản lý)",
+      "kind": "page",
+      "p50": 65,
+      "max": 66,
+      "ok": true
+    },
+    {
+      "name": "Ticket: đang mở + quá hạn",
+      "kind": "page",
+      "p50": 8,
+      "max": 9,
+      "ok": true
+    },
+    {
+      "name": "Ticket: tìm theo tiêu đề",
+      "kind": "page",
+      "p50": 142,
+      "max": 142,
+      "ok": true
+    },
+    {
+      "name": "Ticket: danh sách (Sales)",
+      "kind": "page",
+      "p50": 11,
+      "max": 13,
+      "ok": true
+    },
+    {
+      "name": "Ticket: chi tiết",
+      "kind": "detail",
+      "p50": 6,
+      "max": 16,
+      "ok": true
+    },
+    {
+      "name": "Tri thức: danh sách",
+      "kind": "page",
+      "p50": 5,
+      "max": 6,
+      "ok": true
+    },
+    {
+      "name": "Worker: nhắc SLA ticket (1 lượt)",
+      "kind": "job",
+      "p50": 3,
+      "max": 3,
+      "ok": true
+    },
+    {
+      "name": "Job hằng ngày: chỉ số R12M + điểm 3 loại toàn bộ khách",
+      "kind": "daily",
+      "p50": 116,
+      "max": 116,
+      "ok": true
+    },
+    {
+      "name": "Worker: chấm điểm lead mở (lượt đầu)",
+      "kind": "job",
+      "p50": 83,
+      "max": 83,
+      "ok": true
+    },
+    {
+      "name": "Worker: chấm điểm lead mở (lượt kế, không có gì mới)",
+      "kind": "job",
+      "p50": 85,
+      "max": 85,
+      "ok": true
+    },
+    {
+      "name": "Điểm + chỉ số của một khách (hồ sơ 360)",
+      "kind": "detail",
+      "p50": 6,
+      "max": 7,
+      "ok": true
+    },
+    {
+      "name": "Khách: danh sách kèm hạng RFM",
+      "kind": "page",
+      "p50": 98,
+      "max": 101,
+      "ok": true
+    },
+    {
+      "name": "Lead: danh sách kèm điểm ưu tiên",
+      "kind": "page",
+      "p50": 116,
+      "max": 160,
+      "ok": true
+    },
+    {
+      "name": "Phân khúc: xem trước (đếm + 20 mẫu)",
+      "kind": "page",
+      "p50": 267,
+      "max": 356,
+      "ok": true
+    },
+    {
+      "name": "Phân khúc: chạy + lưu ảnh chụp",
+      "kind": "job",
+      "p50": 2830,
+      "max": 2830,
+      "ok": true
+    },
+    {
+      "name": "Worker: đưa khách vào hành trình (≤ 5.000)",
+      "kind": "job",
+      "p50": 844,
+      "max": 844,
+      "ok": true
+    },
+    {
+      "name": "Worker: đưa khách vào hành trình (lượt kế, đã vào hết)",
+      "kind": "job",
+      "p50": 962,
+      "max": 962,
+      "ok": true
+    },
+    {
+      "name": "Worker: chạy bước tới hạn (500 khách)",
+      "kind": "job",
+      "p50": 862,
+      "max": 862,
+      "ok": true
+    },
+    {
+      "name": "Hành trình: chi tiết + thống kê bước",
+      "kind": "detail",
+      "p50": 51,
+      "max": 71,
+      "ok": true
+    },
+    {
+      "name": "Hành trình: danh sách khách trang 1",
+      "kind": "page",
+      "p50": 11,
+      "max": 16,
+      "ok": true
+    },
+    {
+      "name": "Chiến dịch: danh sách + MKT-01/02",
+      "kind": "page",
+      "p50": 5,
+      "max": 6,
+      "ok": true
+    },
+    {
+      "name": "AI: tóm tắt 360 một khách",
+      "kind": "detail",
+      "p50": 59,
+      "max": 81,
+      "ok": true
+    },
+    {
+      "name": "AI: tìm tự nhiên → bộ lọc",
+      "kind": "page",
+      "p50": 21,
+      "max": 50,
+      "ok": true
+    },
+    {
+      "name": "AI: hỏi báo cáo REV-03 theo thị trường (R12M, 200k khách)",
+      "kind": "page",
+      "p50": 200,
+      "max": 213,
+      "ok": true
+    },
+    {
+      "name": "AI: lịch sử lần chạy trang 1",
+      "kind": "page",
+      "p50": 7,
+      "max": 11,
+      "ok": true
+    },
+    {
+      "name": "AI: chi phí tháng (AI-01..03)",
+      "kind": "page",
+      "p50": 7,
+      "max": 8,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo tài chính 12 tháng theo thị trường + nguyên tệ",
+      "kind": "report",
+      "p50": 1762,
+      "max": 1977,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo tài chính 12 tháng theo tháng",
+      "kind": "report",
+      "p50": 2175,
+      "max": 2190,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo bán hàng 12 tháng (phễu + theo người)",
+      "kind": "report",
+      "p50": 171,
+      "max": 174,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo bán hàng (Sales, của mình)",
+      "kind": "report",
+      "p50": 16,
+      "max": 20,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo khách hàng: RFM + cohort 12 tháng",
+      "kind": "report",
+      "p50": 2202,
+      "max": 2271,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo marketing 12 tháng",
+      "kind": "report",
+      "p50": 171,
+      "max": 175,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo vận đơn 12 tháng",
+      "kind": "report",
+      "p50": 404,
+      "max": 424,
+      "ok": true
+    },
+    {
+      "name": "Báo cáo AI tháng này",
+      "kind": "report",
+      "p50": 9,
+      "max": 14,
+      "ok": true
+    },
+    {
+      "name": "Dashboard Quản lý (30 ngày)",
+      "kind": "report",
+      "p50": 1714,
+      "max": 1720,
+      "ok": true
+    },
+    {
+      "name": "Dashboard Sales (30 ngày)",
+      "kind": "report",
+      "p50": 26,
+      "max": 34,
+      "ok": true
+    },
+    {
+      "name": "Đơn: lọc theo ngày giao + REV-03 (30 ngày)",
+      "kind": "page",
+      "p50": 191,
+      "max": 220,
+      "ok": true
+    },
+    {
+      "name": "Vận đơn: cần can thiệp trang 1 (+ đếm theo lý do)",
+      "kind": "page",
+      "p50": 263,
+      "max": 265,
+      "ok": true
+    },
+    {
+      "name": "Vận đơn: cần can thiệp lọc lỗi hãng + tìm mã",
+      "kind": "page",
+      "p50": 7,
+      "max": 10,
+      "ok": true
+    },
+    {
+      "name": "Vận đơn: xử lý một đơn (giao lại → Outbox)",
+      "kind": "write",
+      "p50": 7,
+      "max": 20,
+      "ok": true
+    },
+    {
+      "name": "COD: CASH-01/02/03 theo hãng 30 ngày",
+      "kind": "report",
+      "p50": 737,
+      "max": 817,
+      "ok": true
+    },
+    {
+      "name": "COD: CASH-01/02/03 theo hãng 12 tháng",
+      "kind": "report",
+      "p50": 848,
+      "max": 872,
+      "ok": true
+    },
+    {
+      "name": "COD: đã thu chưa về trang 1",
+      "kind": "page",
+      "p50": 172,
+      "max": 172,
+      "ok": true
+    },
+    {
+      "name": "Đối soát: xem trước 500 dòng dán",
+      "kind": "job",
+      "p50": 53,
+      "max": 62,
+      "ok": true
+    },
+    {
+      "name": "COD: bốn mốc một đơn (trang đơn)",
+      "kind": "detail",
+      "p50": 2,
+      "max": 3,
+      "ok": true
+    },
+    {
+      "name": "Sản phẩm: danh sách + tồn theo thị trường",
+      "kind": "page",
+      "p50": 161,
+      "max": 197,
+      "ok": true
+    },
+    {
+      "name": "Sản phẩm: mã nguồn chưa khớp",
+      "kind": "page",
+      "p50": 195,
+      "max": 220,
+      "ok": true
+    },
+    {
+      "name": "Tạo lead + phân công tự động",
+      "kind": "write",
+      "p50": 109,
+      "max": 211,
+      "ok": true
+    },
+    {
+      "name": "Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)",
+      "kind": "job",
+      "p50": 53,
+      "max": 53,
+      "ok": true
+    },
+    {
+      "name": "Worker: lượt kế tiếp (không còn việc tồn)",
+      "kind": "job",
+      "p50": 38,
+      "max": 38,
+      "ok": true
+    },
+    {
+      "name": "Worker: tính lại giá trị 100 khách",
+      "kind": "job",
+      "p50": 316,
+      "max": 316,
+      "ok": true
+    },
+    {
+      "name": "Nhập đơn: đồng bộ 1.000 bản ghi Pancake",
+      "kind": "ingest",
+      "p50": 24286,
+      "max": 24286,
+      "ok": true
+    },
+    {
+      "name": "Nhập đơn: đồng bộ lại (1.000 bản trùng)",
+      "kind": "ingest",
+      "p50": 2070,
+      "max": 2070,
+      "ok": true
+    }
+  ]
+}

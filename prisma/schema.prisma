@@ -475,6 +475,7 @@ model Order {
   @@index([customerEmail(ops: raw("gin_trgm_ops"))], type: Gin, map: "Order_customerEmail_trgm_idx")
   @@index([workspaceId, deliveredAt])
   @@index([workspaceId, confirmedAt])
+  @@index([workspaceId, status, netBase]) // REV-01 trang đơn hàng: tổng chỉ đọc chỉ mục, không quét heap (docs/performance.md)
 }
 
 // ---- Phase 3: Customer 360 (D-08) -----------------------------------------------------------------
