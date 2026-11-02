@@ -1,0 +1,7 @@
+[
+  {"id": "product-pages", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/product-pages.md",
+   "allowed_paths": ["src/app/(app)/san-pham/page.tsx", "src/app/(app)/san-pham/[id]/page.tsx"],
+   "check": ["python", "-I", "ai-jobs/p10-fulfillment/checker.py", "product-pages", "."], "timeout_s": 1500},
+  {"id": "p10-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/p10-tests.md",
+   "allowed_paths": ["tests/fulfillment-pure.test.ts"], "check": ["python", "-I", "ai-jobs/p10-fulfillment/checker.py", "p10-tests", "."], "timeout_s": 1200}
+]

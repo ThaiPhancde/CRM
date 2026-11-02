@@ -80,6 +80,8 @@ export async function listProducts(u: SessionUser, f: ProductFilter) {
     total: filtered.length, page: f.page, pageSize: PRODUCT_PAGE, markets: shown, brands,
     summary: { products: views.length, variants: views.reduce((s, p) => s + p.variants.length, 0), lowByMarket, unmatchedSkus: unmatched.length, costDiffers: views.reduce((s, p) => s + p.variants.filter((v) => v.costDiffers).length, 0) },
     asOf, canMap: can(u.roles, "product.map"), canSync: can(u.roles, "product.sync"), showMoney: can(u.roles, "finance.view"),
+    /** Biến thể để chọn khi ánh xạ mã nguồn (cả danh mục, không theo trang). */
+    variantOptions: can(u.roles, "product.map") ? views.flatMap((p) => p.variants.map((v) => ({ id: v.id, label: `${v.sku} — ${p.name}` }))) : [],
   };
 }
 
