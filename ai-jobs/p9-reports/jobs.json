@@ -1,0 +1,7 @@
+[
+  {"id": "report-sections", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/report-sections.md",
+   "allowed_paths": ["src/app/(app)/bao-cao/[nhom]/sections/van-don.tsx", "src/app/(app)/bao-cao/[nhom]/sections/ai.tsx"],
+   "check": ["python", "-I", "ai-jobs/p9-reports/checker.py", "report-sections", "."], "timeout_s": 1500},
+  {"id": "report-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/report-tests.md",
+   "allowed_paths": ["tests/reports-period.test.ts"], "check": ["python", "-I", "ai-jobs/p9-reports/checker.py", "report-tests", "."], "timeout_s": 1200}
+]

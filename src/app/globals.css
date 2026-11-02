@@ -23,6 +23,13 @@
   --danger-soft: #fef2f2;
   --info: #2563eb;
   --info-soft: #eff6ff;
+  /* Màu chuỗi biểu đồ (ui-design-system: cam đầu tiên). Bậc màu đã qua validate_palette (dataviz) trên nền trắng:
+     ΔE mù màu cặp kề ≥ 23, thường ≥ 24. Ô 3, 5 dưới 3:1 tương phản → mọi biểu đồ luôn kèm bảng số (relief rule). */
+  --chart-1: #eb6834;
+  --chart-2: #2a78d6;
+  --chart-3: #1baf7a;
+  --chart-4: #6250d6;
+  --chart-5: #eda100;
 }
 
 @theme inline {
