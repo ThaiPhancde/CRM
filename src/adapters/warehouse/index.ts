@@ -32,6 +32,9 @@ class PostgresWarehouse implements Warehouse {
       await tx.$executeRawUnsafe("SET TRANSACTION READ ONLY");
       await tx.$executeRawUnsafe("SET LOCAL statement_timeout = '15s'");
       await tx.$executeRawUnsafe("SET LOCAL work_mem = '128MB'");
+      // Bộ lọc tùy chọn (@p IS NULL OR cột = @p) chỉ ước lượng đúng khi biết giá trị: sau 5 lần cùng câu, Postgres đổi sang kế hoạch chung
+      // và chọn sai (CASH 12 tháng 0,8 s → quá 15 s ở lần thứ 6 — docs/performance.md Phase 10). Buộc lập kế hoạch theo tham số mỗi lần.
+      await tx.$executeRawUnsafe("SET LOCAL plan_cache_mode = force_custom_plan");
       return tx.$queryRawUnsafe<T[]>(b.sql, ...b.values);
     }, { timeout: 20_000 });
   }

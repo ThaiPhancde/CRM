@@ -46,7 +46,7 @@ Cập nhật: 28/10/2026 (Phase 0). Nguồn: D-00, D-05, D-12, D-13, D-18, D-25;
 | Warehouse | `Warehouse { query(sql, params), refreshMetrics(ws), freshness(ws) }` | Schema `analytics` trong Postgres: view/materialized tạo bởi `prisma/analytics.sql`; SQL chỉ số ở `src/modules/metrics/sql/*.sql` | `@google-cloud/bigquery`; cùng file SQL, hàm khác dialect qua `dialect.ts` | Chạy mọi file SQL trên Postgres; BigQuery dry-run khi có khóa |
 | LLM | `LlmProvider { complete(req), completeWithTools(req, tools), estimateCost }` | `replay.ts`: phân loại intent bằng từ khóa; trả fixture `fixtures/llm/{feature}/{case}.json` có `text`, `toolCalls`, `evidence[]`, token giả; chuỗi không khớp → trả "Tôi chưa hiểu, bạn muốn…" | `@anthropic-ai/sdk`, tool use, streaming | Replay: mọi fixture parse đúng schema; thật: 1 prompt ngắn khi có khóa |
 | Messaging | `Messenger { send(msg) }` | `outbox.ts`: ghi `SIMULATED` | `smtp.ts` (nodemailer) | — |
-| Purchasing | `PurchasingLink { getCost(sku), getStock(sku, market) }` | Fixture | REST tới Purchasing System (chưa có API, Q-16) | — |
+| Purchasing | `PurchasingLink { items(skus) → { cost, currency, stock: { [market]: n } }, asOf() }` (Phase 10, `src/adapters/purchasing`) | Fixture `fixtures/purchasing.json` (`scripts/gen-purchasing.ts`) | REST tới Purchasing System (chưa có API, Q-16) | — |
 | Auth | `IdentityProvider` | Đăng nhập thử | Google OIDC | — |
 
 ## 4. Fixture và seed

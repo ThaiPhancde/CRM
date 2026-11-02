@@ -79,7 +79,8 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
   requirePerm(user, "order.view");
   const pii = piiFor(user);
   const w: Prisma.OrderWhereInput = { AND: [where(f, pii.full), await orderScopeWhere(user)] };
-  const [total, rows, agg] = await Promise.all([
+  const showMoney = money(user);
+  const [total, rows, agg, rev03] = await Promise.all([
     db.order.count({ where: w }),
     db.order.findMany({
       where: w,
@@ -90,15 +91,16 @@ export async function listOrders(user: SessionUser, f: OrderFilter) {
     }),
     // REV-01: Σ giá trị đặt của đơn chưa hủy, quy VND (docs/metrics.md, D-44).
     db.order.aggregate({ where: { ...w, status: { not: "CANCELLED" } }, _sum: { netBase: true }, _count: true }),
+    // REV-03 qua Warehouse (một kết nối riêng) chạy song song với danh sách thay vì nối đuôi.
+    rev03For(user, f, showMoney),
   ]);
-  const showMoney = money(user);
   return {
     total,
     page: f.page,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
     showMoney,
     rev01Base: showMoney ? (agg._sum.netBase?.toString() ?? "0") : null,
-    rev03: await rev03For(user, f, showMoney),
+    rev03,
     rev01Count: agg._count,
     rows: rows.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, bookedAt: o.bookedAt.toISOString(), customerName: o.customerName, customerPhone: pii.phone(o.customerPhone), customerId: o.customerId,

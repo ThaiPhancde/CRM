@@ -67,7 +67,7 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 | R-40 | Từ điển chỉ số: REV-01…04, OPS, CASH, CUS; mọi báo cáo ghi mã | D-10; `levelup-company-os/06` | MĐ — **đã có Phase 6** (bảng MetricDefinition + trang Từ điển chỉ số) | 6 | ✓ |
 | R-41 | Bộ chỉ số nhiều chiều (phù hợp, ý định, tương tác, giá trị, mua lại, rủi ro, hỗ trợ, tin cậy) | HLD §7.1 | XĐ | 6 | ✓ |
 | R-42 | Điểm ưu tiên sales 25/35/25/15; lưu lý do, phiên bản, thiếu dữ liệu, hành động | HLD §7.2; D-11; D-33; D-52 | XĐ — **đã có Phase 6** | 6 | ✓ |
-| R-43 | RFM; COD phân tích riêng giao thành công/đã thu/đã đối soát | HLD §7.3; D-52 | XĐ — RFM có; COD đã thu/đối soát chờ Phase 10 | 6 | ◐ |
+| R-43 | RFM; COD phân tích riêng giao thành công/đã thu/đã đối soát | HLD §7.3; D-52; D-58 | XĐ — RFM có; COD giao/đã thu/đã về tách riêng (CASH-01..03, REV-04 gồm COD đã về) ở Phase 10 | 6 | ✓ |
 | R-44 | Phân biệt giá trị đã tạo với dự báo; dự báo kiểm thử theo thời gian | HLD §7.3 | XĐ | 6 (khung), 12 | ◐ |
 | R-45 | Insight → hành động (giao sales, task, ưu tiên ticket, cảnh báo nguồn/sản phẩm) | HLD §7.4 | XĐ | 6, 7 | ✓ |
 | R-46 | Warehouse interface; Postgres demo, BigQuery thật; không trên đường bắt buộc hằng ngày | HLD §2, §9; D-05 | XĐ — **đã có Phase 6** (Postgres chạy thật; BigQuery khung 501, SQL sinh chung) | 6 | ◐ |
@@ -98,8 +98,8 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 |---|---|---|---|---|---|
 | R-70 | Sáu nhóm báo cáo; mỗi báo cáo hiện phạm vi, tiền tệ, kỳ, độ mới, định nghĩa | HLD §9.2; D-57 | XĐ — **đã có Phase 9** (/bao-cao 6 nhóm, mã chỉ số + định nghĩa khi rê chuột, Excel) | 9 | ✓ |
 | R-71 | Dashboard theo vai; đa tiền tệ đối chiếu được | HLD §14.2; D-57 | XĐ — **đã có Phase 9** (Quản lý / Sales / Marketing; bảng nguyên tệ + tỷ giá đã dùng; REV khớp /don-hang) | 9 | ✓ |
-| R-72 | Vận đơn: đơn cần can thiệp, lý do thất bại, COD 4 mốc, đối soát | HLD §3; `levelup-company-os/01` §3.3 | XĐ | 10 | ✓ |
-| R-73 | Sản phẩm/mua hàng: giá vốn, tồn qua tích hợp chỉ đọc | HLD §3; D-25 | MĐ | 10 | ◐ fixture |
+| R-72 | Vận đơn: đơn cần can thiệp, lý do thất bại, COD 4 mốc, đối soát | HLD §3; `levelup-company-os/01` §3.3; D-58 | XĐ — **đã có Phase 10** (/van-don: can thiệp + giao lại/hủy/ticket, COD bốn mốc CASH-01..03 theo hãng, đối soát dán bảng; bốn mốc ở trang đơn/khách/báo cáo tài chính) | 10 | ✓ |
+| R-73 | Sản phẩm/mua hàng: giá vốn, tồn qua tích hợp chỉ đọc | HLD §3; D-25; D-58 | MĐ — **đã có Phase 10** (PurchasingLink fixture; /san-pham tồn theo thị trường + cảnh báo tồn thấp, lấy giá vốn, ánh xạ mã nguồn); API thật chờ Q-16 | 10 | ◐ fixture |
 | R-74 | Quản trị: thành viên, vai trò, cấu hình, audit viewer, sao lưu, vòng đời dữ liệu | HLD §3 | XĐ | 1, 11 | ✓ |
 | R-75 | UI trắng – cam, 4 trạng thái, không chồng lớp, AA | D-15 | CHỐT | 1, 11 | ✓ |
 | R-76 | Kịch bản demo + E2E + handoff điểm cắm thật | TK §10 Phase 11 | MĐ | 11 | ✓ |

@@ -15,7 +15,7 @@ Cập nhật: 28/10/2026 (Phase 0, bản gieo mầm). Nguồn: `D:\Work\levelup-
 | REV-01 | Giá trị đặt (Gross Booked) | Σ `Order.netAmount` của đơn `status ≠ CANCELLED` | `bookedAt` | Order | Gồm đơn sẽ hủy/hoàn; MKT hay dùng mốc này |
 | REV-02 | Giá trị xác nhận | Σ đơn `status = CONFIRMED` | `confirmedAt` | Order | COD: xác nhận qua gọi; prepaid: thanh toán = xác nhận |
 | REV-03 | Giá trị giao thành công | Σ dòng `qtyDelivered × unitPrice` − hoàn | `deliveredAt` (DeliveryEvent DELIVERED) | OrderItem, Refund | Giao một phần chỉ tính phần giao |
-| REV-04 | Thực thu | Σ `Payment.amount` đã đối soát (`Settlement` với COD) − `Refund` | `remittedAt` | Payment, Settlement, Refund | COD trễ 30–60 ngày; đừng so cùng kỳ với REV-01 |
+| REV-04 | Thực thu | Σ `Payment.amount` thành công (theo `paidAt`) + Σ `SettlementLine.amount` COD đã về (theo `remittedAt`) − `Refund` | `paidAt` / `remittedAt` | Payment, SettlementLine, Refund | COD trễ 30–60 ngày; đừng so cùng kỳ với REV-01. COD chưa về không tính (D-58) |
 
 Tỷ lệ chuyển đổi mốc: REV-02/REV-01, REV-03/REV-02, REV-04/REV-03 — hiện ở dashboard Quản lý theo market.
 
@@ -28,8 +28,8 @@ Tỷ lệ chuyển đổi mốc: REV-02/REV-01, REV-03/REV-02, REV-04/REV-03 —
 | OPS-03 | Thời gian giao TB | TB(`deliveredAt` − `confirmedAt`) ngày | Order |
 | OPS-04 | Lý do thất bại top | đếm `Shipment.failureReason` | Shipment |
 | CASH-01 | COD đã thu | Σ `Shipment.codAmount` có `collectedAt` | Shipment |
-| CASH-02 | COD đã về | Σ `Settlement.amount` | Settlement |
-| CASH-03 | COD đang kẹt | CASH-01 − CASH-02 theo carrier | — |
+| CASH-02 | COD đã về | Σ `SettlementLine.amount` theo `remittedAt` (số về thật, có thể thấp hơn COD do phí hãng) | SettlementLine |
+| CASH-03 | COD đang kẹt | Σ `codAmount` đã thu trước cuối kỳ mà chưa có dòng đối soát trước cuối kỳ, theo carrier + tuổi (≤15/16–30/31–60/>60 ngày) — số tồn tại cuối kỳ (D-58) | Shipment, SettlementLine |
 
 ### 3.1. Bốn mốc COD ↔ mã chỉ số
 
@@ -68,7 +68,7 @@ REV-02 (xác nhận) không phải mốc COD; mốc "đã thu" chỉ có ở CAS
 | TXN_RISK | CUS-05, thông tin thiếu, địa chỉ chưa chuẩn | 60/20/20 | Thấp/Vừa/Cao; < 2 đơn → "chưa đủ dữ liệu" |
 | SUPPORT_NEED | ticket mở, mức, thời gian chờ | 40/40/20 | Thấp/Vừa/Cao |
 
-Cách tính chi tiết đã cài (Phase 6, D-52): `src/adapters/warehouse/sql.ts` (chỉ số R12M, một định nghĩa cho Postgres và BigQuery), `src/modules/scoring/formulas.ts` (điểm). REV-04 hiện chưa gồm COD đã đối soát (Settlement ở Phase 10). Lợi nhuận gộp để trống khi thiếu giá vốn.
+Cách tính chi tiết đã cài (Phase 6, D-52): `src/adapters/warehouse/sql.ts` (chỉ số R12M, một định nghĩa cho Postgres và BigQuery), `src/modules/scoring/formulas.ts` (điểm). REV-04 gồm COD đã đối soát từ Phase 10 (SettlementLine, D-58); CASH-01..03 ở `codSql` (`src/adapters/warehouse/reports.ts`). Lợi nhuận gộp để trống khi thiếu giá vốn.
 
 Mọi trọng số ở bảng trên là **giả thuyết v1** (D-33, HLD §7.2), chưa được kiểm chứng; UI ghi rõ phiên bản và không trình bày như chuẩn.
 

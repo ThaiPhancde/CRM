@@ -134,6 +134,27 @@ async function main() {
   await time("Dashboard Quản lý (30 ngày)", "report", () => dash.dashboardFor(mgr));
   await time("Dashboard Sales (30 ngày)", "report", () => dash.dashboardFor(sales));
   await time("Đơn: lọc theo ngày giao + REV-03 (30 ngày)", "page", () => orders.listOrders(mgr, { ...of, page: 1, anchor: "delivered", from: per.addDays(today, -29), to: today }));
+  // Phase 10: vận đơn, COD, sản phẩm. Danh sách can thiệp và COD kẹt là SQL theo chỉ mục (Shipment status/failedAt, collectedAt).
+  const ful = await import("../../src/modules/fulfillment/service");
+  const cod = await import("../../src/modules/fulfillment/cod");
+  const prd = await import("../../src/modules/products/service");
+  const itv = await runInWorkspace(ws.id, () => ful.listInterventions(mgr, ful.interventionFilter.parse({})));
+  console.log("vận đơn cần can thiệp:", itv.total);
+  await time("Vận đơn: cần can thiệp trang 1 (+ đếm theo lý do)", "page", () => ful.listInterventions(mgr, ful.interventionFilter.parse({})));
+  await time("Vận đơn: cần can thiệp lọc lỗi hãng + tìm mã", "page", () => ful.listInterventions(mgr, ful.interventionFilter.parse({ fault: "carrier", q: "L12345" })));
+  let ai2 = 0;
+  await time("Vận đơn: xử lý một đơn (giao lại → Outbox)", "write", () => ful.actOnDelivery(mgr, { orderId: itv.rows[ai2++].orderId, kind: "REATTEMPT", idempotencyKey: `bench-${Date.now()}-${ai2}` }));
+  const f30 = per.parseReportFilter({ from: per.addDays(today, -29), to: today }, today, "none");
+  await time("COD: CASH-01/02/03 theo hãng 30 ngày", "report", () => cod.codSummary(mgr, f30, null));
+  await time("COD: CASH-01/02/03 theo hãng 12 tháng", "report", () => cod.codSummary(mgr, f12, null));
+  await time("COD: đã thu chưa về trang 1", "page", () => cod.outstandingCod(mgr, { page: 1 }));
+  const stuck = (await runInWorkspace(ws.id, () => cod.outstandingCod(mgr, { page: 1 }))).rows;
+  const pasteRows = (await c.shipment.findMany({ where: { collectedAt: { not: null }, carrier: "Aramex" }, select: { trackingNo: true, codAmount: true }, take: 500 }))
+    .map((s) => `${s.trackingNo}\t${s.codAmount}\t28/10/2026`);
+  await time("Đối soát: xem trước 500 dòng dán", "job", () => cod.previewSettlement(mgr, { carrier: "Aramex", reference: "BENCH", text: ["ma_van_don\tso_tien\tngay_ve", ...pasteRows].join("\n") }));
+  await time("COD: bốn mốc một đơn (trang đơn)", "detail", () => cod.orderCodSteps(mgr, [stuck[0]?.orderId ?? anOrder]));
+  await time("Sản phẩm: danh sách + tồn theo thị trường", "page", () => prd.listProducts(mgr, prd.productFilter.parse({})));
+  await time("Sản phẩm: mã nguồn chưa khớp", "page", () => prd.unmatchedSkus(mgr));
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

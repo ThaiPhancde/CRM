@@ -11,7 +11,7 @@ Cập nhật: 28/10/2026 (Phase 0). Nguồn: HLD §5; Purchasing System `docs/in
 | Inbox (hội thoại vào; connector độc lập, HLD §5) | replay fixture → `Activity` MESSAGE (`adapters/connectors/inbox`) | khung, chưa khóa; cần quyền hội thoại (Q-12, D-M4) | CXM (endpoint chưa xác minh) |
 | BigQuery | Postgres `analytics` | khung `@google-cloud/bigquery` | TL |
 | Anthropic | replay | khung SDK | TL |
-| Purchasing System | fixture | chưa có API | CXM (Q-16) |
+| Purchasing System | fixture (`PURCHASING_LINK=fixture`, `fixtures/purchasing.json`) | chưa có API — `api` trả 501 | CXM (Q-16); hợp đồng nội bộ `PurchasingLink.items(skus) → {cost, currency, stock theo thị trường}` (Phase 10) |
 
 **Đã có code (Phase 2, 28/10):** `src/adapters/connectors/{types,registry,pancake,shopify}.ts`. Mapper dùng chung cho phát lại và API thật; nguồn "live" hiện trả 501 có lời giải thích (không gọi endpoint chưa xác minh). Định dạng phát lại Pancake là giả định (D-36). Thêm nền tảng: viết một `Platform` + `registerPlatform()` (có test chứng minh, `tests/orders.test.ts`).
 

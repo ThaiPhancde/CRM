@@ -135,7 +135,8 @@ export async function applySettlement(u: SessionUser, input: unknown, now = new 
 }
 
 /** Hãng có vận đơn COD (cho ô chọn ở form đối soát). */
-export async function codCarriers() {
+export async function codCarriers(u: SessionUser) {
+  requirePerm(u, "cod.reconcile");
   const r = await db.shipment.findMany({ where: { codAmount: { not: null }, carrier: { not: null } }, select: { carrier: true }, distinct: ["carrier"], orderBy: { carrier: "asc" } });
   return r.map((x) => x.carrier!);
 }
@@ -144,6 +145,8 @@ type CodRaw = { carrier: string; cur: string; cash01: unknown; orig01: unknown; 
 
 /** CASH-01/02/03 theo hãng (và theo nguyên tệ) qua Warehouse. Tiền quy tiền tệ báo cáo; thiếu finance.view → chỉ số lượng. */
 export async function codSummary(u: SessionUser, f: ReportFilter, rateToBase: number | null) {
+  // Hai nơi xem: /van-don (fulfillment.view) và báo cáo tài chính (report.finance).
+  requirePerm(u, can(u.roles, "fulfillment.view") ? "fulfillment.view" : "report.finance");
   const wh = getWarehouse();
   const raw = await wh.read<CodRaw>(codSql(wh.dialect), params(u, f));
   const money = can(u.roles, "finance.view");
@@ -192,6 +195,7 @@ export async function outstandingCod(u: SessionUser, f: { carrier?: string; page
 
 /** Bốn mốc COD của một đơn (trang đơn, trang khách). null khi đơn không phải COD. Tiền ẩn khi thiếu finance.view. */
 export async function orderCodSteps(u: SessionUser, orderIds: string[]) {
+  requirePerm(u, "order.view");
   if (!orderIds.length) return new Map<string, ReturnType<typeof codSteps>>();
   const orders = await db.order.findMany({
     where: { id: { in: orderIds } },

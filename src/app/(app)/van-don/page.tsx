@@ -211,7 +211,7 @@ async function Cod({ sp, user }: { sp: SP; user: U }) {
 }
 
 async function Reconcile({ user }: { user: U }) {
-  const [carriers, recent] = await Promise.all([codCarriers(), recentSettlements(user)]);
+  const [carriers, recent] = await Promise.all([codCarriers(user), recentSettlements(user)]);
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
       <Card className="xl:col-span-3">

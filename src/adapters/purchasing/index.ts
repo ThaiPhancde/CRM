@@ -1,5 +1,5 @@
 // PurchasingLink (D-25): đọc giá vốn và tồn khả dụng từ Purchasing System — CRM chỉ đọc, không ghi.
-// Demo: fixtures/purchasing.json (scripts/gen-purchasing.ts, hạt cố định). Thật: PURCHASING=live trả 501 — Purchasing System chưa có API (Q-16),
+// Demo: fixtures/purchasing.json (scripts/gen-purchasing.ts, hạt cố định). Thật: PURCHASING_LINK=api trả 501 (docs/demo-strategy.md) — Purchasing System chưa có API (Q-16),
 // endpoint chưa xác minh nên không bịa; khi có tài liệu thì cài nhánh live ở đây, phần còn lại của CRM không đổi.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -27,11 +27,11 @@ const replay: PurchasingLink = {
   async asOf() { return fixture().asOf; },
 };
 const live: PurchasingLink = {
-  async items() { throw new HttpError(501, "PurchasingLink thật chưa bật — Purchasing System chưa có API (Q-16). Dùng PURCHASING=replay."); },
+  async items() { throw new HttpError(501, "PurchasingLink thật chưa bật — Purchasing System chưa có API (Q-16). Dùng PURCHASING_LINK=fixture."); },
   async asOf() { return null; },
 };
 
-export const getPurchasing = (): PurchasingLink => (process.env.PURCHASING === "live" ? live : replay);
+export const getPurchasing = (): PurchasingLink => (process.env.PURCHASING_LINK === "api" ? live : replay);
 
 /** Tồn khả dụng cộng mọi thị trường (bước "Kiểm tồn" của hành trình). */
 export async function available(skus: string[]) {

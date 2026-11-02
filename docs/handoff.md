@@ -2,6 +2,14 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 16) — Phase 10 xong và đã nghiệm thu; tiếp theo Phase 11
+
+- **Đã làm:** /van-don (can thiệp, COD bốn mốc, đối soát dán bảng), REV-04 gồm COD đã về, /san-pham qua PurchasingLink. Quyết định D-58; chi tiết `docs/implementation-status.md` (Phase 10); biên bản `docs/acceptance/phase-10.md`.
+- **Test:** 590 passed, 1 skipped; tsc 0; build sạch; đo tải 74/75 (`docs/perf/phase10.json`).
+- **Migration mới:** `20261102190000_phase10_fulfillment`, `…191000_delivery_action_once`, `…193000_shipment_tracking_trgm`, `…194000_shipment_tracking_idx` — đã áp dụng `crm`, DB test, `crm_load`. DB demo đã có đối soát mẫu (`scripts/seed-fulfillment.ts`, chạy lại không trùng).
+- **Sửa quan trọng ngoài phạm vi:** `Warehouse.read` buộc `plan_cache_mode = force_custom_plan`; cô lập workspace khi báo Quản lý (routing/tickets).
+- **Tiếp theo:** Phase 11 (quản trị audit/cấu hình/xuất-xóa dữ liệu/sao lưu; rà UI/UX toàn bộ; kịch bản demo + E2E; deploy-checklist) → nghiệm thu. Phase 8 vẫn chờ nghiệm thu chính thức.
+
 ## Checkpoint 02/11/2026 (lần 15) — Phase 9 đã nghiệm thu; bắt đầu Phase 10
 
 - **Nghiệm thu Phase 9:** `docs/acceptance/phase-9.md` — đạt 4/4 tiêu chí. Đối chiếu REV-01/REV-03 báo cáo vs `/don-hang` trên DB demo khớp tuyệt đối 84/84 sau khi chuyển cộng tiền sang Decimal (`c9433fd`). Kiểm vai Marketing/Sales trên trình duyệt.

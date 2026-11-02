@@ -17,7 +17,8 @@ import { FAILURE_REASON_CODES, FAILURE_REASONS, reasonLabel, type Fault } from "
 
 export const INTERVENTION_PAGE = 50;
 export const interventionFilter = z.object({
-  reason: z.enum(FAILURE_REASON_CODES as [string, ...string[]]).optional().catch(undefined),
+  /** "unknown" = nguồn không gửi lý do (khác "other" = có lý do nhưng không thuộc mã chuẩn). */
+  reason: z.enum(["unknown", ...FAILURE_REASON_CODES]).optional().catch(undefined),
   fault: z.enum(["customer", "carrier", "other"]).optional().catch(undefined),
   carrier: z.string().trim().max(60).optional().catch(undefined).transform((v) => v || undefined),
   store: z.string().trim().max(40).optional().catch(undefined).transform((v) => v || undefined),
@@ -38,13 +39,15 @@ const OPEN = Prisma.sql`s."status" = 'FAILED' AND o."status" <> 'CANCELLED' AND 
   AND NOT EXISTS (SELECT 1 FROM "DeliveryAction" a WHERE a."orderId" = s."orderId" AND a."failedAt" >= s."failedAt")`;
 
 function where(u: SessionUser, f: Omit<InterventionFilter, "page">, withReason = true) {
-  const reasons = f.reason ? [f.reason] : f.fault ? FAILURE_REASON_CODES.filter((c) => FAILURE_REASONS[c].fault === f.fault) : null;
+  const reasons = f.reason ? [f.reason] : f.fault ? [...FAILURE_REASON_CODES.filter((c) => FAILURE_REASONS[c].fault === f.fault), ...(f.fault === "other" ? ["unknown"] : [])] : null;
   const parts = [Prisma.sql`s."workspaceId" = ${u.workspaceId}`, OPEN];
-  if (withReason && reasons) parts.push(Prisma.sql`COALESCE(s."failureReason", 'other') IN (${Prisma.join(reasons)})`);
+  if (withReason && reasons) parts.push(Prisma.sql`COALESCE(s."failureReason", 'unknown') IN (${Prisma.join(reasons)})`);
   if (f.carrier) parts.push(Prisma.sql`s."carrier" = ${f.carrier}`);
   if (f.store) parts.push(Prisma.sql`o."storeId" = ${f.store}`);
   if (f.market) parts.push(Prisma.sql`o."marketId" = ${f.market}`);
-  if (f.q) parts.push(Prisma.sql`(o."orderNumber" ILIKE ${`%${f.q}%`} OR s."trackingNo" ILIKE ${`%${f.q}%`})`);
+  // Tìm "chứa chuỗi" trên hai bảng: hai tập ứng viên riêng, mỗi tập dùng trigram của nó (OR xuyên bảng sẽ quét cả bảng — D-48).
+  if (f.q) parts.push(Prisma.sql`s."id" IN (SELECT s2."id" FROM "Shipment" s2 JOIN "Order" o2 ON o2."id" = s2."orderId" WHERE o2."workspaceId" = ${u.workspaceId} AND o2."orderNumber" ILIKE ${`%${f.q}%`}
+    UNION SELECT s3."id" FROM "Shipment" s3 WHERE s3."workspaceId" = ${u.workspaceId} AND s3."trackingNo" ILIKE ${`%${f.q}%`})`);
   return Prisma.join(parts, " AND ");
 }
 
@@ -59,8 +62,8 @@ export async function listInterventions(u: SessionUser, f: InterventionFilter) {
       ORDER BY s."failedAt" ASC, s."id" LIMIT ${INTERVENTION_PAGE} OFFSET ${(f.page - 1) * INTERVENTION_PAGE}`,
     db.$queryRaw<{ n: number }[]>`SELECT COUNT(*)::int AS n FROM "Shipment" s JOIN "Order" o ON o."id" = s."orderId" WHERE ${w}`,
     db.$queryRaw<{ reason: string; n: number }[]>`
-      SELECT COALESCE(s."failureReason", 'other') AS reason, COUNT(*)::int AS n FROM "Shipment" s JOIN "Order" o ON o."id" = s."orderId"
-      WHERE ${where(u, f, false)} GROUP BY 1 ORDER BY 2 DESC`,
+      SELECT COALESCE(s."failureReason", 'unknown') AS reason, COUNT(*)::int AS n FROM "Shipment" s JOIN "Order" o ON o."id" = s."orderId"
+      WHERE ${where(u, f, false)} GROUP BY 1 ORDER BY 2 DESC, 1`,
   ]);
   const ids = [...new Set(rows.map((r) => r.orderId))];
   const [orders, actions] = await Promise.all([
@@ -77,14 +80,14 @@ export async function listInterventions(u: SessionUser, f: InterventionFilter) {
   const money = can(u.roles, "finance.view");
   return {
     total: n, page: f.page, pageSize: INTERVENTION_PAGE,
-    byReason: byReason.map((r) => ({ reason: r.reason, label: reasonLabel(r.reason), fault: (FAILURE_REASONS[r.reason as keyof typeof FAILURE_REASONS]?.fault ?? "other") as Fault, n: r.n })),
+    byReason: byReason.map((r) => ({ reason: r.reason, label: reasonLabel(r.reason === "unknown" ? null : r.reason), fault: (FAILURE_REASONS[r.reason as keyof typeof FAILURE_REASONS]?.fault ?? "other") as Fault, n: r.n })),
     rows: rows.map((r) => {
       const o = byId.get(r.orderId)!;
       return {
         orderId: r.orderId, orderNumber: o.orderNumber, store: o.store.name, market: o.market?.code ?? null, bookedAt: o.bookedAt.toISOString(),
         customerId: o.customerId, customerName: o.customer?.displayName ?? o.customerName, phone: pii.phone(o.customer?.primaryPhoneE164 ?? o.customerPhone),
         amount: money ? o.netAmount.toString() : null, currency: o.currency,
-        failedAt: r.failedAt.toISOString(), reason: r.reason ?? "other", reasonLabel: reasonLabel(r.reason ?? "other"),
+        failedAt: r.failedAt.toISOString(), reason: r.reason ?? "unknown", reasonLabel: reasonLabel(r.reason),
         fault: (FAILURE_REASONS[(r.reason ?? "other") as keyof typeof FAILURE_REASONS]?.fault ?? "other") as Fault,
         carrier: r.carrier, trackingNo: r.trackingNo, priorActions: prior.get(r.orderId) ?? 0,
       };
@@ -152,7 +155,8 @@ export async function actOnDelivery(u: SessionUser, input: unknown, now = new Da
 }
 
 /** Lịch sử xử lý giao hàng của một đơn (trang đơn). */
-export async function deliveryActions(orderId: string) {
+export async function deliveryActions(u: SessionUser, orderId: string) {
+  requirePerm(u, "order.view");
   const rows = await db.deliveryAction.findMany({ where: { orderId }, orderBy: { createdAt: "asc" }, select: { id: true, kind: true, failedAt: true, reasonCode: true, note: true, ticketId: true, createdAt: true, createdById: true } });
   const users = new Map((await db.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.createdById))] } }, select: { id: true, name: true } })).map((x) => [x.id, x.name]));
   return rows.map((r) => ({ ...r, failedAt: r.failedAt.toISOString(), createdAt: r.createdAt.toISOString(), reasonLabel: reasonLabel(r.reasonCode), by: users.get(r.createdById) ?? "—" }));

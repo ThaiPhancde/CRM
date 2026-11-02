@@ -1,6 +1,7 @@
 "use client";
 // Dán bảng đối soát COD của hãng → Xem trước từng dòng → Áp dụng (mẫu Purchasing 5.1). Xem trước không ghi gì.
-import { useActionState, useState } from "react";
+// Ô nhập có kiểm soát: React 19 tự xóa form sau mỗi action, bảng vừa dán phải còn để bấm Ghi. Ghi chỉ mở khi nội dung = nội dung vừa xem trước.
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Badge, Button, type Tone } from "@/components/ui";
 import { settlementAction, type SettlementState } from "./actions";
 
@@ -12,16 +13,22 @@ const SAMPLE = "ma_van_don\tso_tien\tngay_ve\nARA00000123\t163,00\t12/10/2026";
 
 export function SettlementForm({ carriers }: { carriers: string[] }) {
   const [state, action, pending] = useActionState<SettlementState, FormData>(settlementAction, null);
-  const [dirty, setDirty] = useState(false);
+  const [v, setV] = useState({ carrier: "", reference: "", text: "" });
+  const key = JSON.stringify(v);
+  const submitted = useRef("");
+  const [previewed, setPreviewed] = useState<string | null>(null);
+  useEffect(() => { if (state?.ok && !state.applied) setPreviewed(submitted.current); }, [state]);
   const lines = state?.lines ?? [];
   const ready = lines.filter((l) => l.status === "ready").length;
+  const dirty = previewed !== null && previewed !== key;
   const canApply = !!state?.ok && !state.applied && ready > 0 && !dirty;
+  const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV((x) => ({ ...x, [k]: e.target.value }));
   return (
-    <form action={action} onChange={() => setDirty(true)} onSubmit={() => setDirty(false)} className="space-y-3 px-4 py-3">
+    <form action={action} onSubmit={() => { submitted.current = key; }} className="space-y-3 px-4 py-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="st-carrier" className="mb-1 block text-xs font-medium text-fg">Hãng vận chuyển <span className="text-danger">*</span></label>
-          <select id="st-carrier" name="carrier" required defaultValue="" className={`${field} h-9`} aria-invalid={!!state?.fields?.carrier}>
+          <select id="st-carrier" name="carrier" required value={v.carrier} onChange={set("carrier")} className={`${field} h-9`} aria-invalid={!!state?.fields?.carrier}>
             <option value="" disabled>Chọn hãng…</option>
             {carriers.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -29,13 +36,13 @@ export function SettlementForm({ carriers }: { carriers: string[] }) {
         </div>
         <div>
           <label htmlFor="st-ref" className="mb-1 block text-xs font-medium text-fg">Mã bảng đối soát <span className="text-danger">*</span></label>
-          <input id="st-ref" name="reference" required maxLength={60} placeholder="Ví dụ: ARX-2026-10-W2" className={`${field} h-9`} aria-invalid={!!state?.fields?.reference} />
+          <input id="st-ref" name="reference" required maxLength={60} value={v.reference} onChange={set("reference")} placeholder="Ví dụ: ARX-2026-10-W2" className={`${field} h-9`} aria-invalid={!!state?.fields?.reference} />
           {state?.fields?.reference && <p className="mt-1 text-xs text-danger">{state.fields.reference}</p>}
         </div>
       </div>
       <div>
         <label htmlFor="st-text" className="mb-1 block text-xs font-medium text-fg">Dán bảng từ Excel <span className="text-danger">*</span></label>
-        <textarea id="st-text" name="text" required rows={8} placeholder={SAMPLE} className={`${field} py-2 font-mono text-xs`} aria-describedby="st-help" />
+        <textarea id="st-text" name="text" required rows={8} value={v.text} onChange={set("text")} placeholder={SAMPLE} className={`${field} py-2 font-mono text-xs`} aria-describedby="st-help" />
         <p id="st-help" className="mt-1 text-xs text-fg-muted">Dòng đầu là tiêu đề. Cột bắt buộc: <code>ma_van_don</code> (hoặc <code>ma_don</code>), <code>so_tien</code>, <code>ngay_ve</code> (dd/mm/yyyy). Tùy chọn: <code>ma_don</code> khi mã vận đơn trùng giữa hai đơn, <code>tien_te</code>. Tối đa 500 dòng.</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">

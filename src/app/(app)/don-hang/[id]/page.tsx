@@ -24,7 +24,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   }
   const { order: o, events, showMoney, pendingReviews } = data;
   bindTenant(user);
-  const [codMap, actions] = await Promise.all([orderCodSteps(user, [o.id]), deliveryActions(o.id)]);
+  const [codMap, actions] = await Promise.all([orderCodSteps(user, [o.id]), deliveryActions(user, o.id)]);
   const cod = codMap.get(o.id);
   const m = (v: string | null) => (showMoney ? money(v, o.currency) : "—");
   const platformOf = new Map(o.links.map((l) => [l.connectionId, l.connection.store.name]));
@@ -152,7 +152,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <Row k="Email" v={o.customerEmail} />
               <Row k="Giao tới" v={o.market ? `${o.market.code} · ${o.market.name}` : o.shipCountry} />
             </dl>
-            <p className="border-t border-border px-4 py-2 text-xs text-fg-subtle">Hồ sơ khách hợp nhất (Customer 360) có ở Phase 3.</p>
+            {o.customerId ? (
+              <p className="border-t border-border px-4 py-2 text-xs"><Link href={`/khach-hang/${o.customerId}`} className="text-brand-active hover:underline">Mở hồ sơ khách (Customer 360)</Link></p>
+            ) : (
+              <p className="border-t border-border px-4 py-2 text-xs text-fg-subtle">Đơn chưa gắn hồ sơ khách.</p>
+            )}
           </Card>
           <Card>
             <SectionTitle>Nguồn liên kết ({o.links.length})</SectionTitle>

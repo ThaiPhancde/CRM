@@ -3,6 +3,7 @@
 // (≈500/ngày), 1,5M tương tác, 150k việc, 300k thông báo. SCALE=0.1 để thử nhanh.
 // Chạy: DATABASE_URL=<…/crm_load> SCALE=1 npx tsx scripts/load/generate.ts
 import { PrismaClient, type Prisma } from "@prisma/client";
+import { backfillPhase10 } from "./phase10";
 
 const url = process.env.DATABASE_URL ?? "";
 if (!/\/[a-z0-9_]+_load(\?|$)/i.test(url)) throw new Error("Chỉ chạy trên DB *_load (đặt DATABASE_URL tới crm_load)");
@@ -85,6 +86,8 @@ async function main() {
   const EV = ["PICKED", "IN_TRANSIT", "DELIVERED"] as const;
   await batch("Sự kiện giao", N.orders * 3, (i) => ({ workspaceId: w, shipmentId: sid(Math.floor(i / 3)), type: EV[i % 3], occurredAt: new Date(NOW - (i % 300) * DAY) }),
     (r) => db.deliveryEvent.createMany({ data: r as Prisma.DeliveryEventCreateManyInput[] }));
+  // Phase 10: trạng thái vận đơn theo đơn, COD + mốc đã thu, lý do thất bại (đối soát dựng ở scripts/load/phase10.ts).
+  await backfillPhase10(db, w);
 
   // Lead: ≈500/ngày trong 12 tháng; lead cũ phần lớn đã đóng, 30 ngày gần nhất còn mở nhiều.
   const STAGES_OLD = ["DA_MUA", "TU_CHOI", "MAT_LIEN_LAC", "DA_MUA"] as const;

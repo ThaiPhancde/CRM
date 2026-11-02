@@ -19,13 +19,14 @@ export function DeliveryAction({ orderId, orderNumber, reasonLabel, carrierFault
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<"REATTEMPT" | "CANCEL" | "TICKET">(carrierFault ? "TICKET" : "REATTEMPT");
   const [key, setKey] = useState("");
+  const [note, setNote] = useState(""); // có kiểm soát: React 19 xóa form sau action, lỗi máy chủ không được làm mất ghi chú
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(deliveryAction, null);
   const toast = useToast();
   useEffect(() => setKey(crypto.randomUUID()), []);
   useEffect(() => {
     if (!state?.message) return;
     toast(state.message, state.ok ? "success" : "danger");
-    if (state.ok) { setOpen(false); setKey(crypto.randomUUID()); }
+    if (state.ok) { setOpen(false); setKey(crypto.randomUUID()); setNote(""); }
   }, [state, toast]);
   const formId = `delivery-${orderId}`;
   return (
@@ -58,7 +59,7 @@ export function DeliveryAction({ orderId, orderNumber, reasonLabel, carrierFault
           )}
           <div>
             <label htmlFor={`${formId}-n`} className="mb-1 block text-xs font-medium text-fg">Ghi chú{kind === "CANCEL" ? " (bắt buộc — lý do hủy)" : ""}</label>
-            <textarea id={`${formId}-n`} name="note" rows={3} maxLength={1000} required={kind === "CANCEL"} aria-invalid={!!state?.fields?.note} className={field}
+            <textarea id={`${formId}-n`} name="note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} required={kind === "CANCEL"} aria-invalid={!!state?.fields?.note} className={field}
               placeholder={kind === "REATTEMPT" ? "Ví dụ: khách hẹn giao sau 17h" : kind === "CANCEL" ? "Ví dụ: khách không còn nhu cầu" : "Thông tin thêm cho người xử lý"} />
             {state?.fields?.note && <p className="mt-1 text-xs text-danger">{state.fields.note}</p>}
           </div>

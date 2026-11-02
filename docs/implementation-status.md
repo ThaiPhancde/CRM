@@ -16,7 +16,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 7 Journey + marketing | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-7.md`) | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
 | 8 Trung tâm AI | **Xong, chờ nghiệm thu** | 02/11/2026 | 382 test (381 xanh, 1 bỏ qua); LLM replay + khung Anthropic; 6 chức năng AI; duyệt, chi phí, ngân sách; AI 5/5 đạt đo tải; Gemini 3 job (trang /ai, từ điển ar/de, bảng test) |
 | 9 Báo cáo + dashboard | **Đã nghiệm thu** (`docs/acceptance/phase-9.md`) | 02/11/2026 | 445 test (444 xanh, 1 bỏ qua); 6 nhóm báo cáo + dashboard theo vai + Excel; REV khớp /don-hang; đo tải 11/11 báo cáo < 3 s; Gemini 2 job (vận đơn, AI, bảng test kỳ) |
-| 10 Vận đơn + sản phẩm | Chưa | | |
+| 10 Vận đơn + sản phẩm | **Đã nghiệm thu** (`docs/acceptance/phase-10.md`) | 02/11/2026 | 591 test (590 xanh, 1 bỏ qua); /van-don can thiệp + COD bốn mốc + đối soát dán bảng; REV-04 gồm COD đã về; /san-pham qua PurchasingLink; đo tải 74/75; Gemini 2 job (trang sản phẩm, bảng test — 4 lỗi biên đúng) |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
 | 12 Lên thật | Ngoài demo | | |
 
@@ -143,6 +143,23 @@ Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; t�
 **Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
 
 **Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
+## Phase 10 — đã làm (02/11/2026)
+
+**Đã làm:**
+- Schema (migration `phase10_fulfillment`, `delivery_action_once`, `shipment_tracking_trgm`, `shipment_tracking_idx`): `Settlement`, `SettlementLine` (unique đơn + mã vận đơn), `DeliveryAction` (unique đơn + lần thất bại), `Shipment.failedAt`, `DeliveryEvent.reasonRaw`.
+- `src/modules/fulfillment`: `reasons.ts` (lý do chuẩn hóa + thuộc khách/hãng, từ điển en/vi/ar/fr/de, nhập đơn tự chuẩn hóa), `service.ts` (cần can thiệp, giao lại/hủy/chuyển ticket — Outbox SIMULATED), `cod.ts` (đối soát dán bảng xem trước/ghi, CASH-01/02/03 qua Warehouse, COD kẹt, bốn mốc), `paste.ts`, `milestones.ts` (hàm thuần). REV-04 (báo cáo + chỉ số khách R12M) gồm COD đã về. `src/adapters/purchasing` (PurchasingLink fixture, `PURCHASING_LINK`), `src/modules/products/service.ts` (tồn theo thị trường, tồn thấp, lấy giá vốn, ánh xạ mã nguồn).
+- Giao diện: `/van-don` 3 tab (Claude); bốn mốc COD + lịch sử xử lý ở trang đơn, cột COD + "COD đã về" ở trang khách, bảng CASH ở báo cáo tài chính + Excel (Claude); `/san-pham` danh sách + chi tiết (Gemini). Quyền mới `fulfillment.view/manage`, `cod.reconcile`, `product.map/sync`.
+- Dữ liệu: `scripts/seed-fulfillment.ts` (đối soát demo theo hãng × tuần), `scripts/gen-purchasing.ts`, `scripts/load/phase10.ts`.
+- Sửa ngoài phạm vi: **cô lập workspace** — lead/ticket chưa có nhóm báo "mọi MANAGER" trên toàn DB (Membership không tự gắn workspace) → lọc workspace (`routing.ts`, `tickets.ts`, test hồi quy); **kế hoạch chung của Postgres** làm báo cáo quá 15 s sau 5 lần xem → `plan_cache_mode = force_custom_plan` ở `Warehouse.read`; trang đơn thiếu link sang hồ sơ khách.
+
+**Test đã chạy:** `npx vitest run` → **590 passed, 1 skipped** (17 file). `tests/fulfillment.test.ts` 5 ca: một đơn COD qua 4 mốc ở đơn/CASH/REV-04/chỉ số khách, dán lại không cộng trùng; 11 kiểu dòng sai (chưa thu, không COD, mã mơ hồ, khác hãng, về trước thu, trùng dòng, ngày không có thật…), Kế toán 403; can thiệp (Outbox, bấm lại, 409, thất bại lại hiện lại, ticket); lỗi hãng không đổi điểm, lý do khách chỉ tăng rủi ro giao dịch; sản phẩm (tồn thấp theo ngưỡng, che giá vốn, lấy giá vốn + ánh xạ idempotent). `tests/fulfillment-pure.test.ts` (Gemini + 7 ca hồi quy Claude). `tsc` 0; `next build` thành công. Trình duyệt: Quản lý nhập đối soát qua form → đơn LAE00308 đủ 4 mốc ở đơn, khách, báo cáo; Vận đơn xử lý giao lại qua modal; Kế toán thấy tiền không có nút xử lý; Sales 404; console 0 lỗi. Đo tải `docs/perf/phase10.json`.
+
+**Lỗi tìm thấy:** alias `s` trùng (Shipment/Store) trong SQL CASH; React 19 tự xóa form sau action làm mất bảng vừa dán → ô nhập có kiểm soát, Ghi chỉ mở khi nội dung = nội dung đã xem trước; `codCarriers`/`codSummary`/`orderCodSteps`/`deliveryActions` thiếu `requirePerm`; nguồn không gửi lý do bị gộp vào "Lý do khác" → tách "Không rõ lý do"; tên biến môi trường lệch `demo-strategy.md` → `PURCHASING_LINK`.
+
+**Còn thiếu:** API Purchasing thật (Q-16); đối soát bằng file .xlsx (đang dán bảng); cảnh báo tồn thấp chưa gửi thông báo; giao lại/hủy chỉ ghi yêu cầu (không ghi ngược POS/hãng — D-13).
+
+**Chia việc (D-54, 70/30):** Claude ~1.900 dòng / Gemini ~950 dòng ≈ **67/33**.
 
 ## Phase 9 — đã làm (02/11/2026)
 

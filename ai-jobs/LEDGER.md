@@ -33,8 +33,12 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 26 | 2026-11-02 | p8-ai `ai-tests`: bảng test parseSearch/parseAssistant/redact/costUsd | 1 | gemini-4-argon-high, write | 300 s | checker 0; vitest 52 ca xanh | 0 | 2 nghi vấn về code Claude, cả hai đúng → Claude sửa lõi + thêm 7 ca hồi quy | ~600 dòng |
 | 27 | 2026-11-02 | p9-reports `report-sections`: báo cáo vận đơn + AI | 1 | gemini-4-argon-high, write | 164 s | checker 0, tsc 0 | 0 | 0 sửa (Claude đổi nhãn 'unknown' ở service) | ~250 dòng |
 | 28 | 2026-11-02 | p9-reports `report-tests`: bảng test kỳ/tiền tệ/cohort | 1 | gemini-4-argon-high, write | 246 s | checker 0; vitest 56 ca xanh | 0 | 1 nghi vấn đúng (ngày không có thật được chấp nhận) → Claude sửa + 4 ca hồi quy | ~300 dòng |
+| 29 | 2026-11-02 | p10-fulfillment `product-pages`: /san-pham danh sách + chi tiết | 1 | gemini-4-argon-high, write | 236 s | checker 0, tsc 0 | 0 | 0 sửa (dùng đúng contract, che tiền theo quyền) | ~560 dòng |
+| 30 | 2026-11-02 | p10-fulfillment `p10-tests`: bảng test lý do/đọc bảng dán/bốn mốc COD | 1 | gemini-4-argon-high, write | 269 s | checker 0; vitest xanh | 0 | **4 nghi vấn đúng** (đếm dòng đối soát thay vì vận đơn, giây > 59, rowNo lệch khi có dòng trống đầu, "12,34,56") → Claude sửa + 7 ca hồi quy | ~390 dòng |
 
 ## Notes
+
+9. Batch p10-fulfillment (2 job song song, 269 s; ~67/33 theo dòng): cả 2 qua checker + tsc lần đầu, 0 ghi sai chỗ. Lần thứ tư liên tiếp job test bảng tìm ra lỗi thật trong code Claude — lần này 4 lỗi biên (đếm mốc COD, giây, số dòng, nhóm nghìn). Giao Gemini đọc kỹ hàm thuần và liệt kê nghi vấn là việc đáng nhất của tỷ lệ 30%.
 
 8. Batch p9-reports (2 job, 246 s; ~71/29 — về lại mục tiêu D-54 nhờ giao ít việc hơn p8): cả 2 qua checker + tsc lần đầu, 0 ghi sai chỗ, 0 lỗi review phía Gemini. Lần thứ ba liên tiếp job test bảng tìm ra lỗi thật trong code Claude (ngày không có thật). Gemini dựng phần báo cáo nhanh và đúng khi có sẵn khung + mẫu + hợp đồng chặt.
 
