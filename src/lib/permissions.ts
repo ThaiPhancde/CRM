@@ -69,6 +69,11 @@ const MATRIX = {
   "knowledge.publish": ["MANAGER", "SALES_LEAD", "MARKETING"],
   /** Đổi trọng số điểm (tạo phiên bản mới), tính lại điểm ngay (Phase 6). */
   "score.config": ["MANAGER"],
+  /** Phân khúc, chiến dịch, hành trình (soạn, chạy thử). Bật hành trình gửi tin thật (giả lập) cần journey.activate. */
+  "segment.manage": ["MANAGER", "MARKETING"],
+  "campaign.manage": ["MANAGER", "MARKETING"],
+  "journey.manage": ["MANAGER", "MARKETING"],
+  "journey.activate": ["MANAGER"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof MATRIX;

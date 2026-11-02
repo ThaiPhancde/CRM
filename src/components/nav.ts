@@ -36,9 +36,9 @@ export const NAV: NavGroup[] = [
   {
     label: "Marketing",
     items: [
-      { href: "/phan-khuc", label: "Phân khúc", icon: "pie", phase: 7 },
-      { href: "/hanh-trinh", label: "Hành trình", icon: "route", phase: 7 },
-      { href: "/chien-dich", label: "Chiến dịch", icon: "flag", phase: 7 },
+      { href: "/phan-khuc", label: "Phân khúc", icon: "pie", perm: "segment.manage" },
+      { href: "/hanh-trinh", label: "Hành trình", icon: "route", perm: "journey.manage" },
+      { href: "/chien-dich", label: "Chiến dịch", icon: "flag", perm: "campaign.manage" },
     ],
   },
   {

@@ -164,6 +164,7 @@ SELECT base.customer_id, base.orders, base.delivered_orders, base.failed_by_cust
   base.rev01, base.rev02, base.rev03, base.rev04, base.refunds,
   CASE WHEN base.missing_cost > 0 THEN NULL ELSE base.gross_profit END AS gross_profit,
   base.first_order_at, base.last_valid_at, base.recency_days, base.avg_cycle_days, base.repurchase60,
+  base.avg_cycle_days - base.recency_days AS days_to_next,
   rfm.r_score, rfm.f_score, rfm.m_score, base.open_tickets, base.max_open_priority, base.oldest_open
 FROM base LEFT JOIN rfm ON rfm.customer_id = base.customer_id`;
 }
@@ -171,10 +172,10 @@ FROM base LEFT JOIN rfm ON rfm.customer_id = base.customer_id`;
 /** Ghi kết quả vào CustomerMetric phía DB (Postgres: INSERT … SELECT; BigQuery dùng MERGE ở Phase 12). */
 export function customerMetricsInsert(d: Dialect): string {
   const { t, c } = d;
-  const cols = ["id", "workspaceId", "customerId", "period", "asOf", "createdAt", "orders", "deliveredOrders", "failedByCustomer", "confirmedOrders", "rev01", "rev02", "rev03", "rev04", "refunds", "grossProfit", "firstOrderAt", "lastValidOrderAt", "recencyDays", "avgCycleDays", "repurchase60", "rScore", "fScore", "mScore", "openTickets", "maxOpenPriority", "oldestOpenTicketAt"];
+  const cols = ["id", "workspaceId", "customerId", "period", "asOf", "createdAt", "orders", "deliveredOrders", "failedByCustomer", "confirmedOrders", "rev01", "rev02", "rev03", "rev04", "refunds", "grossProfit", "firstOrderAt", "lastValidOrderAt", "recencyDays", "avgCycleDays", "repurchase60", "rScore", "fScore", "mScore", "openTickets", "maxOpenPriority", "oldestOpenTicketAt", "daysToNextPurchase"];
   return `INSERT INTO ${t("CustomerMetric")} (${cols.map(c).join(", ")})
 SELECT @ws || ':' || m.customer_id || ':R12M', @ws, m.customer_id, 'R12M', ${d.ts("@asOf")}, ${d.ts("@asOf")}, m.orders, m.delivered_orders, m.failed_by_customer, m.confirmed_orders,
   m.rev01, m.rev02, m.rev03, m.rev04, m.refunds, m.gross_profit, m.first_order_at, m.last_valid_at, m.recency_days, m.avg_cycle_days,
-  m.repurchase60 = 1, m.r_score, m.f_score, m.m_score, m.open_tickets, m.max_open_priority, m.oldest_open
+  m.repurchase60 = 1, m.r_score, m.f_score, m.m_score, m.open_tickets, m.max_open_priority, m.oldest_open, m.days_to_next
 FROM (${customerMetricsSelect(d)}) m`;
 }

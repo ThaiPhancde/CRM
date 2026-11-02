@@ -105,6 +105,8 @@ model Brand {
   leads       Lead[]
   scripts     Script[]
 
+  campaigns Campaign[]
+
   @@unique([workspaceId, code])
 }
 
@@ -523,6 +525,11 @@ model Customer {
 
   tickets Ticket[]
 
+  metrics     CustomerMetric[]
+  scores      Score[]
+  journeyRuns JourneyRun[]
+  touchpoints Touchpoint[]
+
   @@index([workspaceId, primaryPhoneE164])
   @@index([workspaceId, lastOrderAt])
   @@index([workspaceId, marketId])
@@ -788,6 +795,8 @@ model Lead {
   assignments        Assignment[]
   activities         Activity[]
   tasks              Task[]
+
+  touchpoints Touchpoint[]
 
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, ownerId, stage])
@@ -1168,7 +1177,10 @@ model CustomerMetric {
   openTickets        Int       @default(0)
   maxOpenPriority    Int       @default(0)
   oldestOpenTicketAt DateTime?
+  /// Số ngày tới lần mua kế tiếp dự kiến = chu kỳ TB − độ gần (âm = đã quá chu kỳ). Null khi < 2 đơn giao. Dùng cho hành trình mua lại (HLD §8.5).
+  daysToNextPurchase Float?
   createdAt          DateTime  @default(now())
+  customer           Customer  @relation(fields: [customerId], references: [id])
 
   @@unique([workspaceId, customerId, period])
   @@index([customerId])
@@ -1215,10 +1227,230 @@ model Score {
   suggestedAction String?
   computedAt      DateTime
   version         ScoreVersion @relation(fields: [versionId], references: [id])
+  customer        Customer?    @relation(fields: [customerId], references: [id])
 
   @@unique([versionId, customerId])
   @@unique([versionId, leadId])
   @@index([customerId])
   @@index([leadId])
   @@index([workspaceId, type, band])
+}
+
+// ---- Phase 7: điều phối chăm sóc + marketing (thiết kế mục 10 Phase 7, HLD §8.5) --------------------
+
+/// Phân khúc động: điều kiện JSON (cây and/or) dịch sang truy vấn khách (src/modules/marketing/segments.ts). Chạy = lưu ảnh chụp.
+model Segment {
+  id          String       @id @default(cuid())
+  workspaceId String
+  name        String
+  description String?
+  rules       Json
+  active      Boolean      @default(true)
+  lastRunAt   DateTime?
+  lastCount   Int?
+  createdById String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  runs        SegmentRun[]
+  journeys    Journey[]
+  campaigns   Campaign[]
+
+  @@index([workspaceId, active])
+}
+
+/// Một lần chạy phân khúc (ảnh chụp điều kiện + số khách). Danh sách khách chỉ giữ cho lần chạy mới nhất (giới hạn dung lượng — D-55).
+model SegmentRun {
+  id          String          @id @default(cuid())
+  workspaceId String
+  segmentId   String
+  rules       Json
+  count       Int
+  ms          Int
+  ranById     String?
+  createdAt   DateTime        @default(now())
+  segment     Segment         @relation(fields: [segmentId], references: [id])
+  members     SegmentMember[]
+
+  @@index([segmentId, createdAt])
+}
+
+model SegmentMember {
+  id          String     @id @default(cuid())
+  workspaceId String
+  runId       String
+  customerId  String
+  run         SegmentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, customerId])
+  @@index([customerId])
+}
+
+enum JourneyStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+}
+
+/// Hành trình: khách trong phân khúc được đưa vào; các bước tuyến tính (chờ, điều kiện, gửi tin, tạo việc, gán thẻ, thoát) trong `steps`.
+model Journey {
+  id            String        @id @default(cuid())
+  workspaceId   String
+  name          String
+  description   String?
+  segmentId     String
+  brandId       String?
+  steps         Json
+  /// Điều kiện ra kiểm trước mỗi bước: { purchased, optOut, openTicket } (bật/tắt) + expireDays.
+  exitRules     Json
+  /// Không đưa lại khách đã ra khỏi hành trình trong N ngày.
+  reentryDays   Int           @default(30)
+  status        JourneyStatus @default(DRAFT)
+  activatedById String?
+  activatedAt   DateTime?
+  createdById   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  segment       Segment       @relation(fields: [segmentId], references: [id])
+  runs          JourneyRun[]
+  campaigns     Campaign[]
+
+  @@index([workspaceId, status])
+  @@index([segmentId])
+}
+
+enum JourneyRunStatus {
+  RUNNING
+  COMPLETED
+  EXITED
+}
+
+model JourneyRun {
+  id          String           @id @default(cuid())
+  workspaceId String
+  journeyId   String
+  customerId  String
+  /// Ngày vào (YYYY-MM-DD) — khóa chống đưa trùng một khách vào cùng hành trình trong cùng ngày khi chạy đồng thời.
+  entryKey    String
+  status      JourneyRunStatus @default(RUNNING)
+  stepIndex   Int              @default(0)
+  nextAt      DateTime
+  enteredAt   DateTime
+  exitedAt    DateTime?
+  exitReason  String?
+  journey     Journey          @relation(fields: [journeyId], references: [id])
+  customer    Customer         @relation(fields: [customerId], references: [id])
+  logs        JourneyStepLog[]
+
+  @@unique([journeyId, customerId, entryKey])
+  @@index([customerId])
+  @@index([workspaceId, status, nextAt])
+  @@index([journeyId, status])
+}
+
+/// Nhật ký từng bước (chỉ thêm). Khóa (run, bước) làm idempotency: chạy lại không gửi/tạo việc trùng.
+model JourneyStepLog {
+  id          String     @id @default(cuid())
+  workspaceId String
+  runId       String
+  stepIndex   Int
+  stepType    String
+  outcome     String
+  detail      String?
+  createdAt   DateTime   @default(now())
+  run         JourneyRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, stepIndex])
+}
+
+/// Giới hạn liên hệ xuyên chiến dịch (HLD §8.5, Q-24): tối đa maxCount tin/kênh trong windowDays (brandId null = mọi brand).
+model ContactCap {
+  id          String   @id @default(cuid())
+  workspaceId String
+  channel     String
+  brandId     String?
+  maxCount    Int
+  windowDays  Int
+  updatedAt   DateTime @updatedAt
+
+  @@unique([workspaceId, channel, brandId])
+}
+
+/// Mỗi lần thật sự liên hệ khách (tin marketing/chăm sóc tự động) — nguồn đếm giới hạn liên hệ, xuyên hành trình/chiến dịch.
+model ContactLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  customerId  String
+  channel     String
+  brandId     String?
+  source      String
+  refId       String?
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, customerId, channel, createdAt])
+}
+
+enum CampaignStatus {
+  DRAFT
+  RUNNING
+  ENDED
+}
+
+/// Chiến dịch: gom hành trình/phân khúc + nguồn tiếp cận; chi phí nhập tay (nguyên tệ + VND quy đổi — D-44).
+model Campaign {
+  id           String         @id @default(cuid())
+  workspaceId  String
+  name         String
+  brandId      String?
+  segmentId    String?
+  journeyId    String?
+  channel      String
+  utmCampaign  String?
+  status       CampaignStatus @default(DRAFT)
+  startAt      DateTime?
+  endAt        DateTime?
+  cost         Decimal?       @db.Decimal(18, 4)
+  costCurrency String?
+  costBase     Decimal?       @db.Decimal(18, 4)
+  createdById  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  brand        Brand?         @relation(fields: [brandId], references: [id])
+  segment      Segment?       @relation(fields: [segmentId], references: [id])
+  journey      Journey?       @relation(fields: [journeyId], references: [id])
+  touchpoints  Touchpoint[]
+
+  @@unique([workspaceId, utmCampaign])
+  @@index([brandId])
+  @@index([segmentId])
+  @@index([journeyId])
+  @@index([workspaceId, status])
+}
+
+/// Điểm chạm: nguồn tiếp cận của khách/lead (UTM), chi phí nhập tay tùy chọn.
+model Touchpoint {
+  id             String    @id @default(cuid())
+  workspaceId    String
+  customerId     String?
+  leadId         String?
+  campaignId     String?
+  source         String
+  medium         String?
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
+  utmContent     String?
+  cost           Decimal?  @db.Decimal(18, 4)
+  costCurrency   String?
+  occurredAt     DateTime
+  idempotencyKey String?
+  createdAt      DateTime  @default(now())
+  customer       Customer? @relation(fields: [customerId], references: [id])
+  lead           Lead?     @relation(fields: [leadId], references: [id])
+  campaign       Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([customerId])
+  @@index([leadId])
+  @@index([campaignId])
+  @@index([workspaceId, occurredAt])
 }

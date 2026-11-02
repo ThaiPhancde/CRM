@@ -1,0 +1,24 @@
+"use server";
+// Server action hành trình — dữ liệu → service (quyền soạn/bật, kiểm bước, audit ở service).
+import type { JourneyStatus } from "@prisma/client";
+import { runAction } from "@/lib/action";
+import { saveJourney, setJourneyStatus } from "@/modules/marketing/journeys";
+import type { ActionResult } from "@/components/form";
+
+const PATHS = ["/hanh-trinh", "/chien-dich"];
+
+/** FormData: payload (JSON: id, name, description, segmentId, brandId, steps, exitRules, reentryDays). */
+export async function saveJourneyAction(_: ActionResult | null, fd: FormData) {
+  return runAction(fd, async (u) => {
+    let payload: unknown;
+    try { payload = JSON.parse(String(fd.get("payload") ?? "")); } catch { return "Dữ liệu hành trình không hợp lệ"; }
+    const j = await saveJourney(u, payload);
+    return `Đã lưu hành trình "${j.name}".`;
+  }, PATHS, "Đã lưu.");
+}
+/** FormData: id, status (ACTIVE | PAUSED | DRAFT) */
+export async function setJourneyStatusAction(_: ActionResult | null, fd: FormData) {
+  const status = String(fd.get("status")) as JourneyStatus;
+  if (!["ACTIVE", "PAUSED", "DRAFT"].includes(status)) return { ok: false, message: "Trạng thái không hợp lệ" };
+  return runAction(null, async (u) => void (await setJourneyStatus(u, String(fd.get("id")), status)), PATHS, status === "ACTIVE" ? "Đã bật hành trình — worker đưa khách vào ở lượt kế tiếp." : status === "PAUSED" ? "Đã tạm dừng hành trình." : "Đã chuyển về nháp.");
+}
