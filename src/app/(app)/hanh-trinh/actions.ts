@@ -1,6 +1,7 @@
 "use server";
 // Server action hành trình — dữ liệu → service (quyền soạn/bật, kiểm bước, audit ở service).
 import type { JourneyStatus } from "@prisma/client";
+import { ValidationError } from "@/lib/errors";
 import { runAction } from "@/lib/action";
 import { saveJourney, setJourneyStatus } from "@/modules/marketing/journeys";
 import type { ActionResult } from "@/components/form";
@@ -11,7 +12,7 @@ const PATHS = ["/hanh-trinh", "/chien-dich"];
 export async function saveJourneyAction(_: ActionResult | null, fd: FormData) {
   return runAction(fd, async (u) => {
     let payload: unknown;
-    try { payload = JSON.parse(String(fd.get("payload") ?? "")); } catch { return "Dữ liệu hành trình không hợp lệ"; }
+    try { payload = JSON.parse(String(fd.get("payload") ?? "")); } catch { throw new ValidationError({ steps: "Dữ liệu hành trình không hợp lệ" }); }
     const j = await saveJourney(u, payload);
     return `Đã lưu hành trình "${j.name}".`;
   }, PATHS, "Đã lưu.");

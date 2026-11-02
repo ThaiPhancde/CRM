@@ -31,7 +31,7 @@ export type Step = z.infer<typeof stepSchema>;
 export const exitRulesSchema = z.object({ purchased: z.boolean().default(true), optOut: z.boolean().default(true), openTicket: z.boolean().default(true), expireDays: z.coerce.number().int().min(1).max(365).default(30) });
 export type ExitRules = z.infer<typeof exitRulesSchema>;
 
-export const STEP_LABEL: Record<Step["type"], string> = { WAIT: "Chờ", CONDITION: "Điều kiện", STOCK_CHECK: "Kiểm tồn", SEND: "Gửi tin", TASK: "Tạo việc", TAG: "Gán thẻ", EXIT: "Thoát" };
+export { STEP_LABEL } from "./labels";
 
 // ---- Quy tắc liên hệ (D-55) ----
 
@@ -116,7 +116,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
     const cust = await c.customer.findUniqueOrThrow({ where: { id: run.customerId }, select: { displayName: true, primaryEmail: true, primaryPhoneE164: true, locale: true, tags: true, market: { select: { code: true, timezone: true, locale: true } } } });
     switch (step.type) {
       case "WAIT": {
-        await log("WAIT", "WAITING", `Tới ${new Date(now.getTime() + step.days * DAY).toISOString()}`);
+        await log("WAIT", "WAITING", `Chờ ${step.days} ngày`);
         await c.journeyRun.update({ where: { id: run.id }, data: { stepIndex: idx + 1, nextAt: new Date(now.getTime() + step.days * DAY) } });
         return "WAITING";
       }

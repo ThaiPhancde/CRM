@@ -1,5 +1,6 @@
 "use server";
 // Server action phân khúc — dữ liệu → service (quyền, danh sách trường cho phép, audit ở service).
+import { ValidationError } from "@/lib/errors";
 import { runAction } from "@/lib/action";
 import { previewSegment, runSegment, saveSegment } from "@/modules/marketing/segments";
 import type { ActionResult } from "@/components/form";
@@ -10,7 +11,7 @@ const PATHS = ["/phan-khuc", "/hanh-trinh"];
 export async function saveSegmentAction(_: ActionResult | null, fd: FormData) {
   return runAction(fd, async (u) => {
     let rules: unknown;
-    try { rules = JSON.parse(String(fd.get("rules") ?? "")); } catch { return "Điều kiện không hợp lệ"; }
+    try { rules = JSON.parse(String(fd.get("rules") ?? "")); } catch { throw new ValidationError({ rules: "Điều kiện không hợp lệ" }); }
     const s = await saveSegment(u, { id: fd.get("id"), name: fd.get("name"), description: fd.get("description"), rules });
     return `Đã lưu phân khúc "${s.name}".`;
   }, PATHS, "Đã lưu.");

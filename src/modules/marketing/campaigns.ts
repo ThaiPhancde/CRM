@@ -4,6 +4,7 @@ import { z } from "zod";
 import { bindTenant, db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { HttpError, parse, ValidationError } from "@/lib/errors";
+import { normalizePhone } from "@/lib/phone";
 import { requirePerm, type SessionUser } from "@/lib/session";
 
 const optId = z.string().trim().optional().transform((v) => v || undefined);
@@ -116,9 +117,21 @@ export async function getCampaign(user: SessionUser, id: string) {
 }
 export type CampaignDetail = Awaited<ReturnType<typeof getCampaign>>;
 
+/** Lựa chọn cho form chiến dịch (cùng quyền campaign.manage — không cần catalog.view). */
+export async function campaignOptions(user: SessionUser) {
+  requirePerm(user, "campaign.manage");
+  const [brands, segments, journeys] = await Promise.all([
+    db.brand.findMany({ where: { active: true }, orderBy: { code: "asc" }, select: { id: true, code: true, name: true } }),
+    db.segment.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true, lastCount: true } }),
+    db.journey.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, status: true } }),
+  ]);
+  return { brands, segments, journeys };
+}
+
 export const touchpointSchema = z.object({
   campaignId: optId,
   customerId: optId,
+  customerPhone: z.string().trim().max(30).optional().transform((v) => v || undefined),
   leadId: optId,
   source: z.string().trim().min(1, "Nhập nguồn").max(60),
   medium: z.string().trim().max(60).optional().transform((v) => v || undefined),
@@ -133,6 +146,12 @@ export const touchpointSchema = z.object({
 export async function addTouchpoint(user: SessionUser, input: unknown, now = new Date()) {
   requirePerm(user, "campaign.manage");
   const d = parse(touchpointSchema, input);
+  if (!d.customerId && d.customerPhone) {
+    const e164 = normalizePhone(d.customerPhone, "VN")?.e164;
+    const byPhone = e164 ? await db.customer.findFirst({ where: { primaryPhoneE164: e164, mergedIntoId: null }, select: { id: true } }) : null;
+    if (!byPhone) throw new ValidationError({ customerPhone: "Không tìm thấy khách với SĐT này" });
+    d.customerId = byPhone.id;
+  }
   if (!d.customerId && !d.leadId) throw new ValidationError({ customerId: "Gắn với một khách hoặc một nhu cầu mua" });
   if (d.cost && !d.costCurrency) throw new ValidationError({ costCurrency: "Nhập tiền tệ của chi phí" });
   const [camp, cust, lead] = await Promise.all([

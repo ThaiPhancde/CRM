@@ -4,6 +4,7 @@ import { runInWorkspace, workspaceDb } from "@/lib/db";
 import { ValidationError } from "@/lib/errors";
 import { loadUser } from "@/lib/session";
 import { enrollJourney, nextSendable, processDueRuns, saveJourney, setJourneyStatus, type Step } from "@/modules/marketing/journeys";
+import { addTouchpoint, listCampaigns, saveCampaign } from "@/modules/marketing/campaigns";
 import { compileRules, previewSegment, runSegmentFor, saveSegment } from "@/modules/marketing/segments";
 
 // 08:00 UTC = 12:00 Dubai, 09:00 Berlin (mùa đông) — trong khung gửi 9–20 giờ địa phương.
@@ -143,5 +144,29 @@ describe("Phase 7 — hành trình mua lại (HLD §8.5)", () => {
     const j = await journey(s);
     await expect(s.as(() => saveJourney(s.mkt, { id: j.id, name: j.name, segmentId: j.segmentId, steps: STEPS, exitRules: {} }))).rejects.toBeInstanceOf(ValidationError);
     await expect(s.as(() => saveJourney(s.mkt, { name: "Rỗng", segmentId: j.segmentId, steps: [{ type: "WAIT", days: 1 }], exitRules: {} }))).rejects.toThrow(ValidationError);
+  });
+});
+
+describe("Phase 7 — chiến dịch & điểm chạm", () => {
+  it("chi phí quy VND theo tỷ giá hiệu lực; trùng mã UTM bị chặn; điểm chạm gửi lại không nhân đôi; MKT-02 chi phí/lead", async () => {
+    const s = await setup("camp");
+    await s.c.fxRate.create({ data: { currency: "AED", rateToBase: "7000", validFrom: new Date("2026-10-01") } as never });
+    await s.c.fxRate.create({ data: { currency: "AED", rateToBase: "7100", validFrom: new Date("2026-11-01") } as never });
+    const camp = await s.as(() => saveCampaign(s.mkt, { name: "Mua lại tháng 11", channel: "EMAIL", utmCampaign: "rebuy-nov", cost: "100", costCurrency: "aed", startAt: "2026-11-02" }, T));
+    expect([camp.costCurrency, camp.costBase?.toString()]).toEqual(["AED", "710000"]);
+    await expect(s.as(() => saveCampaign(s.mkt, { name: "Bản sao", channel: "SMS", utmCampaign: "rebuy-nov" }, T))).rejects.toMatchObject({ fields: { utmCampaign: expect.stringMatching(/đã dùng/) } });
+    await expect(s.as(() => saveCampaign(s.mkt, { name: "Thiếu tỷ giá", channel: "SMS", cost: "5", costCurrency: "JPY" }, T))).rejects.toMatchObject({ fields: { costCurrency: expect.stringMatching(/Thiếu tỷ giá JPY/) } });
+
+    const cu = await s.customer("Eva", { phone: "+971501234567" });
+    const lead = await s.c.lead.create({ data: { contactName: "Eva", customerId: cu.id, source: "web" } as never });
+    const tp = { campaignId: camp.id, leadId: lead.id, source: "newsletter", medium: "email", idempotencyKey: "k-1" };
+    const a = await s.as(() => addTouchpoint(s.mkt, tp, T));
+    const b = await s.as(() => addTouchpoint(s.mkt, tp, T));
+    expect([b.id, a.customerId, a.utmCampaign]).toEqual([a.id, cu.id, "rebuy-nov"]);       // khách lấy từ lead, UTM từ chiến dịch
+    const byPhone = await s.as(() => addTouchpoint(s.mkt, { campaignId: camp.id, customerPhone: "+971 50 123 4567", source: "sms" }, T));
+    expect(byPhone.customerId).toBe(cu.id);
+    await expect(s.as(() => addTouchpoint(s.mkt, { source: "x" }, T))).rejects.toBeInstanceOf(ValidationError);
+    const [row] = await s.as(() => listCampaigns(s.mkt));
+    expect([row.touchpoints, row.leads, row.costPerLead]).toEqual([2, 1, "710000"]);
   });
 });
