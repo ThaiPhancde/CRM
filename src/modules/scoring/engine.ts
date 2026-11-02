@@ -60,10 +60,19 @@ export async function refreshAndScoreCustomers(client: Db, workspaceId: string, 
         row("SUPPORT_NEED", v.SUPPORT_NEED.id, { customerId: m.customerId }, scoreSupport({ openTickets: m.openTickets, maxOpenPriority: m.maxOpenPriority, oldestOpenAt: m.oldestOpenTicketAt }, v.SUPPORT_NEED.weights, now), now),
       ];
     });
-    await client.score.deleteMany({ where: { versionId: { in: [v.RFM.id, v.TXN_RISK.id, v.SUPPORT_NEED.id] }, customerId: { in: ids } } });
-    await client.score.createMany({ data: rows as never });
+    // Chỉ ghi điểm đã đổi (đa số điểm rủi ro/hỗ trợ giữ nguyên mỗi ngày): xóa + chèn qua 6 chỉ mục là phần đắt nhất của job.
+    // computedAt vì vậy = lần điểm thay đổi gần nhất; mốc tính chỉ số nằm ở CustomerMetric.asOf.
+    const old = new Map((await client.score.findMany({ where: { versionId: { in: [v.RFM.id, v.TXN_RISK.id, v.SUPPORT_NEED.id] }, customerId: { in: ids } }, select: { id: true, versionId: true, customerId: true, value: true, band: true, reasons: true, missingData: true, suggestedAction: true } })).map((e) => [`${e.versionId}:${e.customerId}`, e]));
+    const changed = rows.filter((r) => { const e = old.get(`${r.versionId}:${r.customerId}`); return !e || sig(e) !== sig(r); });
+    const stale = changed.flatMap((r) => old.get(`${r.versionId}:${r.customerId}`)?.id ?? []);
+    if (stale.length) await client.score.deleteMany({ where: { id: { in: stale } } });
+    if (changed.length) await client.score.createMany({ data: changed as never });
   }
 }
+
+/** Chữ ký nội dung điểm, không phụ thuộc thứ tự khóa (jsonb sắp lại khóa khi lưu). */
+const sig = (x: { value: unknown; band: unknown; reasons: unknown; missingData: unknown; suggestedAction: unknown }) =>
+  JSON.stringify([x.value, x.band, x.reasons, x.missingData, x.suggestedAction ?? null], (_, v) => (v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v));
 
 /** Chấm lại lead mở chưa có điểm của phiên bản hiện tại hoặc có tương tác mới hơn điểm. */
 export async function scoreOpenLeads(client: Db, now = new Date(), limit = 2000) {

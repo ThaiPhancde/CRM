@@ -12,7 +12,7 @@ import { HttpError, parse, ValidationError } from "@/lib/errors";
 import { enqueueOutbox } from "@/lib/notify";
 import { can } from "@/lib/permissions";
 import { requirePerm, type SessionUser } from "@/lib/session";
-import { groupSchema, segmentWhere, type Group } from "./segments";
+import { groupSchema, runSegmentFor, segmentCtx, segmentWhere, type Group } from "./segments";
 
 const DAY = 86400000;
 
@@ -42,16 +42,18 @@ export const QUIET = { from: 9, to: 20 };
 /** Giới hạn mặc định khi team chưa cấu hình ContactCap (Q-24): 2 tin / 7 ngày / kênh. */
 export const DEFAULT_CAP = { maxCount: 2, windowDays: 7 };
 
-const localHour = (at: Date, tz: string) => Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", hourCycle: "h23" }).format(at));
-/** Thời điểm gửi được gần nhất ≥ at theo giờ địa phương (dời tới 9:00 kế tiếp nếu đang ngoài khung). Hàm thuần — có test. */
+const localClock = (at: Date, tz: string) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(at); // "HH:MM"
+/** Thời điểm gửi được gần nhất ≥ at theo giờ địa phương (dời tới đúng 9:00 kế tiếp nếu đang ngoài khung). Hàm thuần — có test.
+ *  Bước 15 phút để đúng cả múi giờ lệch nửa/45 phút (Ấn Độ, Nepal). */
 export function nextSendable(at: Date, tz: string): Date {
-  const h = localHour(at, tz);
+  const h = Number(localClock(at, tz).slice(0, 2));
   if (h >= QUIET.from && h < QUIET.to) return at;
   const t = new Date(at);
-  t.setUTCMinutes(0, 0, 0);
-  for (let i = 0; i < 26; i++) {
-    t.setUTCHours(t.getUTCHours() + 1);
-    if (localHour(t, tz) === QUIET.from) return t;
+  t.setUTCMinutes(Math.floor(t.getUTCMinutes() / 15) * 15, 0, 0);
+  const target = `${String(QUIET.from).padStart(2, "0")}:00`;
+  for (let i = 0; i < 26 * 4; i++) {
+    t.setUTCMinutes(t.getUTCMinutes() + 15);
+    if (localClock(t, tz) === target) return t;
   }
   return at;
 }
@@ -71,31 +73,49 @@ function render(key: string, language: string, vars: Record<string, string>) {
 
 // ---- Máy chạy ----
 
-/** Đưa khách thỏa phân khúc vào hành trình đang bật (bỏ qua người đang chạy hoặc vừa ra trong reentryDays). Tối đa `limit` khách/lượt. */
+/** Đưa khách trong ảnh chụp mới nhất của phân khúc vào hành trình đang bật (bỏ qua người đang chạy hoặc vừa ra trong reentryDays).
+ *  Đọc ảnh chụp (SegmentMember, có index) chứ không chạy lại điều kiện — điều kiện nặng chỉ chạy khi làm mới phân khúc (D-55). */
 export async function enrollJourney(client: Db, journeyId: string, now = new Date(), limit = 5000) {
-  const j = await client.journey.findFirst({ where: { id: journeyId, status: "ACTIVE" }, include: { segment: true } });
+  const j = await client.journey.findFirst({ where: { id: journeyId, status: "ACTIVE" }, select: { segmentId: true, reentryDays: true } });
   if (!j) return { enrolled: 0 };
+  const snap = await client.segmentRun.findFirst({ where: { segmentId: j.segmentId }, orderBy: { createdAt: "desc" }, select: { id: true } });
+  if (!snap) return { enrolled: 0 };
   const since = new Date(now.getTime() - j.reentryDays * DAY);
-  const where: Prisma.CustomerWhereInput = {
-    AND: [segmentWhere(j.segment.rules as Group, { now, money: true }), { journeyRuns: { none: { journeyId, OR: [{ status: "RUNNING" }, { enteredAt: { gte: since } }, { exitedAt: { gte: since } }] } } }],
-  };
-  const ids = (await client.customer.findMany({ where, select: { id: true }, take: limit })).map((c) => c.id);
+  const ids = (await client.customer.findMany({
+    where: { mergedIntoId: null, segmentMembers: { some: { runId: snap.id } }, journeyRuns: { none: { journeyId, OR: [{ status: "RUNNING" }, { enteredAt: { gte: since } }, { exitedAt: { gte: since } }] } } },
+    select: { id: true }, take: limit,
+  })).map((c) => c.id);
   const entryKey = now.toISOString().slice(0, 10);
   const r = await client.journeyRun.createMany({ data: ids.map((customerId) => ({ journeyId, customerId, entryKey, nextAt: now, enteredAt: now })) as never, skipDuplicates: true });
   return { enrolled: r.count };
 }
 
-type RunCtx = { client: Db; now: Date; caps: { channel: string; brandId: string | null; maxCount: number; windowDays: number }[] };
+type RunCtx = { client: Db; now: Date; caps: { channel: string; brandId: string | null; maxCount: number; windowDays: number }[]; facts: Map<string, Facts>; customers: Map<string, Cust>; brands: Map<string, string> };
 
-/** Lý do ra khỏi hành trình (kiểm trước mỗi bước) hoặc null. */
-async function exitReason(c: Db, run: { customerId: string; enteredAt: Date }, rules: ExitRules, now: Date): Promise<string | null> {
+type Facts = { lastOrderAt: Date | null; optedOut: boolean; openTicket: boolean };
+const CUST_SELECT = { displayName: true, primaryEmail: true, primaryPhoneE164: true, locale: true, tags: true, market: { select: { code: true, timezone: true, locale: true } } } as const;
+type Cust = Prisma.CustomerGetPayload<{ select: typeof CUST_SELECT }>;
+
+/** Dữ kiện thoát cho cả lô (3 truy vấn cho mọi khách) — thay vì 3 truy vấn mỗi bước mỗi khách. */
+async function exitFacts(c: Db, customerIds: string[]): Promise<Map<string, Facts>> {
+  const [orders, prefs, tickets] = await Promise.all([
+    c.order.groupBy({ by: ["customerId"], where: { customerId: { in: customerIds }, status: { not: "CANCELLED" } }, _max: { bookedAt: true } }),
+    c.contactPreference.findMany({ where: { customerId: { in: customerIds }, purpose: "MARKETING" }, orderBy: { changedAt: "desc" }, select: { customerId: true, optIn: true } }),
+    c.ticket.groupBy({ by: ["customerId"], where: { customerId: { in: customerIds }, status: { in: ["MOI", "DANG_XU_LY", "CHO_KHACH"] } }, _count: { _all: true } }),
+  ]);
+  const latestPref = new Map<string, boolean>();
+  for (const p of prefs) if (!latestPref.has(p.customerId)) latestPref.set(p.customerId, p.optIn);
+  const open = new Set(tickets.map((t) => t.customerId));
+  const last = new Map(orders.map((o) => [o.customerId, o._max.bookedAt]));
+  return new Map(customerIds.map((id) => [id, { lastOrderAt: last.get(id) ?? null, optedOut: latestPref.get(id) === false, openTicket: open.has(id) }]));
+}
+
+/** Lý do ra khỏi hành trình (kiểm trước mỗi bước) hoặc null. Hàm thuần trên dữ kiện của lô. */
+function exitReason(f: Facts | undefined, run: { enteredAt: Date }, rules: ExitRules, now: Date): string | null {
   if (now.getTime() - run.enteredAt.getTime() > rules.expireDays * DAY) return `Hết hạn ${rules.expireDays} ngày`;
-  if (rules.purchased && (await c.order.count({ where: { customerId: run.customerId, status: { not: "CANCELLED" }, bookedAt: { gt: run.enteredAt } } }))) return "Khách đã mua";
-  if (rules.optOut) {
-    const last = await c.contactPreference.findFirst({ where: { customerId: run.customerId, purpose: "MARKETING" }, orderBy: { changedAt: "desc" } });
-    if (last && !last.optIn) return "Khách từ chối nhận tin";
-  }
-  if (rules.openTicket && (await c.ticket.count({ where: { customerId: run.customerId, status: { in: ["MOI", "DANG_XU_LY", "CHO_KHACH"] } } }))) return "Đang có khiếu nại cần xử lý";
+  if (rules.purchased && f?.lastOrderAt && f.lastOrderAt > run.enteredAt) return "Khách đã mua";
+  if (rules.optOut && f?.optedOut) return "Khách từ chối nhận tin";
+  if (rules.openTicket && f?.openTicket) return "Đang có khiếu nại cần xử lý";
   return null;
 }
 
@@ -106,14 +126,15 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
   const log = (stepType: string, outcome: string, detail?: string) => c.journeyStepLog.createMany({ data: [{ runId: run.id, stepIndex: idx, stepType, outcome, detail }] as never, skipDuplicates: true });
   const finish = (status: "COMPLETED" | "EXITED", reason?: string) => c.journeyRun.update({ where: { id: run.id }, data: { status, stepIndex: idx, exitedAt: now, exitReason: reason ?? null } });
   for (let guard = 0; guard < 50; guard++) {
-    const reason = await exitReason(c, run, j.exitRules, now);
+    const reason = exitReason(ctx.facts.get(run.customerId), run, j.exitRules, now);
     if (reason) return finish("EXITED", reason).then(() => "EXITED");
     if (idx >= j.steps.length) return finish("COMPLETED").then(() => "COMPLETED");
     const step = j.steps[idx];
     // Bước đã có nhật ký = đã chạy (kể cả lượt trước bị ngắt) → bỏ qua, không làm lại.
     const done = await c.journeyStepLog.findUnique({ where: { runId_stepIndex: { runId: run.id, stepIndex: idx } } });
     if (done) { idx++; continue; }
-    const cust = await c.customer.findUniqueOrThrow({ where: { id: run.customerId }, select: { displayName: true, primaryEmail: true, primaryPhoneE164: true, locale: true, tags: true, market: { select: { code: true, timezone: true, locale: true } } } });
+    const cust = ctx.customers.get(run.customerId);
+    if (!cust) return finish("EXITED", "Không còn hồ sơ khách").then(() => "EXITED");
     switch (step.type) {
       case "WAIT": {
         await log("WAIT", "WAITING", `Chờ ${step.days} ngày`);
@@ -121,7 +142,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
         return "WAITING";
       }
       case "CONDITION": {
-        const ok = await c.customer.count({ where: { AND: [{ id: run.customerId }, segmentWhere(step.rules as Group, { now, money: true })] } });
+        const ok = await c.customer.count({ where: { AND: [{ id: run.customerId }, segmentWhere(step.rules as Group, await segmentCtx(c, now, true))] } });
         await log("CONDITION", ok ? "PASSED" : "FAILED", step.label);
         if (!ok) { idx++; return finish("EXITED", `Không thỏa điều kiện: ${step.label}`).then(() => "EXITED"); }
         break;
@@ -147,7 +168,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
         else if (pref ? !pref.optIn : needOptIn) await log("SEND", "SKIPPED_NO_CONSENT", needOptIn && !pref ? `Thị trường ${cust.market?.code} cần khách đồng ý trước` : "Khách đã từ chối kênh này");
         else if (sent >= cap.maxCount) await log("SEND", "SKIPPED_CAP", `Đã nhận ${sent}/${cap.maxCount} tin ${step.channel} trong ${cap.windowDays} ngày`);
         else {
-          const brand = j.brandId ? (await c.brand.findFirst({ where: { id: j.brandId }, select: { name: true } }))?.name ?? "" : "";
+          const brand = j.brandId ? ctx.brands.get(j.brandId) ?? "" : "";
           const lang = (cust.locale ?? cust.market?.locale ?? "en").slice(0, 2);
           const msg = render(step.template, lang, { name: cust.displayName, brand });
           await c.$transaction(async (tx) => {
@@ -169,7 +190,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
         break;
       }
       case "TAG": {
-        if (!cust.tags.includes(step.tag)) await c.customer.update({ where: { id: run.customerId }, data: { tags: { push: step.tag } } });
+        if (!cust.tags.includes(step.tag)) { await c.customer.update({ where: { id: run.customerId }, data: { tags: { push: step.tag } } }); cust.tags.push(step.tag); }
         await log("TAG", "TAGGED", step.tag);
         break;
       }
@@ -190,22 +211,39 @@ export async function processDueRuns(client: Db, now = new Date(), limit = 500) 
   const runs = await client.journeyRun.findMany({ where: { status: "RUNNING", nextAt: { lte: now }, journey: { status: "ACTIVE" } }, orderBy: { nextAt: "asc" }, take: limit });
   if (!runs.length) return { processed: 0, outcomes: {} as Record<string, number> };
   const journeys = new Map((await client.journey.findMany({ where: { id: { in: [...new Set(runs.map((r) => r.journeyId))] } } })).map((j) => [j.id, { ...j, steps: j.steps as Step[], exitRules: exitRulesSchema.parse(j.exitRules) }]));
-  const caps = await client.contactCap.findMany();
+  const ids = [...new Set(runs.map((r) => r.customerId))];
+  const [caps, facts, custs, brands] = await Promise.all([
+    client.contactCap.findMany(),
+    exitFacts(client, ids),
+    client.customer.findMany({ where: { id: { in: ids } }, select: { id: true, ...CUST_SELECT } }),
+    client.brand.findMany({ select: { id: true, name: true } }),
+  ]);
+  const ctx: RunCtx = { client, now, caps, facts, customers: new Map(custs.map((x) => [x.id, x])), brands: new Map(brands.map((b) => [b.id, b.name])) };
   const outcomes: Record<string, number> = {};
-  for (const r of runs) {
-    const o = await advance({ client, now, caps }, r, journeys.get(r.journeyId)!);
-    outcomes[o] = (outcomes[o] ?? 0) + 1;
-  }
+  // Song song theo khách (8 luồng); các lượt của cùng một khách chạy tuần tự để giới hạn tần suất không bị vượt do chạy đua.
+  const groups = [...Map.groupBy(runs, (r) => r.customerId).values()];
+  const worker = async () => {
+    for (let g = groups.pop(); g; g = groups.pop()) {
+      for (const r of g) {
+        const o = await advance(ctx, r, journeys.get(r.journeyId)!);
+        outcomes[o] = (outcomes[o] ?? 0) + 1;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
   return { processed: runs.length, outcomes };
 }
 
 /** Job worker: với mỗi hành trình đang bật — đưa khách mới vào rồi chạy các lượt đến hạn. */
+/** Job worker: làm mới phân khúc đang dùng mỗi ~20 giờ (sau khi chỉ số/điểm đã dựng), đưa khách vào hành trình, chạy bước tới hạn. */
 export async function journeyJobs(client: Db, now = new Date()) {
+  const stale = await client.segment.findMany({ where: { active: true, OR: [{ lastRunAt: null }, { lastRunAt: { lt: new Date(now.getTime() - 20 * 3600000) } }] }, select: { id: true } });
+  for (const s of stale) await runSegmentFor(client, s.id, null, now);
   const active = await client.journey.findMany({ where: { status: "ACTIVE" }, select: { id: true } });
   let enrolled = 0;
   for (const j of active) enrolled += (await enrollJourney(client, j.id, now)).enrolled;
   const due = await processDueRuns(client, now);
-  return { enrolled, ...due };
+  return { segmentsRefreshed: stale.length, enrolled, ...due };
 }
 
 // ---- Service cho giao diện ----

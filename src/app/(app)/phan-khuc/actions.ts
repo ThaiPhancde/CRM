@@ -20,7 +20,7 @@ export async function saveSegmentAction(_: ActionResult | null, fd: FormData) {
 export async function runSegmentAction(_: ActionResult | null, fd: FormData) {
   return runAction(null, async (u) => {
     const r = await runSegment(u, String(fd.get("id")));
-    return `Đã chạy: ${r.count.toLocaleString("vi-VN")} khách (${Math.round(r.ms / 100) / 10} giây).`;
+    return `Đã chạy: ${r.count.toLocaleString("vi-VN")} khách (${r.ms < 1000 ? `${r.ms} ms` : `${(r.ms / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giây`}).`;
   }, PATHS, "Đã chạy.");
 }
 /** Xem trước không ghi gì — trả số khách + mẫu. */

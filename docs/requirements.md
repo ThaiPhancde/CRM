@@ -76,10 +76,10 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-50 | Phân khúc động; chiến dịch; nguồn khách/touchpoint | HLD §3 | XĐ | 7 | ✓ |
-| R-51 | Journey: điều kiện vào/ra, giới hạn liên hệ xuyên chiến dịch, dừng khi mua/từ chối/khiếu nại | HLD §8.5, §14.2 | XĐ | 7 | ✓ |
-| R-52 | Gửi tin ghi Outbox SIMULATED; không gửi thật | D-13 | MĐ | 7 | ✓ |
-| R-53 | Đo tác động riêng với dự báo (nhóm đối chứng) | HLD §7.3 | XĐ | 7 (khung Experiment) | ◐ |
+| R-50 | Phân khúc động; chiến dịch; nguồn khách/touchpoint | HLD §3; D-55 | XĐ — **đã có Phase 7** (trình dựng điều kiện 15 trường, ảnh chụp mỗi lần chạy; chiến dịch + điểm chạm, MKT-01/02) | 7 | ✓ |
+| R-51 | Journey: điều kiện vào/ra, giới hạn liên hệ xuyên chiến dịch, dừng khi mua/từ chối/khiếu nại | HLD §8.5, §14.2; D-55 | XĐ — **đã có Phase 7** (chờ, điều kiện, kiểm tồn, gửi tin, tạo việc, gán thẻ; giờ yên lặng, opt-in EU, 2 tin/7 ngày) | 7 | ✓ |
+| R-52 | Gửi tin ghi Outbox SIMULATED; không gửi thật | D-13 | MĐ — **đã có Phase 7** (khóa `journey:<run>:<bước>`, chạy lại không gửi trùng) | 7 | ✓ |
+| R-53 | Đo tác động riêng với dự báo (nhóm đối chứng) | HLD §7.3 | XĐ — **chưa làm**: Phase 7 chưa có Experiment/nhóm đối chứng; dời Phase 9 (báo cáo) | 9 | ◐ |
 
 ### AI
 

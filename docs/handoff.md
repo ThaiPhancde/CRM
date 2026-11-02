@@ -2,6 +2,16 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 12) — Phase 7 xong, chờ nghiệm thu
+
+- **Đã làm:** phân khúc động, hành trình tự động (HLD §8.5), chiến dịch + điểm chạm, kho tồn replay; worker làm mới phân khúc > 20 giờ → đưa khách vào từ ảnh chụp → chạy bước tới hạn. Chi tiết `docs/implementation-status.md` (Phase 7), quyết định D-55.
+- **Test:** `npx vitest run` → 317 passed, 1 skipped; `npx tsc --noEmit` 0 lỗi; đo tải `docs/perf/phase7.json` 0/49.
+- **Phát hiện quan trọng:** generator dữ liệu tải thiếu `deliveredAt` → số đo job hằng ngày Phase 6 (80 s) là trên dữ liệu suy biến. Đã sửa generator + bù `crm_load`; đo lại 82–103 s (< 120 s, sát). Ghi đính chính ở `docs/acceptance/phase-6.md`.
+- **DB demo `crm`:** đã dựng lại chỉ số + điểm (để có `daysToNextPurchase`) và chạy `scripts/seed-marketing.ts`: 63 khách đã vào hành trình "Nhắc mua lại theo chu kỳ", đang chờ khung giờ gửi theo giờ địa phương. Chạy `npm run worker` để thấy bước gửi tin (Outbox SIMULATED) và tạo việc.
+- **Migration mới:** `20261102090000_phase7_marketing`, `20261102120000_segment_member_customer`, `20261102140000_segment_indexes` (file thứ 3 đã sửa sau khi áp — checksum trên `crm`, `crm_test`, `crm_load` đã cập nhật khớp file; DB mới áp bình thường).
+- **Chưa làm:** Experiment/nhóm đối chứng (R-53 → Phase 9), giao diện quản trị `ContactCap` và mẫu tin (đang seed/fixture).
+- **Tiếp theo:** nghiệm thu Phase 7 (theo mục 12 thiết kế + `docs/demo-script.md` phần marketing), rồi Phase 8 (Trợ lý AI) theo tỷ lệ 70/30.
+
 ## Checkpoint 02/11/2026 (lần 11) — nghiệm thu Phase 6, chốt Q-20, đổi tỷ lệ 70/30
 
 **Đã làm:** Q-20 theo công thức công ty (D-53: REV-03; thêm CM-01); tỷ lệ Claude/Gemini 70/30 từ Phase 7 (D-54); nghiệm thu Phase 6 đạt (`docs/acceptance/phase-6.md`) — kiểm thêm tạo phiên bản trọng số qua giao diện. Dữ liệu demo: Nhu cầu hỗ trợ của PiAlpha đang ở v2 (20/60/20).

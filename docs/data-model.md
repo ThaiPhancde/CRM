@@ -121,7 +121,12 @@ erDiagram
     Customer ||--o{ JourneyRun : in
     Campaign ||--o{ Touchpoint : has
     Customer ||--o{ Touchpoint : has
-    Customer ||--o{ ContactCap : has
+    Segment ||--o{ SegmentRun : snapshots
+    SegmentRun ||--o{ SegmentMember : lists
+    Customer ||--o{ SegmentMember : in
+    JourneyRun ||--o{ JourneyStepLog : logs
+    Customer ||--o{ ContactLog : contacted
+    Lead ||--o{ Touchpoint : from
     AgentRun ||--o{ ToolCall : has
     AgentRun ||--o{ Suggestion : has
     Suggestion ||--o| Approval : needs
@@ -134,12 +139,16 @@ erDiagram
     Score { string id PK  string customerId FK  string leadId FK  string scoreVersionId FK  decimal value  string band  json reasons  json missingData  string suggestedAction  datetime computedAt }
     Prediction { string id PK  string customerId FK  enum target "BUY_7D|REBUY_60D|DELIVER_OK"  decimal probability  string modelVersion  datetime asOf  datetime evaluatedAt  bool actual }
     Experiment { string id PK  string workspaceId FK  string name  string journeyId FK  decimal holdoutPct  datetime startedAt  json results }
-    Segment { string id PK  string workspaceId FK  string name  json conditions  datetime lastEvaluatedAt  int lastCount }
-    Journey { string id PK  string workspaceId FK  string name  json trigger  json steps  json exitConditions  bool isActive }
-    JourneyRun { string id PK  string journeyId FK  string customerId FK  int currentStep  enum status "ACTIVE|DONE|EXITED"  string exitReason  datetime nextAt }
-    ContactCap { string id PK  string customerId FK  enum channel  string brandId FK  int windowDays  int maxContacts  int usedInWindow  datetime windowStart }
-    Campaign { string id PK  string workspaceId FK  string brandId FK  string name  enum channel  decimal cost  string currency  date startDate  date endDate }
-    Touchpoint { string id PK  string customerId FK  string campaignId FK  json utm  datetime occurredAt  string sourceRef }
+    Segment { string id PK  string workspaceId FK  string name  json rules  bool active  datetime lastRunAt  int lastCount }
+    SegmentRun { string id PK  string segmentId FK  json rules  int count  int ms  string ranById }
+    SegmentMember { string id PK  string runId FK  string customerId FK }
+    Journey { string id PK  string workspaceId FK  string segmentId FK  string brandId FK  string name  enum status "DRAFT|ACTIVE|PAUSED"  json steps  json exitRules  int reentryDays  string activatedById }
+    JourneyRun { string id PK  string journeyId FK  string customerId FK  string entryKey  int stepIndex  enum status "RUNNING|COMPLETED|EXITED"  string exitReason  datetime nextAt }
+    JourneyStepLog { string id PK  string runId FK  int stepIndex  string stepType  string outcome  string detail }
+    ContactCap { string id PK  string workspaceId FK  string channel  string brandId  int maxCount  int windowDays }
+    ContactLog { string id PK  string customerId FK  string channel  string brandId  string source  string refId  datetime createdAt }
+    Campaign { string id PK  string workspaceId FK  string brandId FK  string segmentId FK  string journeyId FK  string name  string channel  enum status "DRAFT|RUNNING|ENDED"  string utmCampaign  decimal cost  string costCurrency  decimal costBase  date startAt  date endAt }
+    Touchpoint { string id PK  string customerId FK  string leadId FK  string campaignId FK  string source  string medium  string utmCampaign  string utmContent  decimal cost  string costCurrency  datetime occurredAt  string idempotencyKey }
     AgentRun { string id PK  string workspaceId FK  string userId FK  string feature  string model  text promptRedacted  text output  json evidence  int tokensIn  int tokensOut  decimal costUsd  enum status  datetime startedAt }
     ToolCall { string id PK  string agentRunId FK  string tool  json args  json result  enum status "OK|DENIED|ERROR|NEEDS_APPROVAL" }
     Suggestion { string id PK  string agentRunId FK  enum kind  json payload  enum status "PENDING|ACCEPTED|REJECTED" }
@@ -176,3 +185,6 @@ erDiagram
 8. `ToolCall` ghi dữ liệu có `status = DENIED` khi thiếu quyền, không có side effect.
 9. `Outbox.status = SIMULATED` khi `EXTERNAL_WRITES_ENABLED=false`; `idempotencyKey` unique.
 10. Mọi truy vấn bảng có `workspaceId` không có ngữ cảnh → ném lỗi.
+11. `JourneyStepLog` unique `(runId, stepIndex)`: một bước của một khách chạy đúng một lần; tin gửi khóa Outbox `journey:<runId>:<bước>` (test `tests/marketing.test.ts`).
+12. Gửi tin bị bỏ qua (thiếu liên hệ / chưa đồng ý / quá tần suất) vẫn ghi `JourneyStepLog` có lý do, không ghi `ContactLog`; `ContactLog` là nguồn đếm giới hạn xuyên chiến dịch.
+13. `SegmentMember` chỉ còn ở lần chạy mới nhất của mỗi phân khúc (D-55).

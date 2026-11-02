@@ -90,6 +90,23 @@ async function main() {
   await time("Điểm + chỉ số của một khách (hồ sơ 360)", "detail", () => scoreSvc.getCustomerScores(mgr, aCustomer));
   await time("Khách: danh sách kèm hạng RFM", "page", () => customers.listCustomers(mgr, customers.parseCustomerFilter({})));
   await time("Lead: danh sách kèm điểm ưu tiên", "page", () => leads.listLeads(mgr, leads.parseLeadFilter({})));
+  // Phase 7: phân khúc → hành trình → chiến dịch. Mốc 08:00 UTC (12:00 Dubai) để bước gửi tin nằm trong khung 9–20 giờ.
+  const segs = await import("../../src/modules/marketing/segments");
+  const jrs = await import("../../src/modules/marketing/journeys");
+  const camps = await import("../../src/modules/marketing/campaigns");
+  const T7 = new Date(); T7.setUTCHours(8, 0, 0, 0);
+  const rules = { op: "and", rules: [{ field: "rfm", cmp: "in", value: ["CHAMPIONS", "TRUNG_THANH", "CAN_CHAM_SOC", "MOI"] }, { field: "daysToNextPurchase", cmp: "lte", value: 30 }] };
+  await time("Phân khúc: xem trước (đếm + 20 mẫu)", "page", () => segs.previewSegment(mgr, rules, T7));
+  const seg = await runInWorkspace(ws.id, () => segs.saveSegment(mgr, { name: `Bench ${Date.now()}`, rules }));
+  await time("Phân khúc: chạy + lưu ảnh chụp", "job", () => segs.runSegmentFor(c, seg.id, mgr.id, T7), 1);
+  const jr = await runInWorkspace(ws.id, () => jrs.saveJourney(mgr, { name: `Bench ${Date.now()}`, segmentId: seg.id, steps: [{ type: "SEND", channel: "EMAIL", template: "repurchase_reminder" }, { type: "WAIT", days: 3 }, { type: "TASK", title: "Gọi khách", dueDays: 1 }], exitRules: { purchased: true, optOut: true, openTicket: true, expireDays: 30 } }));
+  await runInWorkspace(ws.id, () => jrs.setJourneyStatus(mgr, jr.id, "ACTIVE", T7));
+  await time("Worker: đưa khách vào hành trình (≤ 5.000)", "job", () => jrs.enrollJourney(c, jr.id, T7), 1);
+  await time("Worker: đưa khách vào hành trình (lượt kế, đã vào hết)", "job", () => jrs.enrollJourney(c, jr.id, T7), 1);
+  await time("Worker: chạy bước tới hạn (500 khách)", "job", () => jrs.processDueRuns(c, T7), 1);
+  await time("Hành trình: chi tiết + thống kê bước", "detail", () => jrs.getJourney(mgr, jr.id));
+  await time("Hành trình: danh sách khách trang 1", "page", () => jrs.listJourneyRuns(mgr, jr.id, {}));
+  await time("Chiến dịch: danh sách + MKT-01/02", "page", () => camps.listCampaigns(mgr));
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

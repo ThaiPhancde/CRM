@@ -13,7 +13,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 4 Nhu cầu mua + sales | **Đã nghiệm thu** (29/10) | 29/10/2026 | 143 test xanh; 60 lead mẫu 4 ngôn ngữ; Gemini 5 job (4 trang + nội dung) |
 | 5 Dịch vụ + tri thức | **Đã nghiệm thu** (29/10) | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
 | 6 Chỉ số + điểm + Warehouse | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-6.md`) | 29/10/2026 | 230 test xanh; một khách tính tay khớp REV-01..04 + RFM; đo tải 0/41 vượt; Gemini 50% |
-| 7 Journey + marketing | Chưa | | |
+| 7 Journey + marketing | **Xong, chờ nghiệm thu** | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
 | 8 Trung tâm AI | Chưa | | |
 | 9 Báo cáo + dashboard | Chưa | | |
 | 10 Vận đơn + sản phẩm | Chưa | | |
@@ -143,6 +143,26 @@ Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; t�
 **Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
 
 **Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
+## Phase 7 — đã làm (02/11/2026)
+
+**Đã làm (luồng DB → service → action → UI → quyền → test):**
+- Schema: `Segment`, `SegmentRun`, `SegmentMember` (→ Customer), `Journey`, `JourneyRun`, `JourneyStepLog` (khóa `runId+stepIndex`), `ContactCap`, `ContactLog`, `Campaign`, `Touchpoint` (khóa idempotency); `CustomerMetric.daysToNextPurchase` (chu kỳ TB − độ gần, Warehouse dựng). 3 migration.
+- Phân khúc (`src/modules/marketing/segments.ts`): danh sách trường cho phép 15 trường, phép so sánh theo kiểu, lồng ≤ 3 cấp, trường tiền cần `finance.view`; xem trước (đếm + 20 mẫu, SĐT che theo quyền); chạy lưu ảnh chụp, chỉ giữ danh sách lần mới nhất (D-55).
+- Hành trình (`journeys.ts`): 7 loại bước (chờ, điều kiện, kiểm tồn, gửi tin, tạo việc, gán thẻ, thoát); luật thoát; giờ yên lặng 9–20 giờ địa phương (bước 15 phút, đúng cả múi lệch nửa giờ); opt-in DE/FR; giới hạn 2 tin/7 ngày qua `ContactLog`; Outbox SIMULATED; chạy lại không làm lại bước. Worker: làm mới phân khúc quá 20 giờ → đưa khách vào từ ảnh chụp → chạy bước tới hạn (500/lượt, 8 luồng gom theo khách).
+- Kho tồn `src/adapters/inventory` (replay `fixtures/inventory.json`, 67 SKU / 9 hết hàng; Purchasing 501 tới Phase 10).
+- Chiến dịch (`campaigns.ts`): chi phí nguyên tệ + VND theo tỷ giá hiệu lực, trùng UTM chặn, điểm chạm theo SĐT hoặc lead, MKT-01/02.
+- Giao diện: `/phan-khuc` (trình dựng điều kiện VÀ/HOẶC + "thuộc" chọn nhiều, xem trước, chạy), `/hanh-trinh` (danh sách, tạo/sửa với mẫu HLD §8.5, chi tiết: sơ đồ bước + kết quả từng bước, lý do ra, khách lọc + phân trang server, bật/tạm dừng) — Claude; `/chien-dich` (danh sách, form, chi tiết, điểm chạm, trạng thái) — Gemini.
+- Quyền: `segment.manage`, `campaign.manage`, `journey.manage` (Quản lý, Marketing), `journey.activate` (Quản lý).
+- Seed `scripts/seed-marketing.ts` (gọi từ seed-demo): giới hạn mặc định, phân khúc "Gần chu kỳ mua lại", hành trình "Nhắc mua lại theo chu kỳ" (Quản lý bật), chiến dịch "Mua lại tháng N" + điểm chạm.
+
+**Test đã chạy:** `npx vitest run` → **317 passed, 1 skipped** (11 file). `tests/marketing.test.ts` 7 ca (phân khúc, whitelist/403/độ sâu, mua giữa chừng → ra, quá tần suất, Outbox 1 lần, opt-in EU, giờ yên lặng, ticket → ra, worker làm mới phân khúc, không sửa khi đang chạy, chiến dịch + điểm chạm); `tests/marketing-rules.test.ts` 80 ca (Gemini, Claude đối chiếu; sửa 3 ca Kolkata sau khi sửa lỗi giờ yên lặng). `tsc` 0 lỗi. Trình duyệt: Quản lý + Marketing (bật bị chặn với Marketing), lưu/chạy phân khúc, tạo hành trình (lỗi trường + chuyển trang), ghi điểm chạm theo SĐT, console 0 lỗi. Đo tải: `docs/perf/phase7.json` 0/49.
+
+**Lỗi tìm thấy khi review/kiểm:** Gemini báo đúng 2 nghi vấn — giờ yên lặng sai ở múi lệch nửa giờ (dời 9:30 thay 9:00) và trường lựa chọn nhận phép so sánh sai rồi coi như "bằng" → sửa tận gốc (bước 15 phút; kiểm phép so sánh một chỗ trong `compileRules`). Trình dựng chưa có "thuộc" nên phân khúc seed hiện sai và sẽ mất 2 hạng khi lưu → thêm chọn nhiều. Lỗi dữ liệu tải (`deliveredAt`) che 4 điểm chậm → sửa (performance.md).
+
+**Còn thiếu:** nhóm đối chứng/Experiment (R-53, dời Phase 9); quản trị `ContactCap` qua giao diện (đang seed mặc định); mẫu tin sửa trong app (đang ở fixture); gửi thật (D-13, Phase 12).
+
+**Chia việc (D-54, 70/30):** Claude ~2.200 dòng file mới + ~300 dòng sửa (schema, engine điểm, worker, bench) — 3 service, action, labels, trình dựng điều kiện, 5 màn hành trình/phân khúc, test, seed, đo tải / Gemini ~1.050 dòng (5 file trang chiến dịch, 16 mẫu tin, 80 ca test bảng) ≈ 70/30.
 
 ## Phase 4 — đã làm (29/10/2026)
 

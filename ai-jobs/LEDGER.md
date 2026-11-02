@@ -25,8 +25,13 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 18 | 2026-10-29 | p6-scoring `customer-scores`: thẻ điểm 360 + bảng R12M + cột hạng RFM | 1 | gemini-4-argon-high, write | 474 s | checker 0, tsc 0 | 0 | 0 sửa | ~430 dòng |
 | 19 | 2026-10-29 | p6-scoring `lead-scores`: điểm ở danh sách/Kanban/chi tiết lead | 1 | gemini-4-argon-high, write | 317 s | checker 0, tsc 0 | 0 | 0 sửa | ~200 dòng |
 | 20 | 2026-10-29 | p6-scoring `score-admin`: /quan-tri/diem + /quan-tri/chi-so | 1 | gemini-4-argon-high, write | 209 s | checker 0, tsc 0 | 0 | 0 sửa | ~350 dòng |
+| 21 | 2026-11-02 | p7-marketing `campaigns-ui`: /chien-dich danh sách, form, chi tiết, điểm chạm, trạng thái | 1 | gemini-4-argon-high, write | 293 s | checker 0, tsc 0 | 0 | 1 sửa nhỏ: bảng 11 cột cuộn ngang → gộp Brand vào cột Kênh | ~760 dòng |
+| 22 | 2026-11-02 | p7-marketing `message-templates`: 4 mẫu × vi/en/ar/de | 1 | gemini-4-argon-high, write | 90 s | checker 0 (16 mẫu, dòng STOP đúng từng ngôn ngữ) | 0 | 0 sửa | 16 mẫu |
+| 23 | 2026-11-02 | p7-marketing `marketing-tests`: bảng test compileRules + nextSendable | 1 | gemini-4-argon-high, write | 292 s | checker 0; vitest 76 ca xanh | 0 | 3 ca Kolkata đổi kỳ vọng sau khi Claude sửa lỗi Gemini tự báo | ~270 dòng |
 
 ## Notes
+
+6. Batch p7-marketing (3 job, 293 s; tỷ lệ 70/30 — D-54): cả 3 qua checker + tsc lần đầu, 0 ghi sai chỗ. Điểm mới: job test bảng **tự báo 2 nghi vấn về code của Claude và cả hai đúng** (giờ yên lặng sai ở múi giờ lệch nửa giờ; trường lựa chọn nhận phép so sánh sai) — giữ quy tắc "test khớp code, liệt kê nghi vấn" ở work order là có giá trị. Lỗi review phía Gemini chỉ là bố cục (bảng quá rộng). Lỗi lớn nhất của đợt nằm ở phía Claude và lộ ra khi xem trang: trình dựng điều kiện thiếu phép "thuộc".
 
 5. Batch p6-scoring (5 job, 474 s; tỷ lệ 50/50 — D-51): cả 5 qua checker + tsc lần đầu, **0 lỗi review phía Gemini** — lần đầu từ p3. Khác biệt so với p5: work order liệt kê đúng enum/nhãn/tông màu và checker cấm tên hạng tự bịa. Bảng test hàm thuần là việc mới giao Gemini: Claude kiểm bằng cách tự tính lại từng kỳ vọng từ công thức (không chỉ chạy test) — đúng toàn bộ. Lỗi review lần này nằm ở phía Claude (bằng chứng điểm còn mã thô, số tiền chưa định dạng) — lộ ra khi Gemini hiển thị.
 

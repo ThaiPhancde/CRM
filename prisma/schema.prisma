@@ -525,10 +525,11 @@ model Customer {
 
   tickets Ticket[]
 
-  metrics     CustomerMetric[]
-  scores      Score[]
-  journeyRuns JourneyRun[]
-  touchpoints Touchpoint[]
+  metrics        CustomerMetric[]
+  scores         Score[]
+  segmentMembers SegmentMember[]
+  journeyRuns    JourneyRun[]
+  touchpoints    Touchpoint[]
 
   @@index([workspaceId, primaryPhoneE164])
   @@index([workspaceId, lastOrderAt])
@@ -1185,6 +1186,8 @@ model CustomerMetric {
   @@unique([workspaceId, customerId, period])
   @@index([customerId])
   @@index([workspaceId, period, asOf])
+  @@index([period, daysToNextPurchase, customerId])
+  @@index([period, recencyDays, customerId])
 }
 
 enum ScoreType {
@@ -1234,6 +1237,7 @@ model Score {
   @@index([customerId])
   @@index([leadId])
   @@index([workspaceId, type, band])
+  @@index([versionId, band, customerId])
 }
 
 // ---- Phase 7: điều phối chăm sóc + marketing (thiết kế mục 10 Phase 7, HLD §8.5) --------------------
@@ -1280,6 +1284,7 @@ model SegmentMember {
   runId       String
   customerId  String
   run         SegmentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  customer    Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([runId, customerId])
   @@index([customerId])

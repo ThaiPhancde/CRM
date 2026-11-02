@@ -8,9 +8,9 @@ export const STEP_LABEL: Record<StepType, string> = { WAIT: "Chờ", CONDITION: 
 export const CHANNELS = ["EMAIL", "SMS", "WHATSAPP"] as const;
 export const CHANNEL_LABEL: Record<(typeof CHANNELS)[number], string> = { EMAIL: "Email", SMS: "SMS", WHATSAPP: "WhatsApp" };
 
-export const CMP_LABEL: Record<string, string> = { eq: "bằng", neq: "khác", gt: "lớn hơn", gte: "từ", lt: "nhỏ hơn", lte: "tới", in: "thuộc", has: "có", not_has: "không có" };
+export const CMP_LABEL: Record<string, string> = { eq: "bằng", neq: "khác", gt: "lớn hơn", gte: "ít nhất", lt: "nhỏ hơn", lte: "không quá", in: "thuộc", has: "có", not_has: "không có" };
 /** Phép so sánh hợp lệ theo kiểu trường (khớp FIELDS ở segments.ts). */
-export const CMPS_BY_TYPE: Record<"number" | "enum" | "tags" | "bool", string[]> = { number: ["gte", "lte", "gt", "lt", "eq"], enum: ["eq", "neq"], tags: ["has", "not_has"], bool: ["eq"] };
+export const CMPS_BY_TYPE: Record<"number" | "enum" | "tags" | "bool", string[]> = { number: ["gte", "lte", "gt", "lt", "eq"], enum: ["eq", "neq", "in"], tags: ["has", "not_has"], bool: ["eq"] };
 
 export const JOURNEY_STATUS_LABEL: Record<JourneyStatus, string> = { DRAFT: "Nháp", ACTIVE: "Đang chạy", PAUSED: "Tạm dừng" };
 export const JOURNEY_STATUS_TONE: Record<JourneyStatus, Tone> = { DRAFT: "neutral", ACTIVE: "success", PAUSED: "warning" };

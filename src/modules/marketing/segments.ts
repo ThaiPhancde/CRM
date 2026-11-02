@@ -14,7 +14,8 @@ export const CMPS = ["eq", "neq", "gt", "gte", "lt", "lte", "in", "has", "not_ha
 export type Cmp = (typeof CMPS)[number];
 export type Rule = { field: string; cmp: Cmp; value: unknown };
 export type Group = { op: "and" | "or"; rules: (Rule | Group)[] };
-type Ctx = { now: Date; money: boolean };
+/** `versions`: id phiên bản điểm đang dùng theo loại — có thì lọc thẳng theo versionId (dùng chỉ mục), không có thì lọc version.active. */
+type Ctx = { now: Date; money: boolean; versions?: Partial<Record<"RFM" | "TXN_RISK" | "SUPPORT_NEED", string>> };
 
 const num = (v: unknown) => {
   const n = Number(v);
@@ -31,10 +32,11 @@ const list = (v: unknown) => (Array.isArray(v) ? v.map(String) : [String(v)]);
 /** Điều kiện trên chỉ số R12M mới nhất (CustomerMetric, Phase 6). */
 const metric = (w: Prisma.CustomerMetricWhereInput): Prisma.CustomerWhereInput => ({ metrics: { some: { period: "R12M", ...w } } });
 /** Điều kiện trên điểm hiện hành của một loại (phiên bản đang dùng). */
-const score = (type: "RFM" | "TXN_RISK" | "SUPPORT_NEED", cmp: Cmp, v: unknown): Prisma.CustomerWhereInput => {
+const score = (type: "RFM" | "TXN_RISK" | "SUPPORT_NEED", cmp: Cmp, v: unknown, ctx: Ctx): Prisma.CustomerWhereInput => {
   const band = cmp === "in" ? { in: list(v) } : cmp === "eq" ? String(v) : null;
-  if (band != null) return { scores: { some: { type, version: { active: true }, band } } };
-  if (cmp === "neq") return { scores: { none: { type, version: { active: true }, band: String(v) } } };
+  const ver: Prisma.ScoreWhereInput = ctx.versions?.[type] ? { versionId: ctx.versions[type] } : { type, version: { active: true } };
+  if (band != null) return { scores: { some: { ...ver, band } } };
+  if (cmp === "neq") return { scores: { none: { ...ver, band: String(v) } } };
   throw new ValidationError({ rules: "Hạng chỉ so sánh bằng / khác / thuộc" });
 };
 
@@ -72,9 +74,9 @@ export const FIELDS: Record<string, FieldDef> = {
   },
   repurchase60: { label: "Đã mua lại trong 60 ngày", type: "bool", compile: (cmp, v) => metric({ repurchase60: (cmp === "neq") !== (v === true || v === "true") }) },
   openTickets: { label: "Ticket đang mở", type: "number", unit: "ticket", compile: (cmp, v) => metric({ openTickets: numCmp(cmp, v) }) },
-  rfm: { label: "Hạng RFM", type: "enum", options: RFM_OPTIONS, compile: (cmp, v) => score("RFM", cmp, v) },
-  txnRisk: { label: "Rủi ro giao dịch", type: "enum", options: BAND_OPTIONS, compile: (cmp, v) => score("TXN_RISK", cmp, v) },
-  supportNeed: { label: "Nhu cầu hỗ trợ", type: "enum", options: BAND_OPTIONS, compile: (cmp, v) => score("SUPPORT_NEED", cmp, v) },
+  rfm: { label: "Hạng RFM", type: "enum", options: RFM_OPTIONS, compile: (cmp, v, ctx) => score("RFM", cmp, v, ctx) },
+  txnRisk: { label: "Rủi ro giao dịch", type: "enum", options: BAND_OPTIONS, compile: (cmp, v, ctx) => score("TXN_RISK", cmp, v, ctx) },
+  supportNeed: { label: "Nhu cầu hỗ trợ", type: "enum", options: BAND_OPTIONS, compile: (cmp, v, ctx) => score("SUPPORT_NEED", cmp, v, ctx) },
 };
 
 const ruleSchema: z.ZodType<Rule | Group> = z.lazy(() => z.union([
@@ -83,6 +85,9 @@ const ruleSchema: z.ZodType<Rule | Group> = z.lazy(() => z.union([
 ]));
 export const groupSchema = z.object({ op: z.enum(["and", "or"]), rules: z.array(ruleSchema).min(1, "Cần ít nhất một điều kiện").max(20) });
 
+/** Phép so sánh hợp lệ theo kiểu trường — kiểm một chỗ cho mọi trường (giao diện dùng CMPS_BY_TYPE ở labels.ts, tập con của đây). */
+const ALLOWED: Record<FieldDef["type"], readonly Cmp[]> = { number: ["eq", "neq", "gt", "gte", "lt", "lte"], enum: ["eq", "neq", "in"], tags: ["has", "not_has"], bool: ["eq", "neq"] };
+
 /** Dịch cây điều kiện → điều kiện truy vấn khách. Hàm thuần (không DB) — có bảng test. Độ sâu tối đa 3. */
 export function compileRules(g: Group, ctx: Ctx, depth = 0): Prisma.CustomerWhereInput {
   if (depth > 2) throw new ValidationError({ rules: "Lồng nhóm tối đa 3 cấp" });
@@ -90,12 +95,18 @@ export function compileRules(g: Group, ctx: Ctx, depth = 0): Prisma.CustomerWher
     if ("op" in r) return compileRules(r, ctx, depth + 1);
     const f = FIELDS[r.field];
     if (!f) throw new ValidationError({ rules: `Trường "${r.field}" không được hỗ trợ` });
+    if (!ALLOWED[f.type].includes(r.cmp)) throw new ValidationError({ rules: `Phép so sánh "${r.cmp}" không dùng cho trường "${f.label}"` });
     return f.compile(r.cmp, r.value, ctx);
   });
   return g.op === "and" ? { AND: parts } : { OR: parts };
 }
 
 /** Điều kiện khách đầy đủ cho một phân khúc: khách còn hiệu lực (chưa bị gộp) + cây điều kiện. */
+/** Ngữ cảnh chạy thật: kèm id phiên bản điểm đang dùng (một truy vấn). */
+export async function segmentCtx(client: Pick<Db, "scoreVersion">, now: Date, money: boolean): Promise<Ctx> {
+  const vs = await client.scoreVersion.findMany({ where: { active: true, type: { in: ["RFM", "TXN_RISK", "SUPPORT_NEED"] } }, select: { id: true, type: true } });
+  return { now, money, versions: Object.fromEntries(vs.map((v) => [v.type, v.id])) };
+}
 export const segmentWhere = (rules: Group, ctx: Ctx): Prisma.CustomerWhereInput => ({ AND: [{ mergedIntoId: null }, compileRules(rules, ctx)] });
 
 // ---- Service cho giao diện ----
@@ -122,7 +133,7 @@ export type SegmentField = Awaited<ReturnType<typeof segmentFields>>[number];
 export async function previewSegment(user: SessionUser, rulesInput: unknown, now = new Date()) {
   requirePerm(user, "segment.manage");
   const rules = parse(groupSchema, rulesInput) as Group;
-  const where = segmentWhere(rules, { now, money: can(user.roles, "finance.view") });
+  const where = segmentWhere(rules, await segmentCtx(db, now, can(user.roles, "finance.view")));
   const pii = piiFor(user);
   const [count, sample] = await Promise.all([
     db.customer.count({ where }),
@@ -161,14 +172,10 @@ export async function runSegmentFor(client: Db, segmentId: string, ranById: stri
   const t = Date.now();
   const seg = await client.segment.findFirst({ where: { id: segmentId } });
   if (!seg) throw new HttpError(404, "Không tìm thấy phân khúc");
-  const where = segmentWhere(seg.rules as Group, { now, money: true });
-  const ids: string[] = [];
-  for (let cursor: string | undefined; ;) {
-    const page = await client.customer.findMany({ where, select: { id: true }, orderBy: { id: "asc" }, take: 10000, ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}) });
-    if (!page.length) break;
-    ids.push(...page.map((p) => p.id));
-    cursor = page.at(-1)!.id;
-  }
+  const where = segmentWhere(seg.rules as Group, await segmentCtx(client, now, true));
+  // Một truy vấn lấy toàn bộ id (phân trang bằng cursor sẽ chạy lại điều kiện nặng mỗi trang).
+  // ponytail: giữ id trong bộ nhớ (~50 byte/khách, 200k khách ≈ 10 MB); quá lớn thì chuyển INSERT … SELECT bằng SQL thô.
+  const ids = (await client.customer.findMany({ where, select: { id: true } })).map((c) => c.id);
   const run = await client.segmentRun.create({ data: { segmentId, rules: seg.rules as Prisma.InputJsonValue, count: ids.length, ms: 0, ranById } as never });
   for (let i = 0; i < ids.length; i += 10000) await client.segmentMember.createMany({ data: ids.slice(i, i + 10000).map((customerId) => ({ runId: run.id, customerId })) as never });
   const old = await client.segmentRun.findMany({ where: { segmentId, id: { not: run.id } }, select: { id: true } });
@@ -187,7 +194,7 @@ export async function runSegment(user: SessionUser, segmentId: string, now = new
 export async function listSegments(user: SessionUser) {
   requirePerm(user, "segment.manage");
   const rows = await db.segment.findMany({ orderBy: { updatedAt: "desc" }, include: { _count: { select: { journeys: true, campaigns: true } } } });
-  return rows.map((s) => ({ id: s.id, name: s.name, description: s.description, active: s.active, lastRunAt: s.lastRunAt?.toISOString() ?? null, lastCount: s.lastCount, journeys: s._count.journeys, campaigns: s._count.campaigns, updatedAt: s.updatedAt.toISOString() }));
+  return rows.map((s) => ({ id: s.id, name: s.name, description: s.description, rules: s.rules as Group, active: s.active, lastRunAt: s.lastRunAt?.toISOString() ?? null, lastCount: s.lastCount, journeys: s._count.journeys, campaigns: s._count.campaigns, updatedAt: s.updatedAt.toISOString() }));
 }
 
 export async function getSegment(user: SessionUser, id: string) {

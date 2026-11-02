@@ -1,0 +1,98 @@
+[
+  {
+    "key": "repurchase_reminder",
+    "language": "vi",
+    "subject": "Lời nhắc mua lại sản phẩm từ {{brand}}",
+    "body": "Xin chào {{name}}, {{brand}} hy vọng bạn hài lòng với sản phẩm đã sử dụng thời gian qua. Nếu sản phẩm sắp hết, bạn có thể đặt lại để duy trì trải nghiệm trọn vẹn mỗi ngày. Trả lời STOP để ngừng nhận tin."
+  },
+  {
+    "key": "repurchase_reminder",
+    "language": "en",
+    "subject": "Time to restock your favorites from {{brand}}",
+    "body": "Hello {{name}}, {{brand}} hopes you have been enjoying your recent purchase. Whenever you are ready to restock, we are here to help keep your daily routine seamless. Reply STOP to unsubscribe."
+  },
+  {
+    "key": "repurchase_reminder",
+    "language": "ar",
+    "subject": "تذكير بإعادة طلب منتجاتك من {{brand}}",
+    "body": "مرحباً {{name}}، يأمل فريق {{brand}} أن تكون راضياً عن تجربتك معنا. إذا قاربت منتجاتك على النفاد، يسعدنا مساعدتك في تجديد طلبك بكل سهولة. أرسل STOP لإيقاف الرسائل."
+  },
+  {
+    "key": "repurchase_reminder",
+    "language": "de",
+    "subject": "Erinnerung an Ihre Nachbestellung bei {{brand}}",
+    "body": "Hallo {{name}}, {{brand}} hofft, dass Sie mit Ihrem Einkauf rundum zufrieden sind. Wenn Ihr Vorrat zur Neige geht, unterstützen wir Sie gerne bei Ihrer Nachbestellung. Antworten Sie mit STOP, um keine Nachrichten mehr zu erhalten."
+  },
+  {
+    "key": "repurchase_offer",
+    "language": "vi",
+    "subject": "Ưu đãi dành riêng cho bạn từ {{brand}}",
+    "body": "Xin chào {{name}}, cảm ơn bạn đã luôn đồng hành cùng {{brand}}. Chúng tôi gửi tặng bạn ưu đãi dành riêng cho lần mua sắm tiếp theo như lời tri ân chân thành. Trả lời STOP để ngừng nhận tin."
+  },
+  {
+    "key": "repurchase_offer",
+    "language": "en",
+    "subject": "An exclusive offer for you from {{brand}}",
+    "body": "Hello {{name}}, thank you for choosing {{brand}}. We are pleased to share an exclusive offer reserved just for your next order as a token of our appreciation. Reply STOP to unsubscribe."
+  },
+  {
+    "key": "repurchase_offer",
+    "language": "ar",
+    "subject": "عرض خاص لك من {{brand}}",
+    "body": "مرحباً {{name}}، شكراً لثقتك المستمرة في {{brand}}. يسعدنا تقديم عرض خاص ومميز لك في طلبك القادم تقديراً لولائك. أرسل STOP لإيقاف الرسائل."
+  },
+  {
+    "key": "repurchase_offer",
+    "language": "de",
+    "subject": "Ein exklusives Angebot von {{brand}} für Sie",
+    "body": "Hallo {{name}}, vielen Dank für Ihre Treue zu {{brand}}. Als Dankeschön haben wir ein exklusives Angebot für Ihre nächste Bestellung vorbereitet. Antworten Sie mit STOP, um keine Nachrichten mehr zu erhalten."
+  },
+  {
+    "key": "back_in_stock",
+    "language": "vi",
+    "subject": "Sản phẩm bạn quan tâm tại {{brand}} đã có hàng",
+    "body": "Xin chào {{name}}, sản phẩm bạn từng tìm kiếm tại {{brand}} hiện đã có hàng trở lại. Mời bạn ghé xem và đặt mua sớm để không bỏ lỡ sản phẩm yêu thích. Trả lời STOP để ngừng nhận tin."
+  },
+  {
+    "key": "back_in_stock",
+    "language": "en",
+    "subject": "Your favorite item at {{brand}} is back in stock",
+    "body": "Hello {{name}}, great news from {{brand}}. The item you were interested in is now back in stock and ready for your order whenever you would like. Reply STOP to unsubscribe."
+  },
+  {
+    "key": "back_in_stock",
+    "language": "ar",
+    "subject": "المنتج المفضل لديك متوفر الآن لدى {{brand}}",
+    "body": "مرحباً {{name}}، يسعد فريق {{brand}} إبلاغك بأن المنتج الذي كنت تنتظره قد عاد إلى المخزون وأصبح جاهزاً للطلب الآن. أرسل STOP لإيقاف الرسائل."
+  },
+  {
+    "key": "back_in_stock",
+    "language": "de",
+    "subject": "Ihr Wunschprodukt bei {{brand}} ist wieder verfügbar",
+    "body": "Hallo {{name}}, gute Nachrichten von {{brand}}. Das Produkt, für das Sie sich interessiert haben, ist wieder auf Lager und kann ab sofort bestellt werden. Antworten Sie mit STOP, um keine Nachrichten mehr zu erhalten."
+  },
+  {
+    "key": "winback",
+    "language": "vi",
+    "subject": "{{brand}} rất mong được đón tiếp bạn trở lại",
+    "body": "Xin chào {{name}}, đã một thời gian {{brand}} chưa có dịp phục vụ bạn. Chúng tôi vừa cập nhật nhiều sản phẩm mới kèm ưu đãi dành riêng và rất mong được đón tiếp bạn trở lại. Trả lời STOP để ngừng nhận tin."
+  },
+  {
+    "key": "winback",
+    "language": "en",
+    "subject": "We would love to welcome you back to {{brand}}",
+    "body": "Hello {{name}}, it has been a while since your last visit to {{brand}}. We have prepared new arrivals and an exclusive offer to welcome you back anytime. Reply STOP to unsubscribe."
+  },
+  {
+    "key": "winback",
+    "language": "ar",
+    "subject": "يسعدنا الترحيب بعودتك إلى {{brand}}",
+    "body": "مرحباً {{name}}، اشتقنا لتواصلك مع {{brand}}. لقد أضفنا تشكيلة جديدة مع عرض خاص نرحب به بعودتك إلينا في أي وقت. أرسل STOP لإيقاف الرسائل."
+  },
+  {
+    "key": "winback",
+    "language": "de",
+    "subject": "{{brand}} freut sich auf Ihr Wiedersehen",
+    "body": "Hallo {{name}}, wir haben Sie bei {{brand}} schon eine Weile vermisst. Entdecken Sie unsere Neuheiten sowie ein exklusives Angebot zu Ihrer Rückkehr. Antworten Sie mit STOP, um keine Nachrichten mehr zu erhalten."
+  }
+]

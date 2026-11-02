@@ -77,6 +77,11 @@ Dữ liệu đo: 602.000 đơn, 200.500 khách, 180.010 lead, 1.440.000 tương 
 
 **Phase 6 (`docs/perf/phase6.json`): 0/41 vượt mục tiêu sau khi sửa.** Lần đo đầu vượt 2: job hằng ngày (chỉ số R12M + 600k dòng điểm cho 200k khách) **148 s** (mục tiêu < 120 s) — SQL chỉ số 30 s, xóa/ghi CustomerMetric 13 s, ghi điểm tuần tự ~100 s; sửa: `SET LOCAL work_mem = '128MB'` trong giao dịch dựng chỉ số + ghi điểm 4 khúc song song → **80 s**. Danh sách đơn theo phạm vi Sales chậm lại **579 ms** do phạm vi khách thêm nhánh ticket (3 EXISTS lồng) → hợp 3 truy vấn có index → **321 ms**. Điểm/chỉ số một khách 4 ms, danh sách khách kèm hạng RFM 120 ms, danh sách lead kèm điểm 166 ms, chấm lead mở 0,7 s/lượt.
 
+**Phase 7 (`docs/perf/phase7.json`): 0/49 vượt mục tiêu sau khi sửa.** Trong lúc đo phát hiện **lỗi dữ liệu tải**: `scripts/load/generate.ts` không ghi `deliveredAt`, nên trên `crm_load` mọi khách có 0 đơn giao thành công → toàn bộ chỉ số R12M/điểm là "Chưa đủ dữ liệu". **Con số 80 s của job hằng ngày ở Phase 6 đo trên dữ liệu suy biến này.** Đã sửa generator (đơn DELIVERED có `deliveredAt` = ngày đặt + 3 ngày) và bù 260.508 đơn trên `crm_load`. Đo lại trên dữ liệu đúng, lần đầu vượt 4: job hằng ngày **148 s**, xem trước phân khúc **5,9 s**, chạy phân khúc **13 s**, chạy bước hành trình 500 khách **7,2 s**. Sửa:
+- Job hằng ngày: chỉ xóa/ghi điểm **đã đổi** (so chữ ký nội dung, không phụ thuộc thứ tự khóa jsonb) → **82–103 s** (SQL chỉ số ~50 s, ghi điểm ~30–50 s tùy số điểm đổi trong ngày). `Score.computedAt` vì vậy là lần điểm đổi gần nhất.
+- Phân khúc: lọc hạng theo **id phiên bản đang dùng** (tra một lần, `segmentCtx`) thay vì nối `ScoreVersion.active`; chỉ mục phủ `Score(versionId, band, customerId)`, `CustomerMetric(period, daysToNextPurchase, customerId)` và `(period, recencyDays, customerId)` (truy vấn con Prisma không mang `workspaceId` — cô lập nằm ở `Customer`). Xem trước **481 ms**; chạy phân khúc một truy vấn lấy toàn bộ id (cursor chạy lại điều kiện nặng mỗi trang) → **3,2 s** cho 23.000 khách.
+- Hành trình: dữ kiện thoát (đã mua / từ chối / ticket mở) tính **một lần cho cả lô** (3 truy vấn), nạp sẵn khách + brand, chạy **8 luồng song song gom theo khách** → **0,93 s** / 500 khách. Đưa khách vào từ ảnh chụp: ~1 s mỗi hành trình đang chạy mỗi lượt worker.
+
 ## 4. Nguyên nhân và cách sửa
 
 | Nguyên nhân | Ảnh hưởng | Sửa |
@@ -94,6 +99,9 @@ Dữ liệu đo: 602.000 đơn, 200.500 khách, 180.010 lead, 1.440.000 tương 
 - **Phân trang bằng offset**: trang 500 mất 230 ms. Nếu cần lật rất sâu thì đổi sang phân trang theo con trỏ.
 - **Phạm vi Sales lấy danh sách khách vào bộ nhớ**: một Sales có khoảng 3.000 khách trong phạm vi thì ổn. Từ vài chục nghìn trở lên thì cần bảng phân công khách riêng.
 - **Index tạo trong transaction migration.** Trên DB thật đang chạy cần `CREATE INDEX CONCURRENTLY` (ghi ở `deploy-checklist.md`).
+- **Job hằng ngày 82–103 s, sát mục tiêu 120 s** (dao động theo checkpoint/autovacuum của Postgres và số điểm đổi). Nâng cấp kế tiếp: dựng chỉ số tăng dần (chỉ khách có đơn/ticket đổi) hoặc chạy ở BigQuery (D-05).
+- **Xem trước phân khúc 481 ms, sát mục tiêu 500 ms**; điều kiện trên trường chỉ số chưa có chỉ mục riêng (REV-03, số đơn giao, ticket mở) sẽ chậm hơn. Nâng cấp: thêm chỉ mục theo trường hay dùng, hoặc đếm ước lượng khi > 100k khách.
+- **Mỗi hành trình đang chạy tốn ~1 s mỗi lượt worker để kiểm khách mới trong ảnh chụp.** Với > 5 hành trình nên chỉ đưa khách vào khi ảnh chụp đổi (ghi id lần chạy đã đưa vào).
 - Chưa đo **đồng thời nhiều người dùng**; các số trên là một người một lúc. Phase 11 thêm đo tải đồng thời (≤ 20 người theo thiết kế mục 1.3).
 
 ## 6. Luồng làm việc ở khối lượng lớn (D-49)

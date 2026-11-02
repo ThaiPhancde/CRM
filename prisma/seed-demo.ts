@@ -10,6 +10,7 @@ import { resolveAllCustomers } from "../src/modules/customers/resolve";
 import { workspaceDb } from "../src/lib/db";
 import { seedSales } from "../scripts/seed-sales";
 import { seedService } from "../scripts/seed-service";
+import { seedMarketing } from "../scripts/seed-marketing";
 
 const db = new PrismaClient();
 type Catalog = { products: { code: string; brand: string; category: string; name_vi: string; name_en: string; name_ar?: string; variants: { sku: string; attributes: Record<string, string>; cost_usd: string }[] }[] };
@@ -66,6 +67,8 @@ async function main() {
   console.log("nhu cầu mua:", await seedSales());
   // Phase 5: bài tri thức + ticket kèm hội thoại.
   console.log("chăm sóc:", await seedService());
+  // Phase 7: phân khúc, hành trình mua lại, chiến dịch (cần chỉ số/điểm Phase 6 — worker dựng; thiếu thì phân khúc rỗng tới lượt worker kế).
+  console.log("marketing:", await seedMarketing());
   console.log(`xong: đơn=${orders} liên kết nguồn=${links} đơn chờ xác minh=${reviews} khách=${customers} khách chờ xác minh=${customerReviews}`);
 }
 

@@ -34,3 +34,7 @@
 ## Kết luận
 
 Phase 6 **đạt toàn bộ tiêu chí nghiệm thu**.
+
+## Đính chính (02/11/2026, khi đo tải Phase 7)
+
+Dòng "Chịu tải" ở trên (job hằng ngày 80 s) đo trên `crm_load` có **lỗi dữ liệu**: generator không ghi `deliveredAt`, mọi khách "Chưa đủ dữ liệu". Đo lại trên dữ liệu đã sửa: lần đầu 148 s (vượt), sau khi chỉ ghi điểm đã đổi còn **82–103 s** (< 120 s, vẫn đạt nhưng sát). Chi tiết: `docs/performance.md` mục 3 (Phase 7). Kết luận nghiệm thu Phase 6 không đổi; giới hạn ghi ở `docs/performance.md` mục 5.

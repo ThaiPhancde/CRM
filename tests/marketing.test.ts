@@ -3,7 +3,7 @@ import { makeUser, makeWorkspace, RUN } from "./helpers";
 import { runInWorkspace, workspaceDb } from "@/lib/db";
 import { ValidationError } from "@/lib/errors";
 import { loadUser } from "@/lib/session";
-import { enrollJourney, nextSendable, processDueRuns, saveJourney, setJourneyStatus, type Step } from "@/modules/marketing/journeys";
+import { enrollJourney, journeyJobs, nextSendable, processDueRuns, saveJourney, setJourneyStatus, type Step } from "@/modules/marketing/journeys";
 import { addTouchpoint, listCampaigns, saveCampaign } from "@/modules/marketing/campaigns";
 import { compileRules, previewSegment, runSegmentFor, saveSegment } from "@/modules/marketing/segments";
 
@@ -81,6 +81,7 @@ describe("Phase 7 — hành trình mua lại (HLD §8.5)", () => {
     const j = await s.as(() => saveJourney(s.mkt, { name: "Gần chu kỳ mua lại", segmentId: seg.id, brandId: s.brand.id, steps: STEPS, exitRules: { purchased: true, optOut: true, openTicket: true, expireDays: 30 } }));
     await expect(s.as(() => setJourneyStatus(s.mkt, j.id, "ACTIVE", T))).rejects.toMatchObject({ status: 403 }); // Marketing không tự bật
     await s.as(() => setJourneyStatus(s.mgr, j.id, "ACTIVE", T));
+    await runSegmentFor(s.c, seg.id, null, T); // vào hành trình theo ảnh chụp phân khúc (D-55)
     return j;
   }
 
@@ -137,6 +138,17 @@ describe("Phase 7 — hành trình mua lại (HLD §8.5)", () => {
     expect(await s.c.outbox.count({ where: { recipient: "late@x.invalid" } })).toBe(0);
     // EU đồng ý rồi → hành trình mới của khách này gửi được (kiểm hàm giờ thuần).
     expect(nextSendable(new Date("2026-11-03T21:30:00Z"), "Europe/Berlin").toISOString()).toBe("2026-11-04T08:00:00.000Z");
+  });
+
+  it("worker làm mới phân khúc quá 20 giờ rồi mới đưa khách vào; trong 20 giờ không chạy lại", async () => {
+    const s = await setup("jrw");
+    await s.customer("Fresh");
+    const seg = await s.as(() => saveSegment(s.mkt, { name: "Gần chu kỳ", rules: REPURCHASE }));
+    const j = await s.as(() => saveJourney(s.mkt, { name: "Nhắc mua lại", segmentId: seg.id, steps: [{ type: "TAG", tag: "da-nhac" }, { type: "TASK", title: "Gọi khách", dueDays: 1 }], exitRules: { purchased: true, optOut: true, openTicket: true, expireDays: 30 } }));
+    await s.as(() => setJourneyStatus(s.mgr, j.id, "ACTIVE", T));
+    const r1 = await journeyJobs(s.c, T);
+    const r2 = await journeyJobs(s.c, h(2));
+    expect([r1.segmentsRefreshed, r1.enrolled, r2.segmentsRefreshed, r2.enrolled]).toEqual([1, 1, 0, 0]);
   });
 
   it("đang bật thì không sửa bước; cần ít nhất một bước gửi tin hoặc tạo việc", async () => {

@@ -65,11 +65,12 @@ async function main() {
   await batch("Đơn", N.orders, (i) => {
     const net = (50 + Math.floor(rnd() * 400)).toFixed(2);
     const booked = new Date(NOW - Math.floor(rnd() * 365 * DAY));
+    const fs = pick(FS);
     return {
       id: oid(i), workspaceId: w, storeId: store.id, marketId: market.id, customerId: cid(i % N.customers), orderNumber: `L${100000 + i}`,
-      status: rnd() < 0.08 ? "CANCELLED" : "CONFIRMED", paymentStatus: pick(["COD_PENDING", "COD_COLLECTED", "PAID"] as const), fulfillmentStatus: pick(FS),
+      status: rnd() < 0.08 ? "CANCELLED" : "CONFIRMED", paymentStatus: pick(["COD_PENDING", "COD_COLLECTED", "PAID"] as const), fulfillmentStatus: fs,
       currency: "AED", grossAmount: net, discount: "0", shippingFee: "0", netAmount: net, fxRate: "7161.23", fxDate: new Date("2025-01-01"),
-      netBase: (Number(net) * 7161.23).toFixed(4), bookedAt: booked, customerName: `Khách tải ${i % N.customers}`, customerPhone: phone(i % N.customers),
+      netBase: (Number(net) * 7161.23).toFixed(4), bookedAt: booked, confirmedAt: booked, deliveredAt: fs === "DELIVERED" ? new Date(Math.min(booked.getTime() + 3 * DAY, NOW)) : null, customerName: `Khách tải ${i % N.customers}`, customerPhone: phone(i % N.customers),
     };
   }, (r) => db.order.createMany({ data: r as Prisma.OrderCreateManyInput[] }));
   await batch("Dòng hàng", N.orders * 2, (i) => ({ workspaceId: w, orderId: oid(i >> 1), sourceSku: `SKU-${i % 67}`, name: `Hàng ${i % 67}`, qty: 1, qtyDelivered: 1, unitPrice: "100", lineAmount: "100" }),
