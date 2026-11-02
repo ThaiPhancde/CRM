@@ -2,6 +2,11 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 15) — Phase 9 đã nghiệm thu; bắt đầu Phase 10
+
+- **Nghiệm thu Phase 9:** `docs/acceptance/phase-9.md` — đạt 4/4 tiêu chí. Đối chiếu REV-01/REV-03 báo cáo vs `/don-hang` trên DB demo khớp tuyệt đối 84/84 sau khi chuyển cộng tiền sang Decimal (`c9433fd`). Kiểm vai Marketing/Sales trên trình duyệt.
+- **Tiếp theo:** Phase 10 (vận đơn + sản phẩm) → nghiệm thu → Phase 11 → nghiệm thu. Phase 8 vẫn chờ nghiệm thu chính thức.
+
 ## Checkpoint 02/11/2026 (lần 14) — Phase 9 xong, chờ nghiệm thu; người dùng yêu cầu làm tuần tự 9 → nghiệm thu → 10 → nghiệm thu → 11 → nghiệm thu
 
 - **Đã làm:** báo cáo 6 nhóm + dashboard theo vai + Excel; /don-hang Mốc ngày + REV-03 khớp báo cáo. Quyết định D-57; chi tiết `docs/implementation-status.md` (Phase 9).
