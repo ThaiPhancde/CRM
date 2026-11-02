@@ -72,7 +72,9 @@ describe("phiên và chọn workspace", () => {
   it("token ký đúng thì đọc được, sai/hết hạn/rỗng thì null", async () => {
     const t = await signSession("u1");
     expect(await verifySession(t)).toBe("u1");
-    expect(await verifySession(t.slice(0, -2) + "xx")).toBeNull();
+    // Đổi một ký tự dữ liệu (không phải ký tự cuối base64url — ký tự cuối chứa bit đệm) và luôn khác ký tự cũ: không phụ thuộc may rủi.
+    const i = t.length - 5;
+    expect(await verifySession(t.slice(0, i) + (t[i] === "A" ? "B" : "A") + t.slice(i + 1))).toBeNull();
     expect(await verifySession(undefined)).toBeNull();
   });
 
