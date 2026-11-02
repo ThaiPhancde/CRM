@@ -4,13 +4,23 @@
    "đơn",
    "đơn hàng",
    "order",
-   "orders"
+   "orders",
+   "bestellung",
+   "bestellungen",
+   "طلب",
+   "طلبات",
+   "الطلبات"
   ],
   "customers": [
    "khách",
    "khách hàng",
    "customer",
-   "customers"
+   "customers",
+   "kunde",
+   "kunden",
+   "عميل",
+   "عملاء",
+   "العملاء"
   ]
  },
  "fulfillment": {
@@ -18,66 +28,112 @@
    "giao thất bại",
    "giao không thành công",
    "failed delivery",
-   "failed"
+   "failed",
+   "fehlgeschlagen",
+   "zustellung fehlgeschlagen",
+   "فشل التوصيل",
+   "فشل التسليم"
   ],
   "RETURNED": [
    "hoàn hàng",
    "bị hoàn",
-   "returned"
+   "returned",
+   "retourniert",
+   "zurückgeschickt",
+   "مرتجع",
+   "تم الإرجاع"
   ],
   "IN_TRANSIT": [
    "đang giao",
-   "in transit"
+   "in transit",
+   "unterwegs",
+   "in zustellung",
+   "قيد التوصيل",
+   "في الطريق"
   ],
   "DELIVERED": [
    "đã giao",
    "giao thành công",
-   "delivered"
+   "delivered",
+   "zugestellt",
+   "geliefert",
+   "تم التوصيل",
+   "تم التسليم"
   ],
   "UNFULFILLED": [
    "chưa giao",
    "not shipped",
-   "unfulfilled"
+   "unfulfilled",
+   "nicht versandt",
+   "noch nicht versandt",
+   "غير مشحون",
+   "لم يتم الشحن"
   ]
  },
  "cancelled": [
   "đã hủy",
   "bị hủy",
   "cancelled",
-  "canceled"
+  "canceled",
+  "storniert",
+  "abgebrochen",
+  "ملغي",
+  "تم الإلغاء"
  ],
  "repeat": [
   "mua lại",
   "mua nhiều lần",
   "repeat",
-  "returning"
+  "returning",
+  "wiederkehrend",
+  "stammkunde",
+  "عميل متكرر",
+  "تكرار الشراء"
  ],
  "period": {
   "today": [
    "hôm nay",
-   "today"
+   "today",
+   "heute",
+   "اليوم"
   ],
   "yesterday": [
    "hôm qua",
-   "yesterday"
+   "yesterday",
+   "gestern",
+   "أمس",
+   "الأمس"
   ],
   "last_7_days": [
    "7 ngày qua",
    "tuần này",
    "last 7 days",
-   "this week"
+   "this week",
+   "letzte 7 tage",
+   "diese woche",
+   "آخر 7 أيام",
+   "هذا الأسبوع"
   ],
   "this_month": [
    "tháng này",
-   "this month"
+   "this month",
+   "diesen monat",
+   "dieser monat",
+   "هذا الشهر"
   ],
   "last_month": [
    "tháng trước",
-   "last month"
+   "last month",
+   "letzten monat",
+   "letzter monat",
+   "الشهر الماضي"
   ],
   "last_30_days": [
    "30 ngày qua",
-   "last 30 days"
+   "last 30 days",
+   "letzte 30 tage",
+   "آخر 30 يوم",
+   "آخر 30 يوما"
   ]
  },
  "markets": {
@@ -85,33 +141,54 @@
    "uae",
    "dubai",
    "emirates",
-   "tiểu vương quốc"
+   "tiểu vương quốc",
+   "vereinigte arabische emirate",
+   "vae",
+   "الإمارات",
+   "دبي"
   ],
   "SA": [
    "saudi",
    "ả rập xê út",
-   "riyadh"
+   "riyadh",
+   "saudi-arabien",
+   "riad",
+   "السعودية",
+   "الرياض"
   ],
   "KW": [
    "kuwait",
-   "cô oét"
+   "cô oét",
+   "kuwait-stadt",
+   "staat kuwait",
+   "الكويت"
   ],
   "DE": [
    "đức",
-   "germany"
+   "germany",
+   "deutschland",
+   "ألمانيا",
+   "المانيا"
   ],
   "FR": [
    "pháp",
-   "france"
+   "france",
+   "frankreich",
+   "فرنسا"
   ],
   "US": [
    "mỹ",
    "usa",
-   "united states"
+   "united states",
+   "vereinigte staaten",
+   "الولايات المتحدة",
+   "أمريكا"
   ],
   "VN": [
    "việt nam",
-   "vietnam"
+   "vietnam",
+   "republik vietnam",
+   "فيتنام"
   ]
  },
  "intents": {
@@ -121,72 +198,121 @@
    "nhắc việc",
    "giao việc",
    "create task",
-   "remind me"
+   "remind me",
+   "erinnere mich",
+   "aufgabe erstellen",
+   "ذكرني",
+   "مهمة"
   ],
   "appointment": [
    "lịch hẹn",
    "đặt hẹn",
    "hẹn gặp",
    "appointment",
-   "schedule a meeting"
+   "schedule a meeting",
+   "termin",
+   "termin vereinbaren",
+   "موعد",
+   "حجز موعد"
   ],
   "report": [
    "doanh thu",
    "báo cáo",
    "revenue",
-   "report"
+   "report",
+   "umsatz",
+   "bericht",
+   "الإيرادات",
+   "تقرير"
   ],
   "find_customer": [
    "tìm khách",
-   "find customer"
+   "find customer",
+   "kunde suchen",
+   "kunden finden",
+   "بحث عن عميل",
+   "ابحث عن عميل"
   ],
   "find_order": [
    "tìm đơn",
-   "find order"
+   "find order",
+   "bestellung suchen",
+   "bestellung finden",
+   "بحث عن طلب",
+   "ابحث عن طلب"
   ]
  },
  "metrics": {
   "REV-01": [
    "giá trị đặt",
    "rev-01",
-   "booked"
+   "booked",
+   "bestellwert",
+   "gebucht",
+   "قيمة الطلبات",
+   "الطلبات المحجوزة"
   ],
   "REV-02": [
    "xác nhận",
    "rev-02",
-   "confirmed"
+   "confirmed",
+   "bestätigt",
+   "bestaetigt",
+   "مؤكد",
+   "الإيرادات المؤكدة"
   ],
   "REV-03": [
    "giao thành công",
    "rev-03",
-   "delivered"
+   "delivered",
+   "zugestellt",
+   "geliefert",
+   "تم التوصيل",
+   "تم التسليم"
   ],
   "REV-04": [
    "thực thu",
    "rev-04",
    "collected",
-   "cash"
+   "cash",
+   "eingezogen",
+   "kassiert",
+   "محصل",
+   "التحصيل الفعلي"
   ]
  },
  "groupByMarket": [
   "theo thị trường",
   "từng thị trường",
   "by market",
-  "per market"
+  "per market",
+  "nach markt",
+  "pro markt",
+  "حسب السوق",
+  "لكل سوق"
  ],
  "tomorrow": [
   "ngày mai",
   "mai",
-  "tomorrow"
+  "tomorrow",
+  "morgen",
+  "غدا",
+  "غداً"
  ],
  "todayWords": [
   "hôm nay",
-  "today"
+  "today",
+  "heute",
+  "اليوم"
  ],
  "customerMarkers": [
   "khách hàng",
   "khách",
   "customer",
-  "with"
+  "with",
+  "kunde",
+  "kunden",
+  "العميل",
+  "عميل"
  ]
 }

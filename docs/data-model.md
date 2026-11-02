@@ -130,6 +130,8 @@ erDiagram
     AgentRun ||--o{ ToolCall : has
     AgentRun ||--o{ Suggestion : has
     Suggestion ||--o| Approval : needs
+    ToolCall ||--o| Approval : needs
+    AgentRun ||--o| AiCost : costs
     Connection ||--o{ SyncRun : has
     SyncRun ||--o{ SourceEvent : has
 
@@ -149,11 +151,11 @@ erDiagram
     ContactLog { string id PK  string customerId FK  string channel  string brandId  string source  string refId  datetime createdAt }
     Campaign { string id PK  string workspaceId FK  string brandId FK  string segmentId FK  string journeyId FK  string name  string channel  enum status "DRAFT|RUNNING|ENDED"  string utmCampaign  decimal cost  string costCurrency  decimal costBase  date startAt  date endAt }
     Touchpoint { string id PK  string customerId FK  string leadId FK  string campaignId FK  string source  string medium  string utmCampaign  string utmContent  decimal cost  string costCurrency  datetime occurredAt  string idempotencyKey }
-    AgentRun { string id PK  string workspaceId FK  string userId FK  string feature  string model  text promptRedacted  text output  json evidence  int tokensIn  int tokensOut  decimal costUsd  enum status  datetime startedAt }
-    ToolCall { string id PK  string agentRunId FK  string tool  json args  json result  enum status "OK|DENIED|ERROR|NEEDS_APPROVAL" }
-    Suggestion { string id PK  string agentRunId FK  enum kind  json payload  enum status "PENDING|ACCEPTED|REJECTED" }
-    Approval { string id PK  string suggestionId FK  string approverId FK  enum decision  text note  datetime decidedAt }
-    AiCost { string id PK  string workspaceId FK  date day  string feature  string model  int tokens  decimal costUsd }
+    AgentRun { string id PK  string workspaceId FK  string userId FK  string feature  string provider  string model  enum status "OK|NEEDS_CLARIFICATION|DENIED|ERROR"  text input "đã lọc"  json output  json evidence  text error  int ms }
+    ToolCall { string id PK  string runId FK  string tool  json args  json result  enum status "OK|DENIED|ERROR|PENDING_APPROVAL"  text error }
+    Suggestion { string id PK  string runId FK  string kind  string entity  string entityId  json payload  enum status "PENDING|ACCEPTED|REJECTED"  string decidedById }
+    Approval { string id PK  string toolCallId FK "unique, tùy chọn"  string suggestionId FK "unique, tùy chọn"  string requestedById  enum status "PENDING|APPROVED|REJECTED"  text reason  string decidedById  text note }
+    AiCost { string id PK  string workspaceId FK  string runId FK "unique"  string feature  string provider  string model  int inputTokens  int outputTokens  decimal usd }
     SyncRun { string id PK  string connectionId FK  enum mode "BACKFILL|INCREMENTAL|REPLAY"  datetime startedAt  datetime finishedAt  int applied  int stale  int duplicate  int errors  json cursor }
     SourceEvent { string id PK  string syncRunId FK  string eventKey  enum recordType  string sourceRecordId  datetime sourceUpdatedAt  enum outcome "APPLIED|STALE|NOT_OWNER|DUPLICATE|ERROR"  string error  string rawPayloadRef }
     Outbox { string id PK  string workspaceId FK  enum channel  string to  string subject  text body  enum status "PENDING|SIMULATED|SENT|FAILED"  string idempotencyKey  string relatedEntity  string relatedId  datetime scheduledAt  datetime sentAt }
@@ -188,3 +190,4 @@ erDiagram
 11. `JourneyStepLog` unique `(runId, stepIndex)`: một bước của một khách chạy đúng một lần; tin gửi khóa Outbox `journey:<runId>:<bước>` (test `tests/marketing.test.ts`).
 12. Gửi tin bị bỏ qua (thiếu liên hệ / chưa đồng ý / quá tần suất) vẫn ghi `JourneyStepLog` có lý do, không ghi `ContactLog`; `ContactLog` là nguồn đếm giới hạn xuyên chiến dịch.
 13. `SegmentMember` chỉ còn ở lần chạy mới nhất của mỗi phân khúc (D-55).
+14. Mọi `AgentRun` có đúng một `AiCost` (kể cả lần chạy lỗi/bị từ chối); `Approval` chuyển PENDING → APPROVED/REJECTED có điều kiện, người duyệt ≠ người yêu cầu (test `tests/ai.test.ts`).

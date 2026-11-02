@@ -107,6 +107,14 @@ async function main() {
   await time("Hành trình: chi tiết + thống kê bước", "detail", () => jrs.getJourney(mgr, jr.id));
   await time("Hành trình: danh sách khách trang 1", "page", () => jrs.listJourneyRuns(mgr, jr.id, {}));
   await time("Chiến dịch: danh sách + MKT-01/02", "page", () => camps.listCampaigns(mgr));
+  // Phase 8: AI (replay) — chi phí chính là gom ngữ cảnh qua service + ghi AgentRun/ToolCall/AiCost.
+  const ai = await import("../../src/modules/ai/features");
+  const aiHist = await import("../../src/modules/ai/history");
+  await time("AI: tóm tắt 360 một khách", "detail", () => ai.summarize360(mgr, aCustomer));
+  await time("AI: tìm tự nhiên → bộ lọc", "page", () => ai.naturalSearch(mgr, "đơn giao thất bại ở UAE tháng này"));
+  await time("AI: hỏi báo cáo REV-03 theo thị trường (R12M, 200k khách)", "page", () => ai.assistant(mgr, { text: "Doanh thu giao thành công theo thị trường" }));
+  await time("AI: lịch sử lần chạy trang 1", "page", () => aiHist.listRuns(mgr, {}));
+  await time("AI: chi phí tháng (AI-01..03)", "page", () => aiHist.aiStats(mgr));
   let k = 0;
   await time("Tạo lead + phân công tự động", "write", () => leads.createLead(mgr, { contactName: `Bench ${Date.now()}-${k++}`, phone: `+97155${String(1000000 + Math.floor(Math.random() * 8999999))}`, source: "inbox" }), 5);
   await time("Worker: giao lead treo + nhắc hạn + tự đóng (1 lượt)", "job", async () => { await queue.assignPendingLeads(c); await queue.remindDue(c); await queue.closeStaleLeads(c); }, 1);

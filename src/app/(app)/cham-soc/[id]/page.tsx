@@ -12,6 +12,8 @@ import {
   type Tone,
 } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
+import { can } from "@/lib/permissions";
+import { ConversationPanel } from "../../ai/conversation-panel";
 import { bindTenant } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { dateTime, num } from "@/lib/format";
@@ -152,13 +154,16 @@ export default async function TicketDetailPage({
           </span>
         }
         actions={
-          ticket.canAssign ? (
-            <AssignTicketDrawer
-              ticketId={ticket.id}
-              currentOwnerId={ticket.owner?.id ?? null}
-              users={users}
-            />
-          ) : undefined
+          <>
+            {can(user.roles, "ai.run") && <ConversationPanel ticketId={ticket.id} canDraft={ticket.canEdit} defaultLanguage={(ticket.customerLocale ?? "vi").slice(0, 2)} />}
+            {ticket.canAssign && (
+              <AssignTicketDrawer
+                ticketId={ticket.id}
+                currentOwnerId={ticket.owner?.id ?? null}
+                users={users}
+              />
+            )}
+          </>
         }
       />
 

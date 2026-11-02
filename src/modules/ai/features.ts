@@ -15,6 +15,7 @@ import { getLead } from "@/modules/sales/leads";
 import { getArticle } from "@/modules/service/knowledge";
 import { getTicket } from "@/modules/service/tickets";
 import { OPEN_TICKET } from "@/modules/service/labels";
+import { norm } from "@/adapters/llm/replay";
 import { aiRun, suggest, type Runner } from "./core";
 
 const SYSTEM = "Bạn là trợ lý CRM của LevelUp. Chỉ dùng dữ liệu được cung cấp; mỗi câu phải dẫn id bằng chứng; thiếu dữ liệu thì nói thiếu; không đoán khách, đơn, SKU, giá.";
@@ -87,7 +88,7 @@ export async function naturalSearch(user: SessionUser, q: string) {
     const schema = out.target === "orders" ? orderFilter : customerFilter;
     const filters: Record<string, string> = {};
     for (const [k, v] of Object.entries(out.filters)) if (k in schema.shape && schema.safeParse({ [k]: v }).success) filters[k] = v;
-    const explain = out.explain.filter((e) => e.field in filters).map((e) => ({ ...e, label: e.field === "market" ? markets.find((m) => m.id === e.value)?.code ?? e.value : e.field === "fulfillment" ? FULFILLMENT_STATUS[e.value]?.label ?? e.value : e.value }));
+    const explain = out.explain.filter((e) => e.field in filters).map((e) => ({ ...e, label: e.field === "market" ? markets.find((m) => m.id === e.value)?.code ?? e.value : e.field === "fulfillment" ? FULFILLMENT_STATUS[e.value]?.label ?? e.value : /^\d{4}-\d{2}-\d{2}$/.test(e.value) ? e.value.split("-").reverse().join("/") : e.field === "repeat" ? "có" : e.value }));
     const href = `/${out.target === "orders" ? "don-hang" : "khach-hang"}?${new URLSearchParams(filters).toString()}`;
     return { status: (Object.keys(filters).length ? "OK" : "NEEDS_CLARIFICATION") as "OK" | "NEEDS_CLARIFICATION", output: { target: out.target, filters, explain, href } };
   });
@@ -156,12 +157,10 @@ export async function draftReply(user: SessionUser, input: { ticketId?: string; 
       if (chosen) order = { id: chosen.id, number: chosen.orderNumber, fulfillment: chosen.fulfillmentStatus, bookedAt: chosen.bookedAt };
     }
     const brand = brandId ? (await db.brand.findFirst({ where: { id: brandId }, select: { name: true } }))?.name ?? "LevelUp" : "LevelUp";
-    // Tri thức: bài đã xuất bản đúng ngôn ngữ (brand/thị trường khớp nhất) — đọc qua service có knowledge.view.
+    // Tri thức: bài đã xuất bản đúng ngôn ngữ, khớp từ khóa với tiêu đề ticket / tin khách; không khớp thì không dẫn bài nào (không chèn bài lạc đề).
     const articles: DraftCtx["articles"] = [];
-    if (can(user.roles, "knowledge.view")) {
-      const cand = await db.knowledgeArticle.findFirst({ where: { status: "PUBLISHED", language, OR: [{ brandId: null }, ...(brandId ? [{ brandId }] : [])] }, orderBy: { updatedAt: "desc" }, select: { id: true } });
-      if (cand) { const a = await getArticle(user, cand.id); articles.push({ id: a.id, title: a.version.title, excerpt: a.version.body.replace(/\s+/g, " ").slice(0, 220) }); }
-    }
+    const best = can(user.roles, "knowledge.view") ? await pickArticle(language, brandId, `${subject ?? ""} ${lastInbound ?? ""}`) : null;
+    if (best) { const a = await getArticle(user, best); articles.push({ id: a.id, title: a.version.title, excerpt: excerpt(a.version.body) }); }
     const ctx: DraftCtx = { language, customerName, brand, subject, lastInbound, order, articles };
     const out = (await r.complete("draft", { system: SYSTEM, prompt: `Soạn phản hồi bằng ngôn ngữ "${language}" từ trạng thái đơn mới nhất và bài tri thức.`, context: ctx })).data as { text: string; evidence: string[] };
     const catalog = new Map<string, Evidence>([
@@ -170,6 +169,28 @@ export async function draftReply(user: SessionUser, input: { ticketId?: string; 
     ]);
     return { output: { text: out.text, language }, evidence: out.evidence.filter((id) => catalog.has(id)).map((id) => catalog.get(id)!) };
   });
+}
+
+/** Chọn bài tri thức: từ khóa chung (bỏ từ dừng) có trọng số theo độ hiếm trong tập bài (IDF) + 1 điểm nếu cùng brand; < 1 điểm → không dẫn bài.
+ *  ponytail: so từ trên tiêu đề + thẻ, đủ cho vài trăm bài; nhiều hơn thì dùng embed (Llm.embed) hoặc tìm toàn văn. */
+const STOP = new Set(["khach", "hang", "don", "tai", "nhan", "cua", "cho", "voi", "khong", "duoc", "nay", "mot", "cac", "nhung", "bao", "the", "nao", "nhu", "minh", "shop", "chao", "va", "la", "co", "toi", "ban", "em", "anh", "chi", "order", "customer", "and", "for", "with", "your", "please", "how", "what", "bitte", "und", "der", "die", "das", "ich", "sie"]);
+const tokens = (s: string) => new Set(norm(s).split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 2 && !STOP.has(w)));
+async function pickArticle(language: string, brandId: string | null, text: string) {
+  const q = tokens(text);
+  if (!q.size) return null;
+  const cands = await db.knowledgeArticle.findMany({ where: { status: "PUBLISHED", language, OR: [{ brandId: null }, ...(brandId ? [{ brandId }] : [])] }, select: { id: true, title: true, tags: true, brandId: true }, take: 200 });
+  const docs = cands.map((a) => ({ a, t: tokens(`${a.title} ${a.tags.join(" ").replace(/-/g, " ")}`) }));
+  const df = new Map<string, number>();
+  for (const d of docs) for (const w of d.t) df.set(w, (df.get(w) ?? 0) + 1);
+  const scored = docs.map(({ a, t }) => ({ id: a.id, score: [...t].filter((w) => q.has(w)).reduce((s, w) => s + Math.log(1 + docs.length / (df.get(w) ?? 1)), 0) + (brandId && a.brandId === brandId ? 1 : 0) })).sort((x, y) => y.score - x.score);
+  return scored[0] && scored[0].score >= 1.5 ? scored[0].id : null;
+}
+/** Trích đoạn sạch markdown, cắt ở ranh giới câu (≤ 240 ký tự). */
+function excerpt(body: string) {
+  const plain = body.replace(/^#{1,6}\s+.*$/gm, "").replace(/[*_`>]+/g, "").replace(/^\s*[-•]\s+/gm, "").replace(/\s+/g, " ").trim();
+  let out = "";
+  for (const s of plain.split(/(?<=[.!?])\s+/)) { if ((out + " " + s).trim().length > 240) break; out = (out + " " + s).trim(); }
+  return out || plain.slice(0, 237) + "…";
 }
 
 // ---- (5) Trợ lý: tạo việc / lịch hẹn qua tool; (6) hỏi báo cáo ----

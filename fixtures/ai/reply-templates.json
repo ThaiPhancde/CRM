@@ -26,5 +26,33 @@
   "noOrder": "To check this accurately, could you please share the order number you need help with?",
   "kb": "More information: {{excerpt}}",
   "closing": "Best regards,\n{{brand}}"
+ },
+ "ar": {
+  "greeting": "مرحباً {{name}}،",
+  "status": {
+   "UNFULFILLED": "تم تأكيد طلبكم رقم {{order}} وجارٍ تجهيزه للشحن.",
+   "IN_TRANSIT": "طلبكم رقم {{order}} في الطريق إليكم حالياً.",
+   "PARTIAL": "تم توصيل جزء من طلبكم رقم {{order}}، وجارٍ معالجة الجزء المتبقي.",
+   "DELIVERED": "تُظهر سجلاتنا أنه تم توصيل الطلب رقم {{order}} بنجاح.",
+   "FAILED": "تعذر توصيل الطلب رقم {{order}} حتى الآن؛ سنتواصل معكم لترتيب موعد توصيل جديد.",
+   "RETURNED": "تم إرجاع الطلب رقم {{order}} إلى المستودع؛ سنساعدكم في الخطوة التالية."
+  },
+  "noOrder": "للتحقق من ذلك بدقة، يرجى تزويدنا برقم الطلب الذي تحتاجون المساعدة بشأنه.",
+  "kb": "معلومات إضافية: {{excerpt}}",
+  "closing": "مع خالص التحية،\n{{brand}}"
+ },
+ "de": {
+  "greeting": "Guten Tag {{name}},",
+  "status": {
+   "UNFULFILLED": "Ihre Bestellung {{order}} wurde bestätigt und wird für den Versand vorbereitet.",
+   "IN_TRANSIT": "Ihre Bestellung {{order}} ist auf dem Weg zu Ihnen.",
+   "PARTIAL": "Ein Teil Ihrer Bestellung {{order}} wurde bereits geliefert; der Rest wird derzeit bearbeitet.",
+   "DELIVERED": "Laut unserem System wurde die Bestellung {{order}} erfolgreich zugestellt.",
+   "FAILED": "Die Bestellung {{order}} konnte noch nicht zugestellt werden; wir kontaktieren Sie, um einen neuen Liefertermin zu vereinbaren.",
+   "RETURNED": "Die Bestellung {{order}} wurde an unser Lager zurückgesendet; wir unterstützen Sie gerne beim nächsten Schritt."
+  },
+  "noOrder": "Um dies genau zu prüfen, teilen Sie uns bitte die Bestellnummer mit, zu der Sie Hilfe benötigen.",
+  "kb": "Weitere Informationen: {{excerpt}}",
+  "closing": "Mit freundlichen Grüßen\n{{brand}}"
  }
 }

@@ -2,6 +2,17 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 13) — nghiệm thu Phase 7, Phase 8 xong, chờ nghiệm thu
+
+- **Đã làm:** nghiệm thu Phase 7 (`docs/acceptance/phase-7.md`, chạy job hành trình trên DB demo: 9 tin SIMULATED, chạy lại không trùng). Phase 8: adapter LLM (replay + khung Anthropic), lõi AI (6 tool qua service có `requirePerm`, duyệt, ngân sách, chi phí), 6 chức năng AI, `/ai` 4 tab, AI trong trang khách/ticket/nhu cầu mua, thanh tìm tự nhiên. Quyết định D-56; chi tiết `docs/implementation-status.md` (Phase 8).
+- **Test:** `npx vitest run` → 381 passed, 1 skipped; `tsc` 0 lỗi; `next build` sạch; đo tải `docs/perf/phase8.json`: 5/5 thao tác AI đạt.
+- **Chưa kết luận được:** vài thao tác cũ (job hằng ngày, xem trước phân khúc, nhập 1.000 đơn) dao động tới ±2 lần giữa các lần đo trên máy dev và có lần vượt ngưỡng (xem `docs/performance.md`, mục Phase 8). Không phải code Phase 8; cần đo lại trên máy riêng trước khi nghiệm thu Phase 8 hoặc Phase 11.
+- **Migration mới:** `20261102160000_phase8_ai` (áp trên `crm`, `crm_load`; `crm_test` tự áp khi chạy vitest).
+- **Chạy dev:** nếu `npx next dev` báo EADDRINUSE, có tiến trình node cũ giữ cổng 3217 — tắt nó. Không chạy `next build` khi dev đang chạy (hỏng `.next`, trang 500/404 thoáng qua).
+- **Chia việc:** thực tế ~48/52 (Gemini nhiều hơn) theo số dòng; mục tiêu D-54 là 70/30. Phase 9 giao Gemini ít dòng hơn (ví dụ chỉ bảng test + nội dung), Claude làm các trang báo cáo có biểu đồ.
+- **Chưa làm:** tác vụ nền AI (R-61), tóm tắt cuộc gọi, LLM thật (Phase 12), Sales báo cáo cá nhân (Phase 9).
+- **Tiếp theo:** nghiệm thu Phase 8 (mục 12 thiết kế: "nhân viên không thấy dữ liệu ngoài quyền qua AI", "AI không đoán khi mơ hồ", "tool thiếu quyền bị từ chối", "mọi run có chi phí và bằng chứng"), rồi Phase 9 (báo cáo + dashboard).
+
 ## Checkpoint 02/11/2026 (lần 12) — Phase 7 xong, chờ nghiệm thu
 
 - **Đã làm:** phân khúc động, hành trình tự động (HLD §8.5), chiến dịch + điểm chạm, kho tồn replay; worker làm mới phân khúc > 20 giờ → đưa khách vào từ ảnh chụp → chạy bước tới hạn. Chi tiết `docs/implementation-status.md` (Phase 7), quyết định D-55.

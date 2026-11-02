@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Card, cx, EmptyState, PageHeader, SectionTitle, StatCard, type Tone } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
+import { can } from "@/lib/permissions";
+import { ConversationPanel } from "../../ai/conversation-panel";
 import { bindTenant } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { date, dateTime, money, num } from "@/lib/format";
@@ -130,8 +132,9 @@ export default async function LeadDetailPage({
         ]}
         description={`${sourceText} · tạo ${dateTime(lead.createdAt)}`}
         actions={
-          lead.canClaim || lead.canAssign ? (
+          lead.canClaim || lead.canAssign || can(user.roles, "ai.run") ? (
             <>
+              {can(user.roles, "ai.run") && <ConversationPanel leadId={lead.id} canDraft={lead.canEdit} defaultLanguage={lead.language ?? "vi"} />}
               {lead.canClaim && <ClaimButton leadId={lead.id} />}
               {lead.canAssign && (
                 <ReassignDrawer

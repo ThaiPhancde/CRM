@@ -45,7 +45,10 @@ const T = () => (tpl ??= read<Templates>("reply-templates.json", {}));
 
 /** Chữ thường, bỏ dấu tiếng Việt/Đức (giữ chữ Ả Rập) để khớp từ khóa. */
 export const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/ß/g, "ss");
-const hit = (text: string, words: string[] = []) => words.find((w) => text.includes(norm(w)));
+/** Khớp NGUYÊN cụm từ theo ranh giới chữ Unicode — "mai" không khớp trong "email". */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hit = (text: string, words: string[] = []) =>
+  words.find((w) => new RegExp(`(?:^|[^\\p{L}\\p{N}])${escapeRe(norm(w))}(?=$|[^\\p{L}\\p{N}])`, "u").test(text));
 const addDays = (ymd: string, n: number) => { const d = new Date(`${ymd}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 
 /** Câu tìm tự nhiên → bộ lọc minh bạch (mỗi bộ lọc kèm cụm từ đã khớp). Hàm thuần — có bảng test. */
@@ -143,8 +146,10 @@ function draft(ctx: DraftCtx) {
 
 /** Câu lệnh trợ lý → lời gọi tool (một lượt). Tên khách để nguyên chữ — nghiệp vụ tự tìm và hỏi lại nếu mơ hồ. Hàm thuần — có bảng test. */
 export function parseAssistant(prompt: string, ctx: AssistantCtx): ToolUse[] {
-  const lx = L(), t = norm(prompt);
+  const lx = L();
   const customer = extractCustomer(prompt);
+  // Bỏ tên khách khỏi câu trước khi tìm ý định / ngày giờ (khách tên "Mai" không thành "ngày mai").
+  const t = norm(customer ? prompt.replace(customer, " ") : prompt);
   const time = t.match(/\b(\d{1,2})(?:[:h](\d{2})|\s?(?:gio|h|uhr)\b|\s?(am|pm)\b)/);
   const dayOffset = hit(t, lx.tomorrow) ? 1 : hit(t, lx.todayWords) ? 0 : (Number(t.match(/(?:sau|in|nach)\s+(\d{1,2})\s+(?:ngay|days?|tagen?)/)?.[1]) || 1);
   const at = () => {
@@ -173,7 +178,8 @@ function extractCustomer(prompt: string): string | null {
     const i = norm(prompt).indexOf(norm(mk) + " ");
     if (i < 0) continue;
     const rest = prompt.slice(i + mk.length + 1);
-    const name = rest.split(/\s+(?:lúc|luc|vào|vao|ngày|ngay|mai|ngày mai|hôm nay|at|on|tomorrow|today|um|morgen|heute|غدا|اليوم|về|ve|about|để|de)\b|[,.;!?]/i)[0].trim();
+    // Ranh giới bằng (?=\s|$) + cờ u: \b không hiểu chữ có dấu / chữ Ả Rập. "mai" đứng riêng không là từ dừng (tên "Nguyễn Mai").
+    const name = rest.split(/\s+(?:lúc|luc|vào|vao|ngày mai|ngày|ngay|hôm nay|at|on|tomorrow|today|um|morgen|heute|غدا|اليوم|về|ve|about|để|de)(?=\s|$)|[,.;!?]/iu)[0].trim();
     if (name && name.split(/\s+/).length <= 4) return name;
   }
   return null;

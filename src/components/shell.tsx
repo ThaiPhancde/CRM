@@ -1,6 +1,7 @@
 "use client";
 // AppShell: sidebar cố định 248px (thu gọn 64px), topbar 56px dính, nội dung tối đa 1440px (ui-design-system mục 4).
 import Link from "next/link";
+import { AiSearch } from "./ai-search";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cx } from "./ui";
@@ -44,11 +45,13 @@ type Props = {
   workspace: { id: string; name: string };
   workspaces: { id: string; name: string }[];
   switchWorkspace: (fd: FormData) => Promise<void>;
+  /** Hiện ô tìm tự nhiên (quyền ai.run). */
+  aiSearch?: boolean;
   logout: () => Promise<void>;
   children: ReactNode;
 };
 
-export function AppShell({ nav, user, workspace, workspaces, switchWorkspace, logout, children }: Props) {
+export function AppShell({ nav, user, workspace, workspaces, switchWorkspace, logout, aiSearch, children }: Props) {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -125,6 +128,7 @@ export function AppShell({ nav, user, workspace, workspaces, switchWorkspace, lo
               <svg aria-hidden width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
             </button>
             <WorkspaceSwitcher current={workspace} options={workspaces} action={switchWorkspace} />
+            {aiSearch && <div className="hidden flex-1 justify-center md:flex"><AiSearch /></div>}
             <div className="ml-auto flex items-center gap-2">
               <UserMenu user={user} logout={logout} />
             </div>

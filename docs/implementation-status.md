@@ -14,7 +14,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 5 Dịch vụ + tri thức | **Đã nghiệm thu** (29/10) | 29/10/2026 | 157 test xanh; 30 ticket + 20 bài tri thức 4 ngôn ngữ; đo tải 0/35 vượt |
 | 6 Chỉ số + điểm + Warehouse | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-6.md`) | 29/10/2026 | 230 test xanh; một khách tính tay khớp REV-01..04 + RFM; đo tải 0/41 vượt; Gemini 50% |
 | 7 Journey + marketing | **Đã nghiệm thu** (02/11, `docs/acceptance/phase-7.md`) | 02/11/2026 | 318 test (317 xanh, 1 bỏ qua); phân khúc + hành trình + chiến dịch; đo tải 0/49 vượt (sửa lỗi dữ liệu tải, xem performance.md); Gemini 3 job (trang chiến dịch, mẫu tin, bảng test) |
-| 8 Trung tâm AI | Chưa | | |
+| 8 Trung tâm AI | **Xong, chờ nghiệm thu** | 02/11/2026 | 382 test (381 xanh, 1 bỏ qua); LLM replay + khung Anthropic; 6 chức năng AI; duyệt, chi phí, ngân sách; AI 5/5 đạt đo tải; Gemini 3 job (trang /ai, từ điển ar/de, bảng test) |
 | 9 Báo cáo + dashboard | Chưa | | |
 | 10 Vận đơn + sản phẩm | Chưa | | |
 | 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
@@ -143,6 +143,23 @@ Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; t�
 **Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
 
 **Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
+## Phase 8 — đã làm (02/11/2026)
+
+**Đã làm (DB → service → action → UI → quyền → test):**
+- Schema (migration `20261102160000_phase8_ai`): `AgentRun`, `ToolCall`, `Suggestion`, `Approval`, `AiCost`. Quyền mới: `ai.run`, `ai.approve`, `ai.budget`, `report.sales`.
+- Adapter LLM `src/adapters/llm`: `interface.ts` (complete, completeWithTools, embed tùy chọn), `replay.ts` (tất định, khớp từ điển vi/en/ar/de, soạn từ ngữ cảnh), `anthropic.ts` (khung: `@anthropic-ai/sdk`, `claude-sonnet-5-5`, nạp động, 501 khi thiếu khóa/gói), `pricing.ts`. Chọn bằng `LLM_PROVIDER`.
+- Lõi AI `src/modules/ai`: `core.ts` (aiRun, Runner.tool, 6 tool qua service có requirePerm, duyệt, ngân sách), `features.ts` (6 chức năng), `redact.ts` (lọc bí mật/PII), `history.ts` (lịch sử, duyệt, thống kê AI-01..03), `labels.ts`. Warehouse thêm `revenueSummary` (chỉ đọc, 10 s, ≤ 50 dòng).
+- Giao diện: `/ai` 4 tab (trợ lý, lịch sử, chờ duyệt, chi phí) + `/ai/[id]` (Gemini); ô trợ lý, drawer tóm tắt 360 ở trang khách, thanh tìm tự nhiên ở đầu trang, tóm tắt hội thoại + soạn phản hồi ở ticket và nhu cầu mua (Claude).
+- Seed: không cần; dữ liệu AI sinh khi dùng. Trên DB demo có thêm vài lần chạy thử và một lịch hẹn "Hẹn với Omar Haddad" tạo khi nghiệm thu giao diện.
+
+**Test đã chạy:** `npx vitest run` → **381 passed, 1 skipped** (13 file). `tests/ai.test.ts` 5 ca (tóm tắt có bằng chứng + chi phí + khách workspace khác bị chặn; tên mơ hồ → hỏi lại, không tạo việc; thiếu quyền → DENIED ở server; giao việc ngoài quyền → chờ duyệt, người khác duyệt một lần, không tự duyệt, Sales không có ai.approve; soạn phản hồi nhiều đơn → hỏi chọn đơn, bí mật không vào nhật ký; tìm tự nhiên → bộ lọc hợp lệ, ngân sách hết → 429). `tests/ai-rules.test.ts` 59 ca (Gemini 52 + Claude 7: khớp nguyên từ, ar/de). `tsc` 0 lỗi; `next build` thành công. Trình duyệt (Quản lý): tóm tắt 360, tìm tự nhiên → danh sách đơn, soạn phản hồi chọn đúng bài tri thức, trợ lý hỏi lại khi 5 khách trùng tên rồi tạo lịch hẹn sau khi chọn, 3 tab /ai; console 0 lỗi. Đo tải: `docs/perf/phase8.json`.
+
+**Lỗi tìm thấy khi review/kiểm:** job ai-tests tự báo 2 nghi vấn trong code của Claude, cả hai đúng — `` không hiểu chữ có dấu/Ả Rập làm tên khách dính từ chỉ thời gian; khớp chuỗi con làm "mai" (ngày mai) khớp tên "Mai" và "email" → sửa bằng ranh giới chữ Unicode và bỏ tên khách khỏi câu trước khi tìm ngày. Khi xem trang: soạn phản hồi chèn bài tri thức lạc đề và trích đoạn còn dấu markdown → chọn bài theo từ khóa có trọng số IDF, trích theo câu; nhãn ngày trong bộ lọc hiện ISO → định dạng dd/mm/yyyy.
+
+**Còn thiếu:** tác vụ nền AI (R-61 — điểm/hành trình hiện là quy tắc, chưa có tác vụ LLM nền); tóm tắt cuộc gọi/ghi âm (chưa có dữ liệu, HLD §14.1 mục 3 chỉ phủ tin nhắn); LLM thật (Phase 12, cần khóa + cài gói); embedding tìm tri thức theo nghĩa; Sales hỏi báo cáo cá nhân (Phase 9); đo tải đồng thời (Phase 11).
+
+**Chia việc (D-54, mục tiêu 70/30):** Claude ~1.600 dòng (adapter, lõi, 6 chức năng, ô trợ lý/drawer/thanh tìm, test, migration) / Gemini ~1.780 dòng (4 file trang /ai, từ điển ar/de + mẫu trả lời, 52 ca test) ≈ **48/52 theo số dòng — vượt ngưỡng 30% của Gemini**, do dòng JSX và JSON đếm nhiều (như Phase 3); theo loại việc, Gemini không chạm logic, quyền, tool hay prompt.
 
 ## Phase 7 — đã làm (02/11/2026)
 

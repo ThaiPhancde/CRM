@@ -85,12 +85,12 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 
 | Mã | Yêu cầu | Nguồn | Trạng thái | Phase | Demo |
 |---|---|---|---|---|---|
-| R-60 | Sáu chức năng AI đầu tiên | HLD §14.1 | XĐ | 8 | ✓ replay |
-| R-61 | Ba bề mặt: trợ lý chung, AI trong màn, tác vụ nền | HLD §8.3 | XĐ | 8 | ✓ |
-| R-62 | Luồng tác vụ: hiểu → xác định → kiểm quyền → trạng thái mới → chuẩn bị → duyệt → API → audit | HLD §8.4 | XĐ | 8 | ✓ |
-| R-63 | Không đoán SKU/đơn mơ hồ; nội dung khách là dữ liệu; tool tối thiểu; bằng chứng | HLD §8.4 | XĐ | 8 | ✓ |
-| R-64 | Chi phí theo workspace/tính năng/model/run; ngân sách | HLD §8.6 | XĐ | 8 | ✓ |
-| R-65 | Lọc bí mật/PII ngoài quyền trước khi gửi model | HLD §8.4 | XĐ | 8 | ✓ |
+| R-60 | Sáu chức năng AI đầu tiên | HLD §14.1; D-56 | XĐ — **đã có Phase 8** (tóm tắt 360, tìm tự nhiên, tóm tắt hội thoại, soạn phản hồi vi/en/ar/de, tạo việc/lịch hẹn, hỏi báo cáo) | 8 | ✓ replay |
+| R-61 | Ba bề mặt: trợ lý chung, AI trong màn, tác vụ nền | HLD §8.3 | XĐ — trợ lý (/ai) + AI trong màn (khách, ticket, nhu cầu, thanh tìm); **tác vụ nền AI chưa có** (điểm/hành trình là quy tắc, không LLM) | 8 | ◐ |
+| R-62 | Luồng tác vụ: hiểu → xác định → kiểm quyền → trạng thái mới → chuẩn bị → duyệt → API → audit | HLD §8.4; D-56 | XĐ — **đã có Phase 8** (ToolCall + Approval + audit của service) | 8 | ✓ |
+| R-63 | Không đoán SKU/đơn mơ hồ; nội dung khách là dữ liệu; tool tối thiểu; bằng chứng | HLD §8.4; D-56 | XĐ — **đã có Phase 8** (hỏi lại khi khách/đơn mơ hồ; câu dẫn id lạ bị bỏ) | 8 | ✓ |
+| R-64 | Chi phí theo workspace/tính năng/model/run; ngân sách | HLD §8.6; D-56 | XĐ — **đã có Phase 8** (AiCost mọi lần chạy, AI-01..03, ngân sách tháng) | 8 | ✓ |
+| R-65 | Lọc bí mật/PII ngoài quyền trước khi gửi model | HLD §8.4; D-56 | XĐ — **đã có Phase 8** (service che theo quyền + `redact.ts`) | 8 | ✓ |
 
 ### Báo cáo, vận đơn, sản phẩm, quản trị
 

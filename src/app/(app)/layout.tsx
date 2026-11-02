@@ -21,6 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       workspaces={user.workspaces}
       switchWorkspace={switchWorkspace}
       logout={logout}
+      aiSearch={can(user.roles, "ai.run")}
     >
       {children}
     </AppShell>

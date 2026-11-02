@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Badge, ButtonLink, Card, cx, EmptyState, PageHeader, SectionTitle, StatCard, type Tone } from "@/components/ui";
 import { pageUser } from "@/lib/current-user";
+import { can } from "@/lib/permissions";
+import { AiSummary } from "./ai-summary";
 import { bindTenant } from "@/lib/db";
 import { HttpError } from "@/lib/errors";
 import { date, dateTime, money, num, base } from "@/lib/format";
@@ -68,6 +70,7 @@ export default async function CustomerProfilePage({
 }) {
   const user = await pageUser("customer.view");
   bindTenant(user);
+  const canAi = can(user.roles, "ai.run");
   const [{ id }, sp] = await Promise.all([params, searchParams]);
 
   let res: Awaited<ReturnType<typeof getCustomer360>>;
@@ -133,11 +136,14 @@ export default async function CustomerProfilePage({
         ]}
         description={`${marketDesc} · khách từ ${date(summary.firstOrderAt ?? c.createdAt)}`}
         actions={
-          pendingReviews > 0 && canMerge ? (
-            <ButtonLink href="/xac-minh?tab=khach" variant="primary">
-              Có {pendingReviews} hồ sơ nghi trùng
-            </ButtonLink>
-          ) : undefined
+          <>
+            {canAi && <AiSummary customerId={c.id} />}
+            {pendingReviews > 0 && canMerge && (
+              <ButtonLink href="/xac-minh?tab=khach" variant="primary">
+                Có {pendingReviews} hồ sơ nghi trùng
+              </ButtonLink>
+            )}
+          </>
         }
       />
 

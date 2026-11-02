@@ -28,8 +28,13 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 21 | 2026-11-02 | p7-marketing `campaigns-ui`: /chien-dich danh sách, form, chi tiết, điểm chạm, trạng thái | 1 | gemini-4-argon-high, write | 293 s | checker 0, tsc 0 | 0 | 1 sửa nhỏ: bảng 11 cột cuộn ngang → gộp Brand vào cột Kênh | ~760 dòng |
 | 22 | 2026-11-02 | p7-marketing `message-templates`: 4 mẫu × vi/en/ar/de | 1 | gemini-4-argon-high, write | 90 s | checker 0 (16 mẫu, dòng STOP đúng từng ngôn ngữ) | 0 | 0 sửa | 16 mẫu |
 | 23 | 2026-11-02 | p7-marketing `marketing-tests`: bảng test compileRules + nextSendable | 1 | gemini-4-argon-high, write | 292 s | checker 0; vitest 76 ca xanh | 0 | 3 ca Kolkata đổi kỳ vọng sau khi Claude sửa lỗi Gemini tự báo | ~270 dòng |
+| 24 | 2026-11-02 | p8-ai `ai-admin-ui`: /ai 4 tab + /ai/[id], duyệt, ngân sách | 1 | gemini-4-argon-high, write | 361 s | checker 0, tsc 0 | 0 | 0 sửa (quyền theo tab đúng, Claude đọc cả 573 dòng) | ~800 dòng |
+| 25 | 2026-11-02 | p8-ai `ai-lexicon`: từ điển + mẫu trả lời ar/de | 1 | gemini-4-argon-high, write | 171 s | checker 0 (giữ nguyên cụm cũ, mỗi danh sách có ar + de) | 0 | 0 sửa | 2 file JSON |
+| 26 | 2026-11-02 | p8-ai `ai-tests`: bảng test parseSearch/parseAssistant/redact/costUsd | 1 | gemini-4-argon-high, write | 300 s | checker 0; vitest 52 ca xanh | 0 | 2 nghi vấn về code Claude, cả hai đúng → Claude sửa lõi + thêm 7 ca hồi quy | ~600 dòng |
 
 ## Notes
+
+7. Batch p8-ai (3 job, 361 s; mục tiêu 70/30 nhưng thực tế ~48/52 theo dòng — vượt, như p3): cả 3 qua checker + tsc lần đầu, 0 ghi sai chỗ. Lần thứ hai liên tiếp job test bảng tự báo đúng 2 lỗi của Claude (tách từ bằng `\b` với chữ có dấu; khớp chuỗi con). Bài học: giao Gemini viết test cho hàm thuần là cách rà lỗi rẻ nhất — giữ quy tắc "test khớp code, liệt kê nghi vấn". Phần lớn lỗi Phase 8 nằm ở phía Claude và chỉ lộ khi xem trang (bài tri thức lạc đề, trích đoạn còn markdown, ngày ISO), không phải khi chạy test.
 
 6. Batch p7-marketing (3 job, 293 s; tỷ lệ 70/30 — D-54): cả 3 qua checker + tsc lần đầu, 0 ghi sai chỗ. Điểm mới: job test bảng **tự báo 2 nghi vấn về code của Claude và cả hai đúng** (giờ yên lặng sai ở múi giờ lệch nửa giờ; trường lựa chọn nhận phép so sánh sai) — giữ quy tắc "test khớp code, liệt kê nghi vấn" ở work order là có giá trị. Lỗi review phía Gemini chỉ là bố cục (bảng quá rộng). Lỗi lớn nhất của đợt nằm ở phía Claude và lộ ra khi xem trang: trình dựng điều kiện thiếu phép "thuộc".
 
