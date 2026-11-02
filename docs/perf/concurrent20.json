@@ -1,0 +1,135 @@
+{
+  "at": "2026-11-02T08:45:07.995Z",
+  "sessions": 20,
+  "seconds": 90,
+  "thinkMs": [
+    2000,
+    5000
+  ],
+  "target": {
+    "page": 1500,
+    "report": 6000
+  },
+  "total": 480,
+  "errors": 0,
+  "errorSamples": [],
+  "rows": [
+    {
+      "name": "Sales: ticket của tôi",
+      "kind": "page",
+      "n": 84,
+      "p50": 14,
+      "p95": 55,
+      "max": 523,
+      "ok": true
+    },
+    {
+      "name": "Sales: nhu cầu mua (danh sách)",
+      "kind": "page",
+      "n": 88,
+      "p50": 33,
+      "p95": 214,
+      "max": 871,
+      "ok": true
+    },
+    {
+      "name": "Sales: hàng đợi của tôi",
+      "kind": "page",
+      "n": 86,
+      "p50": 19,
+      "p95": 730,
+      "max": 750,
+      "ok": true
+    },
+    {
+      "name": "Trưởng nhóm: báo cáo bán hàng 30 ngày",
+      "kind": "report",
+      "n": 12,
+      "p50": 167,
+      "p95": 742,
+      "max": 742,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: hồ sơ 360",
+      "kind": "page",
+      "n": 17,
+      "p50": 32,
+      "p95": 920,
+      "max": 920,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: đơn hàng trang 1",
+      "kind": "page",
+      "n": 16,
+      "p50": 355,
+      "p95": 1234,
+      "max": 1234,
+      "ok": true
+    },
+    {
+      "name": "Sales: đơn hàng (theo phạm vi)",
+      "kind": "page",
+      "n": 87,
+      "p50": 428,
+      "p95": 1086,
+      "max": 1597,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: báo cáo tài chính 30 ngày",
+      "kind": "report",
+      "n": 18,
+      "p50": 787,
+      "p95": 1709,
+      "max": 1709,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: dashboard 30 ngày",
+      "kind": "report",
+      "n": 15,
+      "p50": 2017,
+      "p95": 2501,
+      "max": 2501,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: khách hàng trang 1",
+      "kind": "page",
+      "n": 16,
+      "p50": 121,
+      "p95": 216,
+      "max": 216,
+      "ok": true
+    },
+    {
+      "name": "Trưởng nhóm: nhu cầu mua của nhóm",
+      "kind": "page",
+      "n": 11,
+      "p50": 130,
+      "p95": 460,
+      "max": 460,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: vận đơn cần can thiệp",
+      "kind": "page",
+      "n": 15,
+      "p50": 305,
+      "p95": 685,
+      "max": 685,
+      "ok": true
+    },
+    {
+      "name": "Quản lý: COD theo hãng 30 ngày",
+      "kind": "report",
+      "n": 15,
+      "p50": 871,
+      "p95": 1230,
+      "max": 1230,
+      "ok": true
+    }
+  ]
+}

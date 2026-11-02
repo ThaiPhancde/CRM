@@ -9,12 +9,14 @@ let openOverlay: HTMLDialogElement | null = null;
 function useDialog(open: boolean, onClose: () => void) {
   const ref = useRef<HTMLDialogElement>(null);
   const [refused, setRefused] = useState(false);
+  const toast = useContext(ToastCtx);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (open && !el.open) {
       if (openOverlay && openOverlay !== el && openOverlay.open) {
         if (process.env.NODE_ENV !== "production") console.warn("Đã có một lớp phủ đang mở — bỏ qua yêu cầu mở thêm.");
+        toast("Hãy đóng cửa sổ đang mở trước khi mở cửa sổ khác.", "danger");
         setRefused(true);
         onClose();
         return;
@@ -25,7 +27,7 @@ function useDialog(open: boolean, onClose: () => void) {
     } else if (!open && el.open) {
       el.close();
     }
-  }, [open, onClose]);
+  }, [open, onClose, toast]);
   useEffect(() => () => {
     if (openOverlay === ref.current) openOverlay = null;
   }, []);
@@ -102,19 +104,28 @@ export const useToast = () => useContext(ToastCtx);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
+  const region = useRef<HTMLDivElement>(null);
   const push = useCallback((text: string, tone: ToastItem["tone"] = "success") => {
+    if (!text.trim()) return; // không hiện toast rỗng
     const id = Date.now() + Math.random();
     setItems((x) => [...x, { id, text, tone }]);
     setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), 5000);
   }, []);
+  // Vùng toast là popover (top layer): drawer/modal mở bằng showModal() cũng ở top layer và sẽ che toast thường —
+  // mỗi lần có toast mới, hiện lại popover để nó lên trên cùng.
+  useEffect(() => {
+    const el = region.current as (HTMLDivElement & { showPopover?: () => void; hidePopover?: () => void }) | null;
+    if (!el?.showPopover) return;
+    try { if (el.matches(":popover-open")) el.hidePopover!(); if (items.length) el.showPopover(); } catch {}
+  }, [items]);
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed bottom-4 right-4 z-[var(--z-toast)] flex w-80 flex-col gap-2">
+      <div ref={region} popover="manual" aria-live="polite" className="pointer-events-none fixed inset-auto bottom-4 right-4 m-0 flex w-80 flex-col gap-2 overflow-visible border-0 bg-transparent p-0">
         {items.map((t) => (
-          <div key={t.id} role="status" className="pointer-events-auto flex items-start gap-2 rounded-[var(--radius-md)] border border-border bg-bg px-4 py-3 text-sm shadow-[var(--shadow-md)]">
+          <div key={t.id} role={t.tone === "danger" ? "alert" : "status"} className="pointer-events-auto flex items-start gap-2 rounded-[var(--radius-md)] border border-border bg-bg px-4 py-3 text-sm shadow-[var(--shadow-md)]">
             <span aria-hidden className={cx("mt-1.5 size-2 shrink-0 rounded-full", t.tone === "success" ? "bg-success" : "bg-danger")} />
-            <span className="text-fg">{t.text}</span>
+            <span className="text-fg"><span className="sr-only">{t.tone === "danger" ? "Lỗi: " : "Xong: "}</span>{t.text}</span>
           </div>
         ))}
       </div>
