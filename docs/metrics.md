@@ -42,6 +42,12 @@ REV-02 (xác nhận) không phải mốc COD; mốc "đã thu" chỉ có ở CAS
 | collected | `DeliveryEvent` COD_COLLECTED, `collectedAt` | CASH-01 |
 | remitted | `Settlement.remittedAt` | CASH-02 (số tiền COD), REV-04 (thực thu) |
 
+## 3.2. Nhóm CM — biên đóng góp (theo từ điển chỉ số LevelUp)
+
+| Mã | Tên | Công thức | Ghi chú |
+|---|---|---|---|
+| CM-01 | Biên đóng góp cấp 1 | REV-03 − giá vốn hàng bán phần đã giao | Đã cài ở CustomerMetric (`grossProfit`, R12M); để trống khi thiếu giá vốn. Giá vốn thật phải gồm phí + thuế nhập khẩu theo thị trường. CM-02/CM-03 (trừ phí giao, marketing) làm ở Phase 9–10. |
+
 ## 4. Nhóm CUS — khách hàng
 
 | Mã | Tên | Công thức | Ghi chú |

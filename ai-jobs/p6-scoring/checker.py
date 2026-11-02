@@ -19,7 +19,7 @@ UI = {
 }
 FORBIDDEN = [r"\brootDb\b", r"\bworkspaceDb\b", r"\bdb\.", r'import \{[^}]*\bdb\b[^}]*\} from "@/lib/db"', r"dangerouslySetInnerHTML"]
 VI = re.compile(r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", re.I)
-CODES = [f"REV-0{i}" for i in range(1, 5)] + [f"OPS-0{i}" for i in range(1, 5)] + [f"CASH-0{i}" for i in range(1, 4)] + [f"CUS-0{i}" for i in range(1, 7)] + [f"MKT-0{i}" for i in range(1, 5)] + [f"AI-0{i}" for i in range(1, 4)]
+CODES = [f"REV-0{i}" for i in range(1, 5)] + [f"OPS-0{i}" for i in range(1, 5)] + [f"CASH-0{i}" for i in range(1, 4)] + [f"CUS-0{i}" for i in range(1, 7)] + [f"MKT-0{i}" for i in range(1, 5)] + [f"AI-0{i}" for i in range(1, 4)] + ["CM-01"]  # CM-01 thêm theo D-53 (từ điển LevelUp)
 INVENTED = re.compile(r"\b(HIGH|MEDIUM|LOW|VIP|GOLD|SILVER|AT_RISK|LOYAL|NEW_CUSTOMER)\b")
 
 

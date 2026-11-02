@@ -304,8 +304,8 @@ export default async function CustomerProfilePage({
                             {metric.rev04 != null ? base(metric.rev04) : "—"}
                           </td>
                           <td className="px-4 py-2 text-fg-muted">
-                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">CUS-04</span>
-                            Lợi nhuận gộp
+                            <span className="mr-1.5 font-mono text-xs text-fg-subtle">CM-01</span>
+                            Biên đóng góp cấp 1
                           </td>
                           <td className="tabular px-4 py-2 text-right font-medium text-fg">
                             {metric.grossProfit != null ? (

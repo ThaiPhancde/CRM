@@ -2,6 +2,12 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 11) — nghiệm thu Phase 6, chốt Q-20, đổi tỷ lệ 70/30
+
+**Đã làm:** Q-20 theo công thức công ty (D-53: REV-03; thêm CM-01); tỷ lệ Claude/Gemini 70/30 từ Phase 7 (D-54); nghiệm thu Phase 6 đạt (`docs/acceptance/phase-6.md`) — kiểm thêm tạo phiên bản trọng số qua giao diện. Dữ liệu demo: Nhu cầu hỗ trợ của PiAlpha đang ở v2 (20/60/20).
+
+**Bước tiếp theo:** Phase 7 (người dùng yêu cầu làm ngay).
+
 ## Checkpoint 29/10/2026 (lần 10) — Phase 6 xong, chờ nghiệm thu
 
 **Đã làm:** chỉ số khách R12M qua lớp Warehouse (Postgres chạy thật, BigQuery khung, SQL sinh chung), điểm v1 có phiên bản (ưu tiên lead, RFM, rủi ro giao dịch, nhu cầu hỗ trợ), hiển thị ở 360/khách/lead, trang cấu hình trọng số + từ điển chỉ số. Tỷ lệ 50/50 (D-51). Chi tiết: `implementation-status.md` Phase 6.

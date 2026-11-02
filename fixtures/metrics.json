@@ -262,5 +262,16 @@
     "source": "ToolCall",
     "owner": "Quản lý",
     "pitfalls": "Tỷ lệ cao bất thường cảnh báo người dùng gọi tác vụ vượt quyền hoặc cấu hình RBAC chưa phù hợp"
+  },
+  {
+    "code": "CM-01",
+    "group": "CM",
+    "nameVi": "Biên đóng góp cấp 1",
+    "nameEn": "Contribution Margin 1",
+    "formula": "CM1 = REV-03 − giá vốn hàng bán phần đã giao (COGS); quy VND theo tỷ giá chốt của đơn và tỷ giá hiện hành của giá vốn (D-44). Để trống khi thiếu giá vốn.",
+    "timeAnchor": "Ngày giao thành công (deliveredAt), 12 tháng trượt",
+    "source": "OrderItem, Variant.costPrice, FxRate",
+    "owner": "Kế toán + Quản lý",
+    "pitfalls": "Giá vốn phải gồm chi phí nhập khẩu và thuế nhập khẩu, không chỉ giá mua; cùng SKU có giá vốn khác nhau theo thị trường (từ điển chỉ số LevelUp)."
   }
 ]
