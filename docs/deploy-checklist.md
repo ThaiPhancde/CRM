@@ -26,6 +26,7 @@ Test hợp đồng: `tests/contracts.test.ts` (và BigQuery ở `tests/scoring.t
 - [ ] `npm run db:deploy` (migration), `npm run db:seed` (danh mục) — **không** chạy `db:seed-demo` trên dữ liệu thật.
 - [ ] Sao lưu: `npm run backup` (cần `pg_dump`; đặt `PG_BIN` nếu không có trên PATH) → `backups/<db>-<thời điểm>.dump`; khôi phục `pg_restore -c -d <db> <file>`. Lên lịch sao lưu hằng ngày ở hệ điều hành.
 - [ ] Worker chạy riêng (`npm run worker`, `WORKER_INTERVAL_MIN`).
+- [ ] Migration tạo chỉ mục trên bảng lớn: chạy `CREATE INDEX CONCURRENTLY` ngoài transaction trên DB đang chạy thay vì `prisma migrate deploy` thô (migration demo tạo chỉ mục trong transaction — khóa bảng khi dữ liệu lớn; `docs/performance.md`).
 - [ ] Bí mật chỉ ở biến môi trường / kho bí mật; không có trong git, log, frontend (kiểm `git grep -i "api_key\|secret"`).
 - [ ] Đo tải trên bản sao dữ liệu thật (`scripts/load/bench.ts` chỉ chạy trên DB `*_load`) đạt `docs/performance.md`.
 

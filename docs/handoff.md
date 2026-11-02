@@ -2,6 +2,14 @@
 
 Checkpoint mới nhất ở trên. Phiên sau: đọc `AGENTS.md` → checkpoint này → `implementation-status.md` → `decisions.md` "Còn mở" → chạy `npm run typecheck && npm test`.
 
+## Checkpoint 02/11/2026 (lần 17) — Phase 11 xong và đã nghiệm thu; bản demo hoàn tất Phase 1–11
+
+- **Đã làm:** quản trị (cấu hình, nhật ký, dữ liệu khách theo yêu cầu, sao lưu), rà UI/UX + AA, kịch bản demo + E2E, deploy-checklist + test hợp đồng, đo đồng thời 20 người. Quyết định D-59; biên bản `docs/acceptance/phase-11.md` (checklist mục 12 16/16).
+- **Test:** 690 passed, 5 skipped; E2E 12/12 (`npm run e2e` — cần `rm -rf .next && npx next build` trước); đo tải 75/75; đồng thời 0 lỗi.
+- **Migration mới:** `20261102200000_customer_erased` (đã áp dụng `crm`, DB test, `crm_load`).
+- **Chạy demo:** `docs/demo-script.md`. **Lên thật:** `docs/deploy-checklist.md` (Phase 12, chỉ làm khi được giao).
+- **Còn mở:** Phase 8 chờ nghiệm thu chính thức của người dùng; phiếu ký các phase thuộc người dùng + giám đốc (D-30).
+
 ## Checkpoint 02/11/2026 (lần 16) — Phase 10 xong và đã nghiệm thu; tiếp theo Phase 11
 
 - **Đã làm:** /van-don (can thiệp, COD bốn mốc, đối soát dán bảng), REV-04 gồm COD đã về, /san-pham qua PurchasingLink. Quyết định D-58; chi tiết `docs/implementation-status.md` (Phase 10); biên bản `docs/acceptance/phase-10.md`.

@@ -17,7 +17,7 @@ Mới nhất ở trên. Mỗi mục: đã làm · test đã chạy (lệnh + k�
 | 8 Trung tâm AI | **Xong, chờ nghiệm thu** | 02/11/2026 | 382 test (381 xanh, 1 bỏ qua); LLM replay + khung Anthropic; 6 chức năng AI; duyệt, chi phí, ngân sách; AI 5/5 đạt đo tải; Gemini 3 job (trang /ai, từ điển ar/de, bảng test) |
 | 9 Báo cáo + dashboard | **Đã nghiệm thu** (`docs/acceptance/phase-9.md`) | 02/11/2026 | 445 test (444 xanh, 1 bỏ qua); 6 nhóm báo cáo + dashboard theo vai + Excel; REV khớp /don-hang; đo tải 11/11 báo cáo < 3 s; Gemini 2 job (vận đơn, AI, bảng test kỳ) |
 | 10 Vận đơn + sản phẩm | **Đã nghiệm thu** (`docs/acceptance/phase-10.md`) | 02/11/2026 | 591 test (590 xanh, 1 bỏ qua); /van-don can thiệp + COD bốn mốc + đối soát dán bảng; REV-04 gồm COD đã về; /san-pham qua PurchasingLink; đo tải 74/75; Gemini 2 job (trang sản phẩm, bảng test — 4 lỗi biên đúng) |
-| 11 Quản trị + rà soát UI + chạy thử | Chưa | | |
+| 11 Quản trị + rà soát UI + chạy thử | **Đã nghiệm thu** (`docs/acceptance/phase-11.md`) | 02/11/2026 | 695 test (690 xanh, 5 bỏ qua chờ khóa thật); E2E 12/12; checklist mục 12 đạt 16/16; đo tải 75/75 + đồng thời 20 người 0 lỗi; Gemini 4 job |
 | 12 Lên thật | Ngoài demo | | |
 
 ## Phase 6 — đã làm (29/10/2026) — tỷ lệ Claude/Gemini 50/50 (D-51)
@@ -143,6 +143,24 @@ Kết quả sau: **0/28 vượt mục tiêu** (chi tiết đơn 569 → 7 ms; t�
 **Test:** `npx vitest run` → **149/149 passed** (thêm 6 ca: chống trùng + khác brand + quá 7 ngày; tự đóng + có hẹn thì không + mở lại không đóng ngay; đơn mới → Đã mua, đơn hủy thì không; thông báo gộp + quá hạn báo một lần; hàng loạt có lead ngoài phạm vi bị bỏ qua + cần quyền + cần lý do; Kanban giai đoạn đóng không tải thẻ). Migration áp lên `crm`, `crm_load`; `migrate diff` không lệch. Trình duyệt: Kanban của Sales mặc định "Của tôi" + ô thả; danh sách có thanh hàng loạt, áp dụng 2 lead thành công.
 
 **Còn lại (ghi ở performance.md mục 5):** nhập đơn tuần tự (đổi theo lô khi > ~1M bản ghi/ngày/team); tổng REV-01 tính mỗi lần mở trang (Phase 6–9 dùng bảng chỉ số); chưa đo đồng thời nhiều người (Phase 11); trên DB thật cần `CREATE INDEX CONCURRENTLY`.
+
+## Phase 11 — đã làm (02/11/2026)
+
+**Đã làm:**
+- 11.1 Quản trị: `/quan-tri/cau-hinh` (SLA theo thương hiệu × mức, phân công nhu cầu mua, giới hạn liên hệ, giờ làm việc theo thị trường — hành trình đọc khung mới, ngưỡng tồn thấp; service `src/modules/admin/config.ts`), `/quan-tri/nhat-ky` lọc người/loại/thao tác/mã/kỳ + trước/sau đánh dấu trường đổi (`audit.ts`), xuất/xóa dữ liệu khách theo yêu cầu (`privacy.ts`, route `/khach-hang/[id]/du-lieu`, `Customer.erasedAt`), `npm run backup` (pg_dump). Quyền mới `customer.privacy`.
+- 11.2 UI/UX: hai reviewer chỉ đọc rà 50 phát hiện; sửa: toast top layer + `role=alert`, `ConfirmButton` thay `window.confirm` (9 chỗ), thuật ngữ thống nhất (nhu cầu mua, thương hiệu, cửa hàng), bỏ mã nội bộ khỏi giao diện, nav thay tab ARIA sai, tên truy cập nút lặp, lỗi tóm tắt AI, lỗi cũ trong modal kanban, số ticket mở đúng tổng, tạo bài tri thức không trùng, form `noValidate` + lỗi `role=alert`. **Tương phản AA**: token cam/xám/xanh/đỏ, viền focus, viền ô nhập 3:1 (D-59), kiểm tự động bằng `tests/contrast.test.ts`.
+- 11.3 Demo: `docs/demo-script.md` (15 phút, 5 vai), `scripts/seed-ai.ts` (AI mẫu), E2E Playwright `npm run e2e` (`tests/e2e/`: kịch bản demo 5 vai + không chồng lớp, không cuộn ngang 768/1280/1440/1920, focus, rỗng/lỗi).
+- 11.4 `docs/deploy-checklist.md` (từng điểm cắm theo hiện trạng code: biến env, bật thật cần gì, xác minh, test hợp đồng, rủi ro, thứ tự, giới hạn dữ liệu cá nhân), `tests/contracts.test.ts`.
+- Đo đồng thời 20 người `scripts/load/concurrent.ts`.
+- Sửa ngoài phạm vi (tìm khi nghiệm thu): chỉ số khách dùng dữ liệu tương lai (giao/hoàn/thất bại sau mốc tính); job hằng ngày không VACUUM sau khi ghi lại toàn bộ điểm; xuất dữ liệu bỏ sót tương tác theo nhu cầu mua.
+
+**Test đã chạy:** `npx vitest run` → **690 passed, 5 skipped** (22 file; 5 ca bỏ qua là test hợp đồng chạy thật chờ khóa). `npm run e2e` → **12/12**. `tsc` 0; `next build` sạch. Đo tải 75/75 (`docs/perf/phase11.json`), đồng thời 20 người 0 lỗi 13/13 (`docs/perf/concurrent20.json`).
+
+**Lỗi tìm thấy:** xem mục "Sửa ngoài phạm vi" + 3 nghi vấn đúng của Gemini (ngày không có thật ở bộ lọc nhật ký, ô khoảng trắng thành 0, so JSON phụ thuộc thứ tự khóa); `.next` build chồng lên thư mục dev gây lỗi `next start` (ghi trong `playwright.config.ts`); `crm_load` thiếu một migration.
+
+**Còn thiếu (ngoài demo, xem `deploy-checklist.md`):** bộ gửi tin thật, connector hội thoại, luồng OIDC Google, API Purchasing; chính sách lọc PII cho audit cũ và câu hỏi AI tự gõ.
+
+**Chia việc (D-54, 70/30):** Claude ~1.220 dòng / Gemini ~1.770 dòng ≈ **41/59** — lệch mục tiêu: hai trang quản trị lớn và lượt chữ/a11y trên 36 file (việc cơ học, checker regex) đều giao Gemini; phần logic, bảo mật dữ liệu, đo tải, sửa lỗi nghiệm thu do Claude.
 
 ## Phase 10 — đã làm (02/11/2026)
 

@@ -47,33 +47,36 @@ function scoped(d: Dialect) {
  * Thanh toán thiếu paidAt không tính vào REV-04 (dữ liệu nguồn luôn có paidAt cho thanh toán thành công).
  * REV-04 gồm COD đã đối soát: SettlementLine theo remittedAt (Phase 10, D-58) — COD chưa về tiền không tính.
  */
-export function revenueSql(d: Dialect, g: RevenueGroup) {
+export type RevenueMetric = "rev01" | "rev02" | "rev03" | "rev04";
+/** `only`: chỉ chạy các nhánh của chỉ số cần (nhánh khác thêm `AND 1 = 0` — planner bỏ qua, không quét) — cùng một định nghĩa SQL. */
+export function revenueSql(d: Dialect, g: RevenueGroup, only?: RevenueMetric[]) {
   const c = d.c;
+  const off = (m: RevenueMetric) => (only && !only.includes(m) ? " AND 1 = 0" : "");
   const cf = `COALESCE(o.${c("confirmedAt")}, o.${c("bookedAt")})`;
   const cur = `o.${c("currency")}`;
   const rf = `COALESCE(o.${c("refundedAmount")}, 0)`;
   return `WITH r AS (
   SELECT ${key(d, g, `o.${c("bookedAt")}`)} AS k, ${cur} AS cur, SUM(o.${c("netBase")}) AS v01, SUM(o.${c("netAmount")}) AS o01, COUNT(*) AS n01, 0 AS v02, 0 AS n02, 0 AS v03, 0 AS o03, 0 AS n03, 0 AS v04, 0 AS rfd
-    FROM ${ord(d)} WHERE ${scoped(d)} AND o.${c("status")} <> 'CANCELLED' AND ${inRange(d, `o.${c("bookedAt")}`)} GROUP BY 1, 2
+    FROM ${ord(d)} WHERE ${scoped(d)} AND o.${c("status")} <> 'CANCELLED' AND ${inRange(d, `o.${c("bookedAt")}`)}${off("rev01")} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, cf)}, ${cur}, 0, 0, 0, SUM(o.${c("netBase")}), COUNT(*), 0, 0, 0, 0, 0
     FROM ${ord(d)} WHERE ${scoped(d)} AND o.${c("status")} = 'CONFIRMED'
-      AND ((o.${c("confirmedAt")} IS NOT NULL AND ${inRange(d, `o.${c("confirmedAt")}`)}) OR (o.${c("confirmedAt")} IS NULL AND ${inRange(d, `o.${c("bookedAt")}`)})) GROUP BY 1, 2
+      AND ((o.${c("confirmedAt")} IS NOT NULL AND ${inRange(d, `o.${c("confirmedAt")}`)}) OR (o.${c("confirmedAt")} IS NULL AND ${inRange(d, `o.${c("bookedAt")}`)}))${off("rev02")} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, `o.${c("deliveredAt")}`)}, ${cur}, 0, 0, 0, 0, 0, SUM((gi.dv - ${rf}) * o.${c("fxRate")}), SUM(gi.dv - ${rf}), COUNT(*), 0, 0
     FROM ${ord(d)} JOIN (
       SELECT i.${c("orderId")} AS oid, SUM(i.${c("qtyDelivered")} * i.${c("unitPrice")}) AS dv FROM ${d.t("OrderItem")} i
       WHERE i.${c("orderId")} IN (SELECT o2.${c("id")} FROM ${d.t("Order")} o2 WHERE o2.${c("workspaceId")} = @ws AND ${inRange(d, `o2.${c("deliveredAt")}`)})
       GROUP BY i.${c("orderId")}
     ) gi ON gi.oid = o.${c("id")}
-    WHERE ${scoped(d)} AND ${inRange(d, `o.${c("deliveredAt")}`)} AND gi.dv > 0 GROUP BY 1, 2
+    WHERE ${scoped(d)} AND ${inRange(d, `o.${c("deliveredAt")}`)} AND gi.dv > 0${off("rev03")} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, `p.${c("paidAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, SUM(p.${c("amount")} * o.${c("fxRate")}), 0
     FROM ${d.t("Payment")} p JOIN ${ord(d)} ON o.${c("id")} = p.${c("orderId")}
-    WHERE p.${c("workspaceId")} = @ws AND ${scoped(d)} AND UPPER(p.${c("status")}) IN (${PAID_STATUSES}) AND ${inRange(d, `p.${c("paidAt")}`)} GROUP BY 1, 2
+    WHERE p.${c("workspaceId")} = @ws AND ${scoped(d)} AND UPPER(p.${c("status")}) IN (${PAID_STATUSES}) AND ${inRange(d, `p.${c("paidAt")}`)}${off("rev04")} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, `l.${c("remittedAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, SUM(l.${c("amount")} * o.${c("fxRate")}), 0
     FROM ${d.t("SettlementLine")} l JOIN ${ord(d)} ON o.${c("id")} = l.${c("orderId")}
-    WHERE l.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `l.${c("remittedAt")}`)} GROUP BY 1, 2
+    WHERE l.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `l.${c("remittedAt")}`)}${off("rev04")} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, `x.${c("refundedAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, 0 - SUM(x.${c("amount")} * o.${c("fxRate")}), SUM(x.${c("amount")} * o.${c("fxRate")})
     FROM ${d.t("Refund")} x JOIN ${ord(d)} ON o.${c("id")} = x.${c("orderId")}
-    WHERE x.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `x.${c("refundedAt")}`)} GROUP BY 1, 2
+    WHERE x.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `x.${c("refundedAt")}`)}${off("rev04")} GROUP BY 1, 2
 )
 SELECT k AS ${c("key")}, cur AS ${c("cur")}, SUM(v01) AS ${c("rev01")}, SUM(o01) AS ${c("orig01")}, SUM(n01) AS ${c("orders")}, SUM(v02) AS ${c("rev02")}, SUM(n02) AS ${c("confirmed")},
   SUM(v03) AS ${c("rev03")}, SUM(o03) AS ${c("orig03")}, SUM(n03) AS ${c("delivered")}, SUM(v04) AS ${c("rev04")}, SUM(rfd) AS ${c("refunds")}

@@ -1,7 +1,7 @@
 // REV-01..04 theo nhóm qua Warehouse — một hàm cho báo cáo tài chính, dashboard và tổng REV-03 trên /don-hang (khớp số theo cấu tạo).
 import { Prisma } from "@prisma/client";
 import { getWarehouse } from "@/adapters/warehouse";
-import { revenueSql, type RevenueGroup } from "@/adapters/warehouse/reports";
+import { revenueSql, type RevenueGroup, type RevenueMetric } from "@/adapters/warehouse/reports";
 import { db } from "@/lib/db";
 import { can } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/session";
@@ -43,9 +43,9 @@ function fold(raw: RevRaw[], by: "key" | "cur") {
 }
 
 /** REV-01..04 theo (nhóm × tiền tệ gốc) qua Warehouse — một truy vấn cho cả hai bảng của báo cáo tài chính. */
-export async function revenueCube(u: SessionUser, f: ReportFilter, group: RevenueGroup) {
+export async function revenueCube(u: SessionUser, f: ReportFilter, group: RevenueGroup, only?: RevenueMetric[]) {
   const wh = getWarehouse();
-  return wh.read<RevRaw>(revenueSql(wh.dialect, group), params(u, f));
+  return wh.read<RevRaw>(revenueSql(wh.dialect, group, only), params(u, f));
 }
 
 /** REV-01..04 theo nhóm (hoặc theo nguyên tệ khi byCurrency), quy tiền tệ báo cáo. Cùng hàm cho báo cáo tài chính, dashboard, /don-hang. */

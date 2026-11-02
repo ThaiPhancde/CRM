@@ -84,7 +84,7 @@ async function main() {
   await time("Worker: nhắc SLA ticket (1 lượt)", "job", () => tickets.remindTicketSla(c), 1);
   const scoring = await import("../../src/modules/scoring/engine");
   const scoreSvc = await import("../../src/modules/scoring/service");
-  await time("Job hằng ngày: chỉ số R12M + điểm 3 loại toàn bộ khách", "daily", () => scoring.refreshAndScoreCustomers(c, ws.id), 1);
+  await time("Job hằng ngày: chỉ số R12M + điểm 3 loại toàn bộ khách", "daily", () => scoring.scoringJobs(c, ws.id, new Date(Date.now() + 21 * 3600_000)), 1); // đúng đường của worker (gồm VACUUM sau khi ghi)
   await time("Worker: chấm điểm lead mở (lượt đầu)", "job", () => scoring.scoreOpenLeads(c), 1);
   await time("Worker: chấm điểm lead mở (lượt kế, không có gì mới)", "job", () => scoring.scoreOpenLeads(c), 1);
   await time("Điểm + chỉ số của một khách (hồ sơ 360)", "detail", () => scoreSvc.getCustomerScores(mgr, aCustomer));

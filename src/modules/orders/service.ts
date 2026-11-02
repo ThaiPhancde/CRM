@@ -10,7 +10,7 @@ import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, pickBadge } from "@/l
 import { requirePerm, type SessionUser } from "@/lib/session";
 import { customerScopeWhere, orderScopeWhere } from "@/modules/sales/scope";
 import { todayVN } from "@/modules/reports/period";
-import { revenueRows } from "@/modules/reports/revenue";
+import { revenueCube, revenueRows } from "@/modules/reports/revenue";
 
 export const PAGE_SIZE = 50;
 
@@ -38,7 +38,9 @@ async function rev03For(user: SessionUser, f: OrderFilter, showMoney: boolean): 
   if (!showMoney) return { value: null, note: "Cần quyền xem tiền" };
   if (f.q || f.status || f.fulfillment || f.multi) return { value: null, note: "Bỏ lọc trạng thái/chữ để đối chiếu REV-03" };
   if (Object.keys(customerScopeWhere(user)).length) return { value: null, note: "REV-03 cấp team chỉ hiện với phạm vi đơn đầy đủ" };
-  const [row] = await revenueRows(user, { from: f.from ?? "2000-01-01", to: f.to ?? todayVN(), brand: null, store: f.store ?? null, market: f.market ?? null, currency: "VND", group: "none" }, "none", null);
+  const rf = { from: f.from ?? "2000-01-01", to: f.to ?? todayVN(), brand: null, store: f.store ?? null, market: f.market ?? null, currency: "VND", group: "none" } as const;
+  // Chỉ nhánh REV-03 của cùng hàm doanh thu với báo cáo (khớp số theo cấu tạo, không chạy REV-01/02/04).
+  const [row] = await revenueRows(user, rf, "none", null, await revenueCube(user, rf, "none", ["rev03"]));
   return { value: String(row?.rev03 ?? 0), note: null };
 }
 

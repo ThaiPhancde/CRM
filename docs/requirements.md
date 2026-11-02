@@ -100,9 +100,9 @@ Trạng thái: **XĐ** xác định trong HLD · **CHỐT** người dùng chố
 | R-71 | Dashboard theo vai; đa tiền tệ đối chiếu được | HLD §14.2; D-57 | XĐ — **đã có Phase 9** (Quản lý / Sales / Marketing; bảng nguyên tệ + tỷ giá đã dùng; REV khớp /don-hang) | 9 | ✓ |
 | R-72 | Vận đơn: đơn cần can thiệp, lý do thất bại, COD 4 mốc, đối soát | HLD §3; `levelup-company-os/01` §3.3; D-58 | XĐ — **đã có Phase 10** (/van-don: can thiệp + giao lại/hủy/ticket, COD bốn mốc CASH-01..03 theo hãng, đối soát dán bảng; bốn mốc ở trang đơn/khách/báo cáo tài chính) | 10 | ✓ |
 | R-73 | Sản phẩm/mua hàng: giá vốn, tồn qua tích hợp chỉ đọc | HLD §3; D-25; D-58 | MĐ — **đã có Phase 10** (PurchasingLink fixture; /san-pham tồn theo thị trường + cảnh báo tồn thấp, lấy giá vốn, ánh xạ mã nguồn); API thật chờ Q-16 | 10 | ◐ fixture |
-| R-74 | Quản trị: thành viên, vai trò, cấu hình, audit viewer, sao lưu, vòng đời dữ liệu | HLD §3 | XĐ | 1, 11 | ✓ |
-| R-75 | UI trắng – cam, 4 trạng thái, không chồng lớp, AA | D-15 | CHỐT | 1, 11 | ✓ |
-| R-76 | Kịch bản demo + E2E + handoff điểm cắm thật | TK §10 Phase 11 | MĐ | 11 | ✓ |
+| R-74 | Quản trị: thành viên, vai trò, cấu hình, audit viewer, sao lưu, vòng đời dữ liệu | HLD §3; D-59 | XĐ — **đã có Phase 11** (/quan-tri/cau-hinh, nhật ký lọc + trước/sau, xuất/xóa dữ liệu khách, `npm run backup`) | 1, 11 | ✓ |
+| R-75 | UI trắng – cam, 4 trạng thái, không chồng lớp, AA | D-15; D-59 | CHỐT — **Phase 11**: test tương phản AA trên token thật, E2E không chồng lớp / không cuộn ngang 768–1920 / focus / rỗng–lỗi, rà 2 reviewer + sửa | 1, 11 | ✓ |
+| R-76 | Kịch bản demo + E2E + handoff điểm cắm thật | TK §10 Phase 11 | MĐ — **đã có Phase 11** (`docs/demo-script.md`, `npm run e2e` 12/12, `docs/deploy-checklist.md`, test hợp đồng) | 11 | ✓ |
 
 ### Lên thật (ngoài demo)
 

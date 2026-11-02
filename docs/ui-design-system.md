@@ -16,12 +16,13 @@ Cập nhật: 28/10/2026 (Phase 0). Nguồn: D-15 (người dùng chốt: đẹp
 :root {
   --bg: #FFFFFF;          --bg-subtle: #FAFAF9;     --bg-muted: #F5F5F4;
   --border: #E7E5E4;      --border-strong: #D6D3D1;
-  --fg: #1C1917;          --fg-muted: #57534E;      --fg-subtle: #A8A29E;
-  --brand: #F97316;       --brand-hover: #EA580C;   --brand-active: #C2410C;
+  --fg: #1C1917;          --fg-muted: #57534E;      --fg-subtle: #78716C;   /* AA 4,8:1 (D-59) */
+  --brand: #C2410C;       --brand-hover: #B13A0B;   --brand-active: #9A3412; /* chữ trắng trên nút 5,2:1 (D-59; #F97316 chỉ 2,8:1) */
+  --border-input: #948E88; /* viền ô nhập ≥ 3:1 (WCAG 1.4.11) */
   --brand-soft: #FFF7ED;  --brand-ring: #FDBA74;
-  --success: #16A34A; --success-soft: #F0FDF4;
+  --success: #15803D; --success-soft: #F0FDF4;
   --warning: #D97706; --warning-soft: #FFFBEB;
-  --danger:  #DC2626; --danger-soft:  #FEF2F2;
+  --danger:  #B91C1C; --danger-soft:  #FEF2F2;
   --info:    #2563EB; --info-soft:    #EFF6FF;
   --radius-sm: 6px; --radius: 10px; --radius-lg: 14px;
   --shadow-sm: 0 1px 2px rgb(28 25 23 / .06);
@@ -80,7 +81,8 @@ Tailwind 4: khai báo `@theme` ánh xạ các biến trên thành `bg-brand`, `t
 ## 6. Khả năng truy cập
 
 - Tương phản AA: cam `#F97316` trên trắng chỉ dùng cho chữ ≥ 18px hoặc đậm; chữ nhỏ trên cam dùng trắng; liên kết cam đậm `#C2410C` cho chữ 14.
-- Focus ring 2px `--brand-ring` offset 2px cho mọi phần tử tương tác.
+- Focus ring 2px `--brand` offset 2px cho mọi phần tử tương tác (≥ 3:1 với nền; `--brand-ring` quá nhạt — D-59). Kiểm tự động: `tests/contrast.test.ts` (mọi cặp chữ/nền đang dùng ≥ 4,5:1).
+- Toast hiện ở top layer (popover) để không bị drawer/modal che; lỗi dùng `role=alert`. Xác nhận thao tác dùng `ConfirmButton` (Modal), không `window.confirm`.
 - Bàn phím: Tab trong bảng/drawer/modal; ESC đóng lớp phủ; Enter mở dòng.
 - Mọi input có `label`; icon-button có `aria-label`; bảng có `caption` ẩn.
 

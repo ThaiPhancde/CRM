@@ -101,6 +101,9 @@ export async function scoringJobs(client: Db, workspaceId: string, now = new Dat
   const v = await activeVersions(client);
   const newVersionUnscored = !(await client.score.findFirst({ where: { versionId: v.RFM.id }, select: { id: true } })) || !(await client.score.findFirst({ where: { versionId: v.TXN_RISK.id }, select: { id: true } })) || !(await client.score.findFirst({ where: { versionId: v.SUPPORT_NEED.id }, select: { id: true } }));
   const customers = !fresh || now.getTime() - fresh.getTime() > 20 * 3600000 || newVersionUnscored ? await refreshAndScoreCustomers(client, workspaceId, now) : null;
+  // Job vừa ghi lại điểm + chỉ số của mọi khách: dọn bảng ngay để phân khúc/hành trình dùng lại được quét chỉ-mục (không đọc lại heap).
+  // Đo: đếm phân khúc 200k khách 460 ms → 220 ms (docs/performance.md Phase 11). VACUUM phải chạy ngoài transaction.
+  if (customers) for (const t of ["CustomerMetric", "Score"]) await client.$executeRawUnsafe(`VACUUM (ANALYZE) "${t}"`);
   const leads = await scoreOpenLeads(client, now);
   return { customers, leads };
 }

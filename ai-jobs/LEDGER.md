@@ -35,8 +35,14 @@ A rule moves from hypothesis to pillar only on the evidence recorded here. Write
 | 28 | 2026-11-02 | p9-reports `report-tests`: bảng test kỳ/tiền tệ/cohort | 1 | gemini-4-argon-high, write | 246 s | checker 0; vitest 56 ca xanh | 0 | 1 nghi vấn đúng (ngày không có thật được chấp nhận) → Claude sửa + 4 ca hồi quy | ~300 dòng |
 | 29 | 2026-11-02 | p10-fulfillment `product-pages`: /san-pham danh sách + chi tiết | 1 | gemini-4-argon-high, write | 236 s | checker 0, tsc 0 | 0 | 0 sửa (dùng đúng contract, che tiền theo quyền) | ~560 dòng |
 | 30 | 2026-11-02 | p10-fulfillment `p10-tests`: bảng test lý do/đọc bảng dán/bốn mốc COD | 1 | gemini-4-argon-high, write | 269 s | checker 0; vitest xanh | 0 | **4 nghi vấn đúng** (đếm dòng đối soát thay vì vận đơn, giây > 59, rowNo lệch khi có dòng trống đầu, "12,34,56") → Claude sửa + 7 ca hồi quy | ~390 dòng |
+| 31 | 2026-11-02 | p11-admin `admin-pages`: /quan-tri/nhat-ky + /quan-tri/cau-hinh | 1 | gemini-4-argon-high, write | ~240 s | checker 0, tsc 0 | 0 | 0 sửa | ~970 dòng |
+| 32 | 2026-11-02 | p11-admin `admin-tests`: bảng test schema cấu hình / nhật ký | 1 | gemini-4-argon-high, write | ~240 s | checker 0; vitest xanh | 0 | **3 nghi vấn đúng** (ngày không có thật lọt bộ lọc nhật ký, ô chỉ khoảng trắng thành 0, so JSON phụ thuộc thứ tự khóa) → Claude sửa + ca hồi quy | ~450 dòng |
+| 33 | 2026-11-02 | p11-ux `confirm-modal`: ConfirmButton thay window.confirm (9 file) + tên truy cập nút lặp | 1 | gemini-4-argon-high, write | ~750 s | checker 0, tsc 0 | 0 | Claude nối prop ngữ cảnh ở trang gọi | ~200 dòng đổi |
+| 34 | 2026-11-02 | p11-ux `copy-a11y`: thuật ngữ thống nhất, bỏ mã nội bộ, nav thay tab ARIA sai (27 file) | 1 | gemini-4-argon-high, write | ~750 s | checker 0, tsc 0; E2E cập nhật 1 thuật ngữ | 0 | 0 sửa | ~350 dòng đổi |
 
 ## Notes
+
+10. Phase 11 (2 batch, 4 job): mọi job qua checker lần đầu, 0 ghi sai chỗ. Job test bảng lần thứ năm liên tiếp tìm ra lỗi thật (3 lỗi biên). Lượt chữ/a11y trên 36 file là việc hợp Gemini nhất: cơ học, nhiều file, checker kiểm được bằng regex chữ hiển thị.
 
 9. Batch p10-fulfillment (2 job song song, 269 s; ~67/33 theo dòng): cả 2 qua checker + tsc lần đầu, 0 ghi sai chỗ. Lần thứ tư liên tiếp job test bảng tìm ra lỗi thật trong code Claude — lần này 4 lỗi biên (đếm mốc COD, giây, số dòng, nhóm nghìn). Giao Gemini đọc kỹ hàm thuần và liệt kê nghi vấn là việc đáng nhất của tỷ lệ 30%.
 
