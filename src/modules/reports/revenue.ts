@@ -1,4 +1,5 @@
 // REV-01..04 theo nhóm qua Warehouse — một hàm cho báo cáo tài chính, dashboard và tổng REV-03 trên /don-hang (khớp số theo cấu tạo).
+import { Prisma } from "@prisma/client";
 import { getWarehouse } from "@/adapters/warehouse";
 import { revenueSql, type RevenueGroup } from "@/adapters/warehouse/reports";
 import { db } from "@/lib/db";
@@ -8,6 +9,8 @@ import { rangeParams, toReportCurrency, type ReportFilter } from "./period";
 
 export const n = (v: unknown) => (v == null ? 0 : Number(v));
 export const nn = (v: unknown) => (v == null ? null : Number(v));
+/** Tổng tiền chính xác (Decimal); mọi giá trị null → null (ẩn tiền); không có dòng → 0. */
+export const dsum = (vals: (number | null)[]) => (vals.length && vals.every((v) => v == null) ? null : vals.reduce((a: Prisma.Decimal, v) => a.add(new Prisma.Decimal(String(v ?? 0))), new Prisma.Decimal(0)).toNumber());
 export function params(u: SessionUser, f: Pick<ReportFilter, "from" | "to" | "brand" | "store" | "market">, extra: Record<string, unknown> = {}) {
   return { ws: u.workspaceId, ...rangeParams(f), brand: f.brand, store: f.store, market: f.market, ...extra };
 }
@@ -27,15 +30,16 @@ const SUMS = ["rev01", "orig01", "orders", "rev02", "confirmed", "rev03", "orig0
 
 /** Một truy vấn (nhóm × tiền tệ gốc) → gộp theo `by`: "key" (bảng theo nhóm) hoặc "cur" (bảng theo nguyên tệ). */
 function fold(raw: RevRaw[], by: "key" | "cur") {
-  type Acc = Record<(typeof SUMS)[number], number>;
+  // Cộng bằng Decimal (tiền không cộng số thực: 0,1 + 0,2 ≠ 0,3) rồi mới đổi sang số khi trả ra.
+  type Acc = Record<(typeof SUMS)[number], Prisma.Decimal>;
   const m = new Map<string, Acc>();
   for (const r of raw) {
     const k = r[by];
-    const acc = m.get(k) ?? (Object.fromEntries(SUMS.map((s) => [s, 0])) as Acc);
-    for (const s of SUMS) acc[s] += n(r[s]);
+    const acc = m.get(k) ?? (Object.fromEntries(SUMS.map((s) => [s, new Prisma.Decimal(0)])) as Acc);
+    for (const s of SUMS) acc[s] = acc[s].add(new Prisma.Decimal(String(r[s] ?? 0)));
     m.set(k, acc);
   }
-  return [...m.entries()].map(([key, v]) => ({ key, ...v }));
+  return [...m.entries()].map(([key, v]) => ({ key, ...(Object.fromEntries(SUMS.map((s) => [s, v[s].toNumber()])) as Record<(typeof SUMS)[number], number>) }));
 }
 
 /** REV-01..04 theo (nhóm × tiền tệ gốc) qua Warehouse — một truy vấn cho cả hai bảng của báo cáo tài chính. */

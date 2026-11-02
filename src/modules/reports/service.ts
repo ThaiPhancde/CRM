@@ -11,7 +11,7 @@ import { aiStats } from "@/modules/ai/history";
 import { RFM_OPTIONS } from "@/modules/marketing/segments";
 import { STAGE_LABEL } from "@/modules/sales/labels";
 import { pct, pivotCohort, rangeParams, todayVN, toReportCurrency, type CohortRow, type ReportFilter } from "./period";
-import { labels, n, nn, params, revenueCube, revenueRows, type RevenueRow } from "./revenue";
+import { dsum, labels, n, nn, params, revenueCube, revenueRows, type RevenueRow } from "./revenue";
 import { reportScope } from "./scope";
 
 export const REPORT_GROUP_KEYS = ["sales", "khach-hang", "marketing", "van-don", "tai-chinh", "ai"] as const;
@@ -58,7 +58,7 @@ export type ReportContext = Awaited<ReturnType<typeof reportContext>>;
 
 
 const sumRows = (rows: RevenueRow[]) => {
-  const s = (k: keyof RevenueRow) => (rows.some((r) => r[k] != null) ? rows.reduce((a, r) => a + (Number(r[k]) || 0), 0) : null);
+  const s = (k: keyof RevenueRow) => dsum(rows.map((r) => (r[k] == null ? null : Number(r[k]))));
   return { orders: s("orders") ?? 0, confirmed: s("confirmed") ?? 0, delivered: s("delivered") ?? 0, rev01: s("rev01"), rev02: s("rev02"), rev03: s("rev03"), rev04: s("rev04"), refunds: s("refunds") };
 };
 

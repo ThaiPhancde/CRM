@@ -5,7 +5,7 @@ import type { SessionUser } from "@/lib/session";
 import { myQueue } from "@/modules/sales/queue";
 import { OPEN_TICKET } from "@/modules/service/labels";
 import { addDays, parseReportFilter, pct, todayVN } from "./period";
-import { revenueRows } from "./revenue";
+import { dsum, revenueRows } from "./revenue";
 import { customerReport, marketingReport, reportContext, salesReport } from "./service";
 
 export async function dashboardFor(u: SessionUser, now = new Date()) {
@@ -34,7 +34,7 @@ export async function dashboardFor(u: SessionUser, now = new Date()) {
       return { sources: m.sources.slice(0, 5), cohort: cu?.cohort.slice(-4) ?? null };
     })() : null,
   ]);
-  const total = revenue ? revenue.reduce((a, r) => ({ rev01: a.rev01 + (r.rev01 ?? 0), rev02: a.rev02 + (r.rev02 ?? 0), rev03: a.rev03 + (r.rev03 ?? 0), rev04: a.rev04 + (r.rev04 ?? 0), orders: a.orders + r.orders }), { rev01: 0, rev02: 0, rev03: 0, rev04: 0, orders: 0 }) : null;
+  const total = revenue ? { rev01: dsum(revenue.map((r) => r.rev01)) ?? 0, rev02: dsum(revenue.map((r) => r.rev02)) ?? 0, rev03: dsum(revenue.map((r) => r.rev03)) ?? 0, rev04: dsum(revenue.map((r) => r.rev04)) ?? 0, orders: revenue.reduce((a, r) => a + r.orders, 0) } : null;
   const alerts = [
     sales && sales.total.overdue ? { tone: "warning" as const, text: `${sales.total.overdue} nhu cầu mua quá hạn hành động`, href: "/nhu-cau?overdue=1" } : null,
     tickets?.responseOverdue ? { tone: "danger" as const, text: `${tickets.responseOverdue} ticket quá hạn phản hồi đầu`, href: "/cham-soc?status=open&overdue=1" } : null,
