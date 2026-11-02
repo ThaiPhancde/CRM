@@ -190,7 +190,7 @@ export async function getCustomer360(user: SessionUser, id: string) {
     canEdit: can(user.roles, "customer.edit"),
     pendingReviews: reviews,
     customer: {
-      id: c.id, name: c.displayName, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), locale: c.locale,
+      id: c.id, name: c.displayName, erased: !!c.erasedAt, phone: pii.phone(c.primaryPhoneE164), email: pii.email(c.primaryEmail), locale: c.locale,
       market: c.market ? { code: c.market.code, name: c.market.name, currency: c.market.currency, paymentMode: c.market.paymentMode } : null,
       tags: c.tags, createdAt: c.createdAt.toISOString(),
     },

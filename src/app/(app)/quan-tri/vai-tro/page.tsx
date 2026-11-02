@@ -40,6 +40,7 @@ const PERM_LABEL: Record<Permission, string> = {
   "fulfillment.view": "Xem vận đơn",
   "fulfillment.manage": "Xử lý đơn giao thất bại",
   "cod.reconcile": "Nhập đối soát COD",
+  "customer.privacy": "Xuất / xóa dữ liệu khách theo yêu cầu",
   "report.export": "Xuất Excel báo cáo",
   "ai.run": "Dùng trợ lý AI",
   "ai.approve": "Duyệt thao tác AI cần duyệt",

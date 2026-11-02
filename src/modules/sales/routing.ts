@@ -8,7 +8,7 @@ import { notify } from "@/lib/notify";
 
 export const OPEN_STAGES = ["MOI", "DANG_TU_VAN", "CHO_QUYET_DINH"] as const;
 
-const routingSchema = z.object({
+export const routingSchema = z.object({
   /** Quy tắc khớp theo thứ tự cụ thể nhất (brand + market > một trong hai > không điều kiện). Mã viết hoa. */
   rules: z.array(z.object({ brand: z.string().optional(), market: z.string().optional(), team: z.string() })).default([]),
   maxOpenPerUser: z.number().int().positive().default(30),

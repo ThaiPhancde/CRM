@@ -517,6 +517,8 @@ model Customer {
   tags             String[]
   /// Đã bị gộp vào khách khác (giữ dòng để tách lại; ẩn khỏi danh sách).
   mergedIntoId     String?
+  /// Đã xóa dữ liệu cá nhân theo yêu cầu (Phase 11, ẩn danh hóa — giữ đơn/số tiền cho chỉ số).
+  erasedAt         DateTime?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   market           Market?             @relation(fields: [marketId], references: [id])

@@ -1,0 +1,7 @@
+[
+  {"id": "admin-pages", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/admin-pages.md",
+   "allowed_paths": ["src/app/(app)/quan-tri/nhat-ky/page.tsx", "src/app/(app)/quan-tri/cau-hinh/page.tsx", "src/app/(app)/quan-tri/cau-hinh/forms.tsx"],
+   "check": ["python", "-I", "ai-jobs/p11-admin/checker.py", "admin-pages", "."], "timeout_s": 1800},
+  {"id": "admin-tests", "mode": "write", "model": "gemini-4-argon-high", "prompt_file": "prompts/admin-tests.md",
+   "allowed_paths": ["tests/admin-pure.test.ts"], "check": ["python", "-I", "ai-jobs/p11-admin/checker.py", "admin-tests", "."], "timeout_s": 1200}
+]

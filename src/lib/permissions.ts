@@ -59,6 +59,8 @@ const MATRIX = {
   "customer.edit": ["MANAGER", "SALES_LEAD", "SALES"],
   /** Gộp/tách hồ sơ khách (/xac-minh tab Khách, lịch sử gộp). */
   "customer.merge": ["MANAGER", "SALES_LEAD"],
+  /** Xuất / xóa dữ liệu cá nhân của khách theo yêu cầu (GDPR/PDPA) — Phase 11. */
+  "customer.privacy": ["MANAGER"],
   /** Xem nhu cầu mua. Phạm vi lọc ở service (src/modules/sales/scope.ts): Sales của mình + chưa giao của nhóm, Trưởng nhóm cả nhóm. */
   "lead.view": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING"],
   /** Tạo/sửa lead, đổi giai đoạn, ghi tương tác. */

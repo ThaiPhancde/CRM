@@ -3,6 +3,7 @@
 import { runAction, sent } from "@/lib/action";
 import { mergeFromReview, recordPreference, rejectCustomerReview, unmergeCustomers } from "@/modules/customers/service";
 import type { ActionResult } from "@/components/form";
+import { eraseCustomerData } from "@/modules/admin/privacy";
 
 const PATHS = ["/khach-hang", "/xac-minh", "/don-hang"];
 
@@ -24,4 +25,11 @@ export async function recordPreferenceAction(_: ActionResult | null, fd: FormDat
     const v = sent(fd);
     await recordPreference(u, { ...v, optIn: v.optIn === "true" });
   }, PATHS, "Đã ghi lựa chọn liên hệ.");
+}
+/** FormData: customerId, reason, confirm ("XOA") — xóa dữ liệu cá nhân theo yêu cầu (customer.privacy, audit ở service). */
+export async function eraseCustomerAction(_: ActionResult | null, fd: FormData) {
+  return runAction(fd, async (u) => {
+    const r = await eraseCustomerData(u, sent(fd));
+    return r.replayed ? "Dữ liệu khách này đã được xóa trước đó." : "Đã xóa dữ liệu cá nhân của khách. Đơn và số liệu doanh thu giữ nguyên.";
+  }, PATHS, "Đã xóa.");
 }

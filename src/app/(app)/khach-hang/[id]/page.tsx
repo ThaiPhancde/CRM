@@ -15,6 +15,7 @@ import { getCustomerScores } from "@/modules/scoring/service";
 import { PreferenceForm } from "./preference-form";
 import { ScoreCard } from "./score-card";
 import { UnmergeButton } from "./unmerge-button";
+import { PrivacyActions } from "./privacy-actions";
 
 const ACTIVITY_LABEL: Record<string, string> = { CALL: "Cuộc gọi", MESSAGE: "Tin nhắn", MEETING: "Gặp mặt", NOTE: "Ghi chú" };
 
@@ -71,6 +72,7 @@ export default async function CustomerProfilePage({
   const user = await pageUser("customer.view");
   bindTenant(user);
   const canAi = can(user.roles, "ai.run");
+  const canPrivacy = can(user.roles, "customer.privacy");
   const [{ id }, sp] = await Promise.all([params, searchParams]);
 
   let res: Awaited<ReturnType<typeof getCustomer360>>;
@@ -137,7 +139,8 @@ export default async function CustomerProfilePage({
         description={`${marketDesc} · khách từ ${date(summary.firstOrderAt ?? c.createdAt)}`}
         actions={
           <>
-            {canAi && <AiSummary customerId={c.id} />}
+            {canAi && !c.erased && <AiSummary customerId={c.id} />}
+            {canPrivacy && <PrivacyActions customerId={c.id} erased={c.erased} />}
             {pendingReviews > 0 && canMerge && (
               <ButtonLink href="/xac-minh?tab=khach" variant="primary">
                 Có {pendingReviews} hồ sơ nghi trùng

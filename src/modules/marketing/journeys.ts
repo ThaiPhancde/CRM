@@ -37,20 +37,26 @@ export { STEP_LABEL } from "./labels";
 
 /** Thị trường bắt buộc khách đồng ý trước khi nhận tin marketing (GDPR — EU). Thị trường khác: được gửi trừ khi khách đã từ chối. */
 export const OPT_IN_MARKETS = ["DE", "FR"];
-/** Khung giờ được gửi theo giờ địa phương của thị trường khách. */
+/** Khung giờ được gửi theo giờ địa phương của thị trường khách — mặc định; Quản lý đổi theo thị trường ở /quan-tri/cau-hinh (Setting "workingHours"). */
 export const QUIET = { from: 9, to: 20 };
+export type Window = { from: number; to: number };
+/** Khung giờ của một thị trường: Setting { "*": {from,to}, "AE": {from,to} } — thị trường không ghi dùng "*", không có gì dùng QUIET. */
+export async function workingHours(client: Pick<Db, "setting">) {
+  const v = ((await client.setting.findFirst({ where: { key: "workingHours" } }))?.value ?? {}) as Record<string, Window>;
+  return (market: string | null | undefined): Window => (market && v[market]) || v["*"] || QUIET;
+}
 /** Giới hạn mặc định khi team chưa cấu hình ContactCap (Q-24): 2 tin / 7 ngày / kênh. */
 export const DEFAULT_CAP = { maxCount: 2, windowDays: 7 };
 
 const localClock = (at: Date, tz: string) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(at); // "HH:MM"
 /** Thời điểm gửi được gần nhất ≥ at theo giờ địa phương (dời tới đúng 9:00 kế tiếp nếu đang ngoài khung). Hàm thuần — có test.
  *  Bước 15 phút để đúng cả múi giờ lệch nửa/45 phút (Ấn Độ, Nepal). */
-export function nextSendable(at: Date, tz: string): Date {
+export function nextSendable(at: Date, tz: string, win: Window = QUIET): Date {
   const h = Number(localClock(at, tz).slice(0, 2));
-  if (h >= QUIET.from && h < QUIET.to) return at;
+  if (h >= win.from && h < win.to) return at;
   const t = new Date(at);
   t.setUTCMinutes(Math.floor(t.getUTCMinutes() / 15) * 15, 0, 0);
-  const target = `${String(QUIET.from).padStart(2, "0")}:00`;
+  const target = `${String(win.from).padStart(2, "0")}:00`;
   for (let i = 0; i < 26 * 4; i++) {
     t.setUTCMinutes(t.getUTCMinutes() + 15);
     if (localClock(t, tz) === target) return t;
@@ -90,7 +96,7 @@ export async function enrollJourney(client: Db, journeyId: string, now = new Dat
   return { enrolled: r.count };
 }
 
-type RunCtx = { client: Db; now: Date; caps: { channel: string; brandId: string | null; maxCount: number; windowDays: number }[]; facts: Map<string, Facts>; customers: Map<string, Cust>; brands: Map<string, string> };
+type RunCtx = { client: Db; now: Date; hours: (market: string | null | undefined) => Window; caps: { channel: string; brandId: string | null; maxCount: number; windowDays: number }[]; facts: Map<string, Facts>; customers: Map<string, Cust>; brands: Map<string, string> };
 
 type Facts = { lastOrderAt: Date | null; optedOut: boolean; openTicket: boolean };
 const CUST_SELECT = { displayName: true, primaryEmail: true, primaryPhoneE164: true, locale: true, tags: true, market: { select: { code: true, timezone: true, locale: true } } } as const;
@@ -156,7 +162,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
       }
       case "SEND": {
         const tz = cust.market?.timezone ?? "UTC";
-        const when = nextSendable(now, tz);
+        const when = nextSendable(now, tz, ctx.hours(cust.market?.code));
         if (when > now) { await c.journeyRun.update({ where: { id: run.id }, data: { stepIndex: idx, nextAt: when } }); return "QUIET_HOURS"; }
         const recipient = step.channel === "EMAIL" ? cust.primaryEmail : cust.primaryPhoneE164;
         const prefChannel = step.channel === "WHATSAPP" ? "WHATSAPP" : step.channel;
@@ -212,13 +218,14 @@ export async function processDueRuns(client: Db, now = new Date(), limit = 500) 
   if (!runs.length) return { processed: 0, outcomes: {} as Record<string, number> };
   const journeys = new Map((await client.journey.findMany({ where: { id: { in: [...new Set(runs.map((r) => r.journeyId))] } } })).map((j) => [j.id, { ...j, steps: j.steps as Step[], exitRules: exitRulesSchema.parse(j.exitRules) }]));
   const ids = [...new Set(runs.map((r) => r.customerId))];
-  const [caps, facts, custs, brands] = await Promise.all([
+  const [caps, facts, custs, brands, hours] = await Promise.all([
     client.contactCap.findMany(),
     exitFacts(client, ids),
     client.customer.findMany({ where: { id: { in: ids } }, select: { id: true, ...CUST_SELECT } }),
     client.brand.findMany({ select: { id: true, name: true } }),
+    workingHours(client),
   ]);
-  const ctx: RunCtx = { client, now, caps, facts, customers: new Map(custs.map((x) => [x.id, x])), brands: new Map(brands.map((b) => [b.id, b.name])) };
+  const ctx: RunCtx = { client, now, hours, caps, facts, customers: new Map(custs.map((x) => [x.id, x])), brands: new Map(brands.map((b) => [b.id, b.name])) };
   const outcomes: Record<string, number> = {};
   // Song song theo khách (8 luồng); các lượt của cùng một khách chạy tuần tự để giới hạn tần suất không bị vượt do chạy đua.
   const groups = [...Map.groupBy(runs, (r) => r.customerId).values()];
