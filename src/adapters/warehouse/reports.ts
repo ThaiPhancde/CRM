@@ -45,6 +45,7 @@ function scoped(d: Dialect) {
  * Phía service gộp tiếp: theo nhóm (cộng mọi tiền tệ) và theo tiền tệ (cộng mọi nhóm) — một truy vấn cho cả hai bảng.
  * REV-03 = (Σ qtyDelivered × unitPrice − hoàn) × tỷ giá, đơn có deliveredAt trong kỳ — giống công thức CustomerMetric (sql.ts).
  * Thanh toán thiếu paidAt không tính vào REV-04 (dữ liệu nguồn luôn có paidAt cho thanh toán thành công).
+ * REV-04 gồm COD đã đối soát: SettlementLine theo remittedAt (Phase 10, D-58) — COD chưa về tiền không tính.
  */
 export function revenueSql(d: Dialect, g: RevenueGroup) {
   const c = d.c;
@@ -67,6 +68,9 @@ export function revenueSql(d: Dialect, g: RevenueGroup) {
   UNION ALL SELECT ${key(d, g, `p.${c("paidAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, SUM(p.${c("amount")} * o.${c("fxRate")}), 0
     FROM ${d.t("Payment")} p JOIN ${ord(d)} ON o.${c("id")} = p.${c("orderId")}
     WHERE p.${c("workspaceId")} = @ws AND ${scoped(d)} AND UPPER(p.${c("status")}) IN (${PAID_STATUSES}) AND ${inRange(d, `p.${c("paidAt")}`)} GROUP BY 1, 2
+  UNION ALL SELECT ${key(d, g, `l.${c("remittedAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, SUM(l.${c("amount")} * o.${c("fxRate")}), 0
+    FROM ${d.t("SettlementLine")} l JOIN ${ord(d)} ON o.${c("id")} = l.${c("orderId")}
+    WHERE l.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `l.${c("remittedAt")}`)} GROUP BY 1, 2
   UNION ALL SELECT ${key(d, g, `x.${c("refundedAt")}`)}, ${cur}, 0, 0, 0, 0, 0, 0, 0, 0, 0 - SUM(x.${c("amount")} * o.${c("fxRate")}), SUM(x.${c("amount")} * o.${c("fxRate")})
     FROM ${d.t("Refund")} x JOIN ${ord(d)} ON o.${c("id")} = x.${c("orderId")}
     WHERE x.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `x.${c("refundedAt")}`)} GROUP BY 1, 2
@@ -76,6 +80,38 @@ SELECT k AS ${c("key")}, cur AS ${c("cur")}, SUM(v01) AS ${c("rev01")}, SUM(o01)
 FROM r GROUP BY k, cur ORDER BY 1 LIMIT 2000`;
 }
 // Thứ tự cột trong các nhánh UNION: k, cur, v01, o01, n01, v02, n02, v03, o03, n03, v04, rfd.
+
+/**
+ * COD theo hãng × nguyên tệ (docs/metrics.md mục 3): CASH-01 đã thu trong kỳ (collectedAt), CASH-02 đã về trong kỳ (remittedAt),
+ * CASH-03 đang kẹt TẠI CUỐI KỲ = đã thu trước @to mà chưa có dòng đối soát trước @to (số tồn, không theo kỳ), chia tuổi theo ngày từ lúc thu.
+ * c0x = VND quy đổi theo tỷ giá chốt của đơn (D-44); o0x = nguyên tệ. Cột: ca, cur, c01, o01, n01, c02, o02, n02, c03, o03, n03, a15, a30, a60, a61.
+ */
+export function codSql(d: Dialect) {
+  const c = d.c;
+  const age = d.daysBetween(d.ts("@to"), `sh.${c("collectedAt")}`);
+  const amt = `sh.${c("codAmount")}`;
+  const fx = `o.${c("fxRate")}`;
+  const sh = `${d.t("Shipment")} sh JOIN ${ord(d)} ON o.${c("id")} = sh.${c("orderId")}`;
+  const cod = `sh.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${amt} IS NOT NULL AND sh.${c("collectedAt")} IS NOT NULL`;
+  return `WITH r AS (
+  SELECT COALESCE(sh.${c("carrier")}, '—') AS ca, o.${c("currency")} AS cur, SUM(${amt} * ${fx}) AS c01, SUM(${amt}) AS o01, COUNT(*) AS n01,
+    0 AS c02, 0 AS o02, 0 AS n02, 0 AS c03, 0 AS o03, 0 AS n03, 0 AS a15, 0 AS a30, 0 AS a60, 0 AS a61
+    FROM ${sh} WHERE ${cod} AND ${inRange(d, `sh.${c("collectedAt")}`)} GROUP BY 1, 2
+  UNION ALL SELECT st.${c("carrier")}, o.${c("currency")}, 0, 0, 0, SUM(l.${c("amount")} * ${fx}), SUM(l.${c("amount")}), COUNT(*), 0, 0, 0, 0, 0, 0, 0
+    FROM ${d.t("SettlementLine")} l JOIN ${d.t("Settlement")} st ON st.${c("id")} = l.${c("settlementId")} JOIN ${ord(d)} ON o.${c("id")} = l.${c("orderId")}
+    WHERE l.${c("workspaceId")} = @ws AND ${scoped(d)} AND ${inRange(d, `l.${c("remittedAt")}`)} GROUP BY 1, 2
+  UNION ALL SELECT COALESCE(sh.${c("carrier")}, '—'), o.${c("currency")}, 0, 0, 0, 0, 0, 0, SUM(${amt} * ${fx}), SUM(${amt}), COUNT(*),
+    SUM(CASE WHEN ${age} <= 15 THEN ${amt} * ${fx} ELSE 0 END), SUM(CASE WHEN ${age} > 15 AND ${age} <= 30 THEN ${amt} * ${fx} ELSE 0 END),
+    SUM(CASE WHEN ${age} > 30 AND ${age} <= 60 THEN ${amt} * ${fx} ELSE 0 END), SUM(CASE WHEN ${age} > 60 THEN ${amt} * ${fx} ELSE 0 END)
+    FROM ${sh} WHERE ${cod} AND sh.${c("collectedAt")} < ${d.ts("@to")}
+      AND NOT EXISTS (SELECT 1 FROM ${d.t("SettlementLine")} l WHERE l.${c("orderId")} = sh.${c("orderId")} AND l.${c("trackingNo")} = sh.${c("trackingNo")} AND l.${c("remittedAt")} < ${d.ts("@to")})
+    GROUP BY 1, 2
+)
+SELECT ca AS ${c("carrier")}, cur AS ${c("cur")}, SUM(c01) AS ${c("cash01")}, SUM(o01) AS ${c("orig01")}, SUM(n01) AS ${c("n01")},
+  SUM(c02) AS ${c("cash02")}, SUM(o02) AS ${c("orig02")}, SUM(n02) AS ${c("n02")}, SUM(c03) AS ${c("cash03")}, SUM(o03) AS ${c("orig03")}, SUM(n03) AS ${c("n03")},
+  SUM(a15) AS ${c("age15")}, SUM(a30) AS ${c("age30")}, SUM(a60) AS ${c("age60")}, SUM(a61) AS ${c("age61")}
+FROM r GROUP BY ca, cur ORDER BY 1, 2 LIMIT 500`;
+}
 
 /** Vận đơn theo thị trường (OPS-01..03, COD), kỳ theo confirmedAt của đơn CONFIRMED. */
 export function fulfillmentSql(d: Dialect) {
@@ -97,10 +133,10 @@ GROUP BY COALESCE(o.mk, '—') ORDER BY 2 DESC LIMIT 100`;
 export function failureReasonsSql(d: Dialect) {
   const c = d.c;
   return `WITH o AS (${orderBase(d)})
-SELECT COALESCE(e.${c("reasonCode")}, 'unknown') AS ${c("key")}, COUNT(*) AS ${c("n")}
+SELECT COALESCE(e.${c("reasonCode")}, 'other') AS ${c("key")}, COUNT(*) AS ${c("n")}
 FROM ${d.t("DeliveryEvent")} e JOIN ${d.t("Shipment")} s2 ON s2.${c("id")} = e.${c("shipmentId")} JOIN o ON o.id = s2.${c("orderId")}
 WHERE e.${c("type")} = 'FAILED' AND ${inRange(d, `e.${c("occurredAt")}`)}
-GROUP BY COALESCE(e.${c("reasonCode")}, 'unknown') ORDER BY 2 DESC LIMIT 10`;
+GROUP BY COALESCE(e.${c("reasonCode")}, 'other') ORDER BY 2 DESC LIMIT 10`;
 }
 
 /**

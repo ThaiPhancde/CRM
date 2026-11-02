@@ -1,0 +1,546 @@
+{
+ "asOf": "2026-11-02T00:00:00Z",
+ "items": {
+  "LUMI-LAMP01-WH": {
+   "cost": "6.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 44,
+    "SA": 62,
+    "KW": 0
+   }
+  },
+  "LUMI-LAMP01-CL": {
+   "cost": "6.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 85,
+    "SA": 185,
+    "KW": 31
+   }
+  },
+  "LUMI-LAMP02-WH": {
+   "cost": "11.50",
+   "currency": "USD",
+   "stock": {
+    "AE": 75,
+    "SA": 4,
+    "KW": 0
+   }
+  },
+  "LUMI-LAMP02-BK": {
+   "cost": "10.88",
+   "currency": "USD",
+   "stock": {
+    "AE": 72,
+    "SA": 17,
+    "KW": 3
+   }
+  },
+  "LUMI-LAMP03-30CM": {
+   "cost": "6.80",
+   "currency": "USD",
+   "stock": {
+    "AE": 0,
+    "SA": 0,
+    "KW": 183
+   }
+  },
+  "LUMI-LAMP03-50CM": {
+   "cost": "9.10",
+   "currency": "USD",
+   "stock": {
+    "AE": 61,
+    "SA": 12,
+    "KW": 5
+   }
+  },
+  "LUMI-BOX01-800ML": {
+   "cost": "4.80",
+   "currency": "USD",
+   "stock": {
+    "AE": 7,
+    "SA": 154,
+    "KW": 191
+   }
+  },
+  "LUMI-BOX01-1200ML": {
+   "cost": "6.10",
+   "currency": "USD",
+   "stock": {
+    "AE": 135,
+    "SA": 6,
+    "KW": 111
+   }
+  },
+  "LUMI-JAR02-6PC": {
+   "cost": "8.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 117,
+    "SA": 11,
+    "KW": 136
+   }
+  },
+  "LUMI-JAR02-12PC": {
+   "cost": "13.80",
+   "currency": "USD",
+   "stock": {
+    "AE": 67,
+    "SA": 142,
+    "KW": 96
+   }
+  },
+  "LUMI-BIN03-5KG": {
+   "cost": "9.24",
+   "currency": "USD",
+   "stock": {
+    "AE": 45,
+    "SA": 187,
+    "KW": 10
+   }
+  },
+  "LUMI-BIN03-10KG": {
+   "cost": "13.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 4,
+    "SA": 61,
+    "KW": 19
+   }
+  },
+  "LUMI-SCALE01-SL": {
+   "cost": "5.33",
+   "currency": "USD",
+   "stock": {
+    "AE": 41,
+    "SA": 163,
+    "KW": 145
+   }
+  },
+  "LUMI-CHOP02-GN": {
+   "cost": "8.50",
+   "currency": "USD",
+   "stock": {
+    "AE": 0,
+    "SA": 192,
+    "KW": 104
+   }
+  },
+  "LUMI-CHOP02-GY": {
+   "cost": "8.79",
+   "currency": "USD",
+   "stock": {
+    "AE": 195,
+    "SA": 18,
+    "KW": 2
+   }
+  },
+  "LUMI-MILL03-1PC": {
+   "cost": "6.99",
+   "currency": "USD",
+   "stock": {
+    "AE": 18,
+    "SA": 135,
+    "KW": 68
+   }
+  },
+  "LUMI-MILL03-2PC": {
+   "cost": "12.27",
+   "currency": "USD",
+   "stock": {
+    "AE": 152,
+    "SA": 193,
+    "KW": 180
+   }
+  },
+  "LUMI-WHISK04-BK": {
+   "cost": "3.90",
+   "currency": "USD",
+   "stock": {
+    "AE": 0,
+    "SA": 49,
+    "KW": 184
+   }
+  },
+  "LUMI-RACK01-BK": {
+   "cost": "15.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 62,
+    "SA": 180,
+    "KW": 0
+   }
+  },
+  "LUMI-RACK01-WH": {
+   "cost": "15.20",
+   "currency": "USD",
+   "stock": {
+    "AE": 157,
+    "SA": 6,
+    "KW": 173
+   }
+  },
+  "LUMI-TRAY02-NAT": {
+   "cost": "10.97",
+   "currency": "USD",
+   "stock": {
+    "AE": 129,
+    "SA": 119,
+    "KW": 100
+   }
+  },
+  "LUMI-FLASK01-NV": {
+   "cost": "7.85",
+   "currency": "USD",
+   "stock": {
+    "AE": 0,
+    "SA": 24,
+    "KW": 92
+   }
+  },
+  "LUMI-FLASK01-CR": {
+   "cost": "7.60",
+   "currency": "USD",
+   "stock": {
+    "AE": 67,
+    "SA": 81,
+    "KW": 179
+   }
+  },
+  "LUMI-KETL02-BK": {
+   "cost": "18.00",
+   "currency": "USD",
+   "stock": {
+    "AE": 152,
+    "SA": 65,
+    "KW": 13
+   }
+  },
+  "NOVA-CLNS01-150ML": {
+   "cost": "4.90",
+   "currency": "USD",
+   "stock": {
+    "US": 148
+   }
+  },
+  "NOVA-BALM02-100G": {
+   "cost": "7.20",
+   "currency": "USD",
+   "stock": {
+    "US": 137
+   }
+  },
+  "NOVA-TONR03-200ML": {
+   "cost": "6.00",
+   "currency": "USD",
+   "stock": {
+    "US": 150
+   }
+  },
+  "NOVA-SERM01-30ML": {
+   "cost": "7.80",
+   "currency": "USD",
+   "stock": {
+    "US": 177
+   }
+  },
+  "NOVA-SERM01-50ML": {
+   "cost": "11.20",
+   "currency": "USD",
+   "stock": {
+    "US": 0
+   }
+  },
+  "NOVA-SERM02-30ML": {
+   "cost": "9.50",
+   "currency": "USD",
+   "stock": {
+    "US": 80
+   }
+  },
+  "NOVA-SERM03-30ML": {
+   "cost": "8.60",
+   "currency": "USD",
+   "stock": {
+    "US": 31
+   }
+  },
+  "NOVA-CREM01-50ML": {
+   "cost": "8.51",
+   "currency": "USD",
+   "stock": {
+    "US": 4
+   }
+  },
+  "NOVA-CREM01-100ML": {
+   "cost": "11.92",
+   "currency": "USD",
+   "stock": {
+    "US": 41
+   }
+  },
+  "NOVA-CREM02-50ML": {
+   "cost": "10.48",
+   "currency": "USD",
+   "stock": {
+    "US": 145
+   }
+  },
+  "NOVA-EYEC03-20ML": {
+   "cost": "7.40",
+   "currency": "USD",
+   "stock": {
+    "US": 134
+   }
+  },
+  "NOVA-MASK01-120G": {
+   "cost": "6.60",
+   "currency": "USD",
+   "stock": {
+    "US": 71
+   }
+  },
+  "NOVA-MASK02-20G": {
+   "cost": "4.46",
+   "currency": "USD",
+   "stock": {
+    "US": 9
+   }
+  },
+  "NOVA-MASK02-VAN": {
+   "cost": "4.42",
+   "currency": "USD",
+   "stock": {
+    "US": 173
+   }
+  },
+  "NOVA-TOOL01-PK": {
+   "cost": "6.80",
+   "currency": "USD",
+   "stock": {
+    "US": 162
+   }
+  },
+  "NOVA-TOOL01-GN": {
+   "cost": "6.80",
+   "currency": "USD",
+   "stock": {
+    "US": 116
+   }
+  },
+  "NOVA-TOOL02-LP": {
+   "cost": "17.40",
+   "currency": "USD",
+   "stock": {
+    "US": 2
+   }
+  },
+  "NOVA-TOOL02-MT": {
+   "cost": "17.40",
+   "currency": "USD",
+   "stock": {
+    "US": 158
+   }
+  },
+  "NOVA-TOOL03-WH": {
+   "cost": "21.00",
+   "currency": "USD",
+   "stock": {
+    "US": 111
+   }
+  },
+  "ORBI-TABL01-OAK": {
+   "cost": "105.97",
+   "currency": "USD",
+   "stock": {
+    "DE": 97,
+    "FR": 99
+   }
+  },
+  "ORBI-TABL01-WAL": {
+   "cost": "114.24",
+   "currency": "USD",
+   "stock": {
+    "DE": 46,
+    "FR": 119
+   }
+  },
+  "ORBI-TABL02-BK": {
+   "cost": "42.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 130,
+    "FR": 19
+   }
+  },
+  "ORBI-TABL02-SD": {
+   "cost": "42.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 36,
+    "FR": 95
+   }
+  },
+  "ORBI-DESK03-120CM": {
+   "cost": "142.22",
+   "currency": "USD",
+   "stock": {
+    "DE": 84,
+    "FR": 9
+   }
+  },
+  "ORBI-DESK03-150CM": {
+   "cost": "179.54",
+   "currency": "USD",
+   "stock": {
+    "DE": 14,
+    "FR": 85
+   }
+  },
+  "ORBI-CHAR01-GY": {
+   "cost": "56.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 169,
+    "FR": 141
+   }
+  },
+  "ORBI-CHAR01-OL": {
+   "cost": "59.65",
+   "currency": "USD",
+   "stock": {
+    "DE": 192,
+    "FR": 184
+   }
+  },
+  "ORBI-ARMC02-BG": {
+   "cost": "189.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 4,
+    "FR": 68
+   }
+  },
+  "ORBI-ARMC02-TR": {
+   "cost": "189.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 51,
+    "FR": 178
+   }
+  },
+  "ORBI-BNCH03-OAK": {
+   "cost": "72.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 21,
+    "FR": 82
+   }
+  },
+  "ORBI-SHLF01-OAK": {
+   "cost": "119.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 184,
+    "FR": 121
+   }
+  },
+  "ORBI-SHLF02-60CM": {
+   "cost": "21.50",
+   "currency": "USD",
+   "stock": {
+    "DE": 129,
+    "FR": 174
+   }
+  },
+  "ORBI-SHLF02-90CM": {
+   "cost": "27.78",
+   "currency": "USD",
+   "stock": {
+    "DE": 84,
+    "FR": 41
+   }
+  },
+  "ORBI-CABN03-NAT": {
+   "cost": "207.88",
+   "currency": "USD",
+   "stock": {
+    "DE": 199,
+    "FR": 6
+   }
+  },
+  "ORBI-RUG01-160": {
+   "cost": "66.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 122,
+    "FR": 40
+   }
+  },
+  "ORBI-RUG01-200": {
+   "cost": "95.72",
+   "currency": "USD",
+   "stock": {
+    "DE": 8,
+    "FR": 5
+   }
+  },
+  "ORBI-THRW02-CR": {
+   "cost": "19.30",
+   "currency": "USD",
+   "stock": {
+    "DE": 80,
+    "FR": 160
+   }
+  },
+  "ORBI-THRW02-SG": {
+   "cost": "19.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 71,
+    "FR": 181
+   }
+  },
+  "ORBI-CUSH03-45CM": {
+   "cost": "13.50",
+   "currency": "USD",
+   "stock": {
+    "DE": 3,
+    "FR": 103
+   }
+  },
+  "ORBI-VASE01-WH": {
+   "cost": "15.80",
+   "currency": "USD",
+   "stock": {
+    "DE": 136,
+    "FR": 77
+   }
+  },
+  "ORBI-VASE01-CL": {
+   "cost": "15.80",
+   "currency": "USD",
+   "stock": {
+    "DE": 129,
+    "FR": 84
+   }
+  },
+  "ORBI-MIRR02-60CM": {
+   "cost": "49.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 68,
+    "FR": 8
+   }
+  },
+  "ORBI-MIRR02-80CM": {
+   "cost": "64.00",
+   "currency": "USD",
+   "stock": {
+    "DE": 50,
+    "FR": 113
+   }
+  }
+ }
+}

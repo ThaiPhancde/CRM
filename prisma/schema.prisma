@@ -460,7 +460,9 @@ model Order {
   customer          Customer?         @relation(fields: [customerId], references: [id])
   tasks             Task[]
 
-  tickets Ticket[]
+  tickets         Ticket[]
+  settlementLines SettlementLine[]
+  deliveryActions DeliveryAction[]
 
   @@index([workspaceId, bookedAt])
   @@index([workspaceId, customerPhone])
@@ -727,10 +729,14 @@ model Shipment {
   codAmount     Decimal?          @db.Decimal(18, 4)
   deliveredAt   DateTime?
   collectedAt   DateTime?
+  /// Lần FAILED gần nhất (dựng lại từ sự kiện mỗi lần nhập). Can thiệp ghi ở DeliveryAction theo đơn + mốc này, vì Shipment bị tạo lại khi nguồn cập nhật.
+  failedAt      DateTime?
   order         Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
   events        DeliveryEvent[]
 
   @@index([orderId])
+  @@index([workspaceId, status, failedAt])
+  @@index([workspaceId, collectedAt])
 }
 
 model DeliveryEvent {
@@ -738,7 +744,9 @@ model DeliveryEvent {
   workspaceId String
   shipmentId  String
   type        DeliveryEventType
+  /// Mã lý do chuẩn hóa (src/modules/fulfillment/reasons.ts); chữ gốc của hãng giữ ở reasonRaw.
   reasonCode  String?
+  reasonRaw   String?
   occurredAt  DateTime
   shipment    Shipment          @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
@@ -1590,5 +1598,74 @@ model AiCost {
   createdAt    DateTime @default(now())
   run          AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
+  @@index([workspaceId, createdAt])
+}
+
+// ---- Phase 10: vận đơn + đối soát COD (D-58) -------------------------------------------------------
+
+/// Bảng đối soát COD của hãng vận chuyển (một lần "tiền về"), nhập bằng dán dữ liệu. Mốc remitted → CASH-02, REV-04.
+model Settlement {
+  id          String           @id @default(cuid())
+  workspaceId String
+  carrier     String
+  /// Mã bảng đối soát của hãng (vd số sao kê). Cùng hãng + mã = cùng bảng: dán lại không tạo bảng mới.
+  reference   String
+  createdById String?
+  createdAt   DateTime         @default(now())
+  lines       SettlementLine[]
+
+  @@unique([workspaceId, carrier, reference])
+  @@index([workspaceId, createdAt])
+}
+
+/// Một vận đơn COD đã về tiền. Gắn theo đơn + mã vận đơn (không theo Shipment — Shipment tạo lại khi nguồn cập nhật).
+/// Unique (đơn, mã vận đơn): một vận đơn chỉ đối soát một lần, không cộng trùng CASH-02/REV-04.
+model SettlementLine {
+  id           String     @id @default(cuid())
+  workspaceId  String
+  settlementId String
+  orderId      String
+  trackingNo   String
+  /// Tiền về (nguyên tệ của đơn). Có thể khác codAmount (hãng trừ phí) — chênh lệch hiện ở trang đối soát.
+  amount       Decimal    @db.Decimal(18, 4)
+  currency     String
+  codAmount    Decimal?   @db.Decimal(18, 4)
+  remittedAt   DateTime
+  createdAt    DateTime   @default(now())
+  settlement   Settlement @relation(fields: [settlementId], references: [id])
+  order        Order      @relation(fields: [orderId], references: [id])
+
+  @@unique([workspaceId, orderId, trackingNo])
+  @@index([settlementId])
+  @@index([orderId])
+  @@index([workspaceId, remittedAt])
+}
+
+enum DeliveryActionKind {
+  REATTEMPT
+  CANCEL
+  TICKET
+}
+
+/// Thao tác xử lý đơn giao thất bại (chỉ thêm). Đơn hết "cần can thiệp" khi có thao tác với failedAt ≥ lần thất bại gần nhất;
+/// thất bại lần nữa sau khi giao lại → hiện lại.
+model DeliveryAction {
+  id             String             @id @default(cuid())
+  workspaceId    String
+  orderId        String
+  kind           DeliveryActionKind
+  /// Lần thất bại được xử lý (Shipment.failedAt lúc thao tác).
+  failedAt       DateTime
+  reasonCode     String?
+  note           String?
+  ticketId       String?
+  idempotencyKey String
+  createdById    String
+  createdAt      DateTime           @default(now())
+  order          Order              @relation(fields: [orderId], references: [id])
+
+  @@unique([workspaceId, idempotencyKey])
+  /// Một lần thất bại chỉ xử lý một lần (chặn hai người bấm cùng lúc bằng hai khóa khác nhau).
+  @@unique([orderId, failedAt])
   @@index([workspaceId, createdAt])
 }

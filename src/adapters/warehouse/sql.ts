@@ -69,12 +69,14 @@ export function dialect(name: DialectName, dataset = "crm"): Dialect {
 }
 
 /** Lý do giao thất bại thuộc về khách (Q-27 mặc định) — lỗi hãng vận chuyển không tính vào rủi ro khách (HLD §7.3). */
-export const CUSTOMER_FAILURE_REASONS = ["customer_refused", "unreachable", "wrong_address"];
+// Lý do thất bại thuộc khách (Q-27) — một danh sách ở module vận đơn (D-58).
+export { CUSTOMER_FAILURE_REASONS } from "@/modules/fulfillment/reasons";
+import { CUSTOMER_FAILURE_REASONS } from "@/modules/fulfillment/reasons";
 
 /**
  * Chỉ số khách kỳ R12M tới @asOf cho một team (@ws). Trả một dòng/khách có ít nhất một đơn (CustomerMetric).
  * Định nghĩa theo docs/metrics.md: REV-01 đặt (không hủy, theo bookedAt), REV-02 xác nhận (theo confirmedAt), REV-03 phần đã giao − hoàn
- * (theo deliveredAt), REV-04 thanh toán thành công − hoàn (COD đã đối soát có ở Phase 10), RFM ngũ phân vị trong team.
+ * (theo deliveredAt), REV-04 thanh toán thành công + COD đã đối soát (SettlementLine theo remittedAt, D-58) − hoàn, RFM ngũ phân vị trong team.
  */
 export function customerMetricsSelect(d: Dialect): string {
   const { t, c } = d;
@@ -109,9 +111,13 @@ goods AS (
   GROUP BY i.${c("orderId")}
 ),
 pay AS (
-  SELECT p.${c("orderId")} AS order_id, SUM(p.${c("amount")}) AS paid FROM ${t("Payment")} p JOIN ord ON ord.id = p.${c("orderId")}
-  WHERE UPPER(p.${c("status")}) IN ('SUCCESS', 'PAID', 'COMPLETED') AND COALESCE(p.${c("paidAt")}, ord.booked_at) > ${since} AND COALESCE(p.${c("paidAt")}, ord.booked_at) <= ${asOf}
-  GROUP BY p.${c("orderId")}
+  SELECT order_id, SUM(paid) AS paid FROM (
+    SELECT p.${c("orderId")} AS order_id, p.${c("amount")} AS paid FROM ${t("Payment")} p JOIN ord ON ord.id = p.${c("orderId")}
+    WHERE UPPER(p.${c("status")}) IN ('SUCCESS', 'PAID', 'COMPLETED') AND COALESCE(p.${c("paidAt")}, ord.booked_at) > ${since} AND COALESCE(p.${c("paidAt")}, ord.booked_at) <= ${asOf}
+    UNION ALL
+    SELECT l.${c("orderId")}, l.${c("amount")} FROM ${t("SettlementLine")} l JOIN ord ON ord.id = l.${c("orderId")}
+    WHERE l.${c("remittedAt")} > ${since} AND l.${c("remittedAt")} <= ${asOf}
+  ) x GROUP BY order_id
 ),
 ref AS (
   SELECT r.${c("orderId")} AS order_id, SUM(r.${c("amount")}) AS refunded FROM ${t("Refund")} r JOIN ord ON ord.id = r.${c("orderId")}

@@ -1,5 +1,6 @@
 // Nhãn tiếng Việt + màu cho trạng thái nghiệp vụ (ui-design-system mục 5, Badge). Một chỗ duy nhất để mọi trang hiển thị giống nhau.
 import type { Tone } from "@/components/ui";
+import { FAILURE_REASONS } from "@/modules/fulfillment/reasons";
 
 type Map = Record<string, { label: string; tone: Tone }>;
 
@@ -41,9 +42,7 @@ export const DELIVERY_EVENT: Record<string, string> = {
   PICKED: "Đã lấy hàng", IN_TRANSIT: "Đang vận chuyển", OUT_FOR_DELIVERY: "Đang giao", DELIVERED: "Đã giao",
   FAILED: "Giao thất bại", RETURNED: "Đã hoàn về", COD_COLLECTED: "Đã thu COD",
 };
-export const FAILURE_REASON: Record<string, string> = {
-  customer_refused: "Khách từ chối nhận", unreachable: "Không liên lạc được", wrong_address: "Sai địa chỉ", carrier_delay: "Hãng vận chuyển chậm",
-};
+export const FAILURE_REASON: Record<string, string> = Object.fromEntries(Object.entries(FAILURE_REASONS).map(([k, v]) => [k, v.label]));
 export const SYNC_STATUS: Map = {
   RUNNING: { label: "Đang chạy", tone: "info" },
   OK: { label: "Thành công", tone: "success" },

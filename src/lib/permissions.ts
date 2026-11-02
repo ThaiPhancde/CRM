@@ -41,6 +41,16 @@ const MATRIX = {
   "order.link": ["MANAGER", "FULFILLMENT"],
   /** Xem sản phẩm và ánh xạ mã nguồn. */
   "product.view": ALL,
+  /** Ánh xạ mã SKU nguồn chưa khớp về biến thể (Phase 10). */
+  "product.map": ["MANAGER", "FULFILLMENT"],
+  /** Lấy giá vốn từ Mua hàng (PurchasingLink) ghi vào danh mục — giá vốn là tiền, dùng cho CM-01. */
+  "product.sync": ["MANAGER"],
+  /** Xem /van-don: đơn cần can thiệp, lý do thất bại, COD các mốc (số tiền vẫn cần finance.view). */
+  "fulfillment.view": ["MANAGER", "SALES_LEAD", "FULFILLMENT", "FINANCE_VIEW"],
+  /** Xử lý đơn giao thất bại: giao lại, hủy, chuyển ticket. */
+  "fulfillment.manage": ["MANAGER", "FULFILLMENT"],
+  /** Nhập bảng đối soát COD (mốc tiền về). Mặc định chỉ Quản lý (D-58): Kế toán là vai chỉ xem. */
+  "cod.reconcile": ["MANAGER"],
   /** Xem hồ sơ khách (Customer 360). ponytail: Sales thấy mọi khách của team; giới hạn theo khách được giao ở Phase 4. */
   "customer.view": ["MANAGER", "SALES_LEAD", "SALES", "MARKETING", "FULFILLMENT", "FINANCE_VIEW"],
   /** SĐT/email đầy đủ; thiếu quyền thì che giữa ở service (UI, API, CSV, AI đều nhận bản đã che). */

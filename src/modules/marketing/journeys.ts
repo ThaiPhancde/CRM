@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { Prisma, type JourneyStatus } from "@prisma/client";
 import { z } from "zod";
-import { getInventory } from "@/adapters/inventory";
+import { available } from "@/adapters/purchasing";
 import { bindTenant, db, type Db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { HttpError, parse, ValidationError } from "@/lib/errors";
@@ -149,7 +149,7 @@ async function advance(ctx: RunCtx, run: { id: string; journeyId: string; custom
       }
       case "STOCK_CHECK": {
         const item = await c.orderItem.findFirst({ where: { order: { customerId: run.customerId, status: { not: "CANCELLED" } }, qtyDelivered: { gt: 0 } }, orderBy: { order: { bookedAt: "desc" } }, select: { sourceSku: true, name: true } });
-        const qty = item ? (await getInventory().available([item.sourceSku])).get(item.sourceSku) ?? 0 : 0;
+        const qty = item ? (await available([item.sourceSku])).get(item.sourceSku) ?? 0 : 0;
         await log("STOCK_CHECK", qty > 0 ? "IN_STOCK" : "OUT_OF_STOCK", item ? `${item.sourceSku}: ${qty}` : "Không xác định sản phẩm");
         if (qty <= 0) { idx++; return finish("EXITED", item ? `Hết hàng ${item.sourceSku}` : "Không xác định sản phẩm khách mua").then(() => "EXITED"); }
         break;

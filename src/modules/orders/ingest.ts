@@ -11,6 +11,7 @@ import type { Db } from "@/lib/db";
 import { normRef, type NormalizedOrder, type Platform } from "@/adapters/connectors/types";
 import { closeLeadsOnOrder } from "@/modules/sales/routing";
 import { resolveCustomer, type CustomerInput } from "@/modules/customers/resolve";
+import { normalizeReason } from "@/modules/fulfillment/reasons";
 
 const D = Prisma.Decimal;
 type Tx = Parameters<Parameters<Db["$transaction"]>[0]>[0];
@@ -236,15 +237,16 @@ async function createOrder(tx: Tx, conn: Conn, n: NormalizedOrder) {
 }
 
 function shipmentCreate(s: NormalizedOrder["shipments"][number]) {
-  const evs = [...s.events].sort((a, b) => a.at.getTime() - b.at.getTime());
+  const evs = [...s.events].sort((a, b) => a.at.getTime() - b.at.getTime()).map((e) => ({ ...e, raw: e.reasonCode, reasonCode: normalizeReason(e.reasonCode) }));
   const last = evs.filter((e) => e.type !== "COD_COLLECTED").at(-1);
   const status = last?.type === "DELIVERED" ? "DELIVERED" : last?.type === "FAILED" ? "FAILED" : last?.type === "RETURNED" ? "RETURNED" : evs.length ? "IN_TRANSIT" : "UNFULFILLED";
   return {
     carrier: s.carrier, trackingNo: s.trackingNo, codAmount: s.codAmount, status,
     failureReason: evs.filter((e) => e.type === "FAILED").at(-1)?.reasonCode ?? null,
+    failedAt: evs.filter((e) => e.type === "FAILED").at(-1)?.at ?? null,
     deliveredAt: evs.filter((e) => e.type === "DELIVERED").at(-1)?.at ?? null,
     collectedAt: evs.filter((e) => e.type === "COD_COLLECTED").at(-1)?.at ?? null,
-    events: { create: evs.map((e) => ({ type: e.type, occurredAt: e.at, reasonCode: e.reasonCode })) },
+    events: { create: evs.map((e) => ({ type: e.type, occurredAt: e.at, reasonCode: e.reasonCode, reasonRaw: e.raw && e.raw !== e.reasonCode ? e.raw : null })) },
   };
 }
 

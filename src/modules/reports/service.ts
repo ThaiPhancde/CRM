@@ -13,6 +13,7 @@ import { STAGE_LABEL } from "@/modules/sales/labels";
 import { pct, pivotCohort, rangeParams, todayVN, toReportCurrency, type CohortRow, type ReportFilter } from "./period";
 import { dsum, labels, n, nn, params, revenueCube, revenueRows, type RevenueRow } from "./revenue";
 import { reportScope } from "./scope";
+import { reasonLabel } from "@/modules/fulfillment/reasons";
 
 export const REPORT_GROUP_KEYS = ["sales", "khach-hang", "marketing", "van-don", "tai-chinh", "ai"] as const;
 export type ReportGroupKey = (typeof REPORT_GROUP_KEYS)[number];
@@ -166,7 +167,7 @@ export async function fulfillmentReport(u: SessionUser, f: ReportFilter, ctx: Re
     avgDays: r.avgDays == null ? null : Math.round(Number(r.avgDays) * 10) / 10, codCollected: n(r.codCollected), codValue: ctx.showMoney ? toReportCurrency(nn(r.codValue), f.currency, rate) : null,
   }));
   const t = out.reduce((a, r) => ({ confirmed: a.confirmed + r.confirmed, delivered: a.delivered + r.delivered, failed: a.failed + r.failed + r.returned }), { confirmed: 0, delivered: 0, failed: 0 });
-  return { rows: out, reasons: reasons.map((r) => ({ key: r.key, label: FAILURE_REASON[r.key] ?? (r.key === "unknown" ? "Không rõ lý do" : r.key), n: n(r.n) })), total: { ...t, deliveredRate: pct(t.delivered, t.confirmed), failRate: pct(t.failed, t.confirmed) } };
+  return { rows: out, reasons: reasons.map((r) => ({ key: r.key, label: reasonLabel(r.key), n: n(r.n) })), total: { ...t, deliveredRate: pct(t.delivered, t.confirmed), failRate: pct(t.failed, t.confirmed) } };
 }
 
 // ---- AI ----
